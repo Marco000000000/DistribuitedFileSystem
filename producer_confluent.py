@@ -10,11 +10,28 @@ fake=Faker()
 
 
 # Creazione di un logger
+logging.basicConfig(format='%(asctime)s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    filename='producer.log',
+                    filemode='w')
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 
 # Creazione Producer
+p=Producer({'bootstrap.servers':'localhost:9092'})
 print('Il produttore è stato avviato...')
 
 
+# Logging e Stampa dei messaggi prodotti
+def receipt(err,msg):
+    if err is not None:
+        print('Error: {}'.format(err))
+    else:
+        message = 'Prodotto un messaggio sul topic {} con il valore {}\n'.format(msg.topic(), msg.value().decode('utf-8'))
+        logger.info(message)
+        print(message)
 
 
 # Testing        
