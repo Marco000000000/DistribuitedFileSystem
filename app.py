@@ -6,6 +6,7 @@ from confluent_kafka import Consumer
 import logging
 import json
 import subprocess
+import base64
 PARTITION_GRANULARITY=1024
 app=Flask(__name__)
 UPLOAD_FOLDER = 'downloadable'
@@ -61,11 +62,23 @@ def init():
     return output
 
 
-
-def download(filename):
-    uploads = os.path.join(current_app.root_path, app.config['UPLOAD_FOLDER'])
-    return send_from_directory(uploads, filename)
-
+#mettere funzione che da un solo pacchetto
+def download(filename,topicName):
+    if filename is not None and  allowed_file(filename):
+        directory = os.path.join(current_app.root_path, app.config['UPLOAD_FOLDER'])
+        index=0
+        with open("directory", "rb") as f:
+            while (byte := f.read(PARTITION_GRANULARITY)):
+                data={
+                    "index":index,
+                    "data":base64.b64encode(byte)
+                    }
+                m=json.dumps(data)
+                p.poll(1)
+                p.produce(topicName, m.encode('utf-8'),callback=receipt)
+                p.flush()
+                return 
+        
 def upload_file():
     if request.method == 'POST':
         # check if the post request has the file part
@@ -91,7 +104,7 @@ def upload_file():
         '''
 
 app.run(debug=True,port=80)
-def entry_topic():
+def first_Call():
     bashCommandName = "echo $NAME"
 
     ContainerName = subprocess.check_output(['bash','-c', bashCommandName]) 
@@ -115,9 +128,22 @@ def entry_topic():
                 break
     c.close()
     c.unsubscribe()
-    download=Consumer.subscribe([data["downloadTopic"]])
-    
+
+    return data["responseTopic"],data["requestTopic"]
 
 if __name__== "main":
-    entry_topic()
-   
+    responseTopicName,requestTopicName=first_Call()
+    c=c.subscribe(requestTopicName)
+    while True:
+        msg=c.poll(0.1)
+        if msg is None:
+            continue
+        elif msg.error():
+            print('Error: {}'.format(msg.error()))
+            continue
+        else:
+            data=msg.value().decode('utf-8')
+            if data["commandTipe"]=="download":
+                download(data["fileName"],responseTopicName)
+            #manca l'upload ed il resto
+            break
