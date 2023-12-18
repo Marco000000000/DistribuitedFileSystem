@@ -7,18 +7,22 @@ import logging
 import json
 import subprocess
 import base64
+import random
+import string
+
 PARTITION_GRANULARITY=1024
 app=Flask(__name__)
 UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", default = 'downloadable')
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 FILESYSTEM_DIMENSION=os.getenv("FILESYSTEM_DIMENSION", default = 100)#Mb
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+def get_random_string(length):
+    letters = string.ascii_lowercase
+    result_str = ''.join(random.choice(letters) for i in range(length))
+    print("Random string of length", length, "is:", result_str)
 
 p=Producer({'bootstrap.servers':'localhost:9092'})
-c=Consumer({'bootstrap.servers':'localhost:9092','group.id':'python-consumer','auto.offset.reset':'earliest'})
-
-print('Topics disponibili da consumare: ', c.list_topics().topics)
-c.subscribe(['FirstCallAck'])
+c=Consumer({'bootstrap.servers':'localhost:9092','group.id':get_random_string(20),'auto.offset.reset':'earliest'})
 
 logging.basicConfig(format='%(asctime)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
@@ -29,6 +33,10 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
+
+
+print('Topics disponibili da consumare: ', c.list_topics().topics)
+c.subscribe(['FirstCallAck'])
 # Logging e Stampa dei messaggi prodotti
 def receipt(err,msg):
     if err is not None:
@@ -64,13 +72,14 @@ def init():
 
 #mettere funzione che da un solo pacchetto
 def download_file(filename,topicNumber):
+    topicName="Download"+topicNumber
     if filename is not None and  allowed_file(filename):
-        directory = os.path.join(current_app.root_path, app.config['UPLOAD_FOLDER'])
+        directory = os.path.join(current_app.root_path, app.config['UPLOAD_FOLDER'],filename)
         index=0
-        with open("directory", "rb") as f:
+        with open(directory, "rb") as f:
             while (byte := f.read(PARTITION_GRANULARITY)):
                 data={
-                    "index":index,
+                    
                     "data":base64.b64encode(byte)
                     }
                 m=json.dumps(data)
@@ -79,37 +88,18 @@ def download_file(filename,topicNumber):
                 p.flush()
                 return 
         
-def upload_file(filename,topicName):
-    if request.method == 'POST':
-        # check if the post request has the file part
-        print(request)
-        
-        file = request.files['file']
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
-        if file and allowed_file(file.filename):
-            file.save( secure_filename(file.filename))
-            return "ok"
-        else:
-            return "Tipo non adatto"
-    else:
-        return '''
-        <!doctype html>
-        <title>Upload new File</title>
-        <h1>Upload new File</h1>
-        <form method=post enctype=multipart/form-data>
-        <input type=file name="file">
-        <input type=submit value="Upload">
-        </form>
-        '''
+def upload_file(filename,pack):
+    directory = os.path.join(current_app.root_path, app.config['UPLOAD_FOLDER'],filename)
+
+    file = base64.b64decode(pack["data"])
+
+    with open(directory, "ab+") as f:
+        f.write(file)
+    
 
 app.run(debug=True,port=80)
 def first_Call():
-    bashCommandName = "echo $NAME"
-
-    ContainerName = subprocess.check_output(['bash','-c', bashCommandName]) 
-
-    data={"Name":ContainerName,
+    data={"Name":get_random_string(20),
           "Dim":FILESYSTEM_DIMENSION}
     m=json.dumps(data)
     p.poll(1)
@@ -146,6 +136,8 @@ if __name__== "main":
     while True:
         msg=requestConsumer.poll(0.1)
         msgUpload=uploadConsumer.poll(0.1)
+        msgDelete=deleteConsumer.poll(0.1)
+
         if msg is None:
             continue
         elif msg.error():
@@ -164,8 +156,16 @@ if __name__== "main":
         else:
             data=msgUpload.value().decode('utf-8')
             if data["fileName"]!="":
+                upload_file(data["fileName"],data)
                 
-                upload_file(data["fileName"],topicNumber)
+        if msgDelete is None:
+            continue
+        elif msgDelete.error():
+            print('Error: {}'.format(msg.error()))
+            continue
+        else:
+            data=msgDelete.value().decode('utf-8')
+            if data["fileName"]!="":
+                delete_file(data["fileName"])                
                 
-
             
