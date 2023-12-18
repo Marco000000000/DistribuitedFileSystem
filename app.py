@@ -154,10 +154,8 @@ if __name__== "main":
         else:
             data=msg.value().decode('utf-8')
             if data["fileName"]!="":
-                if data["request"]=="download":
-                    download_file(data["fileName"],topicNumber)
-                elif data["request"]=="delete":
-                    delete_file(data["fileName"])
+                download_file(data["fileName"],topicNumber)
+
         if msgUpload is None:
             continue
         elif msgUpload.error():
@@ -166,10 +164,7 @@ if __name__== "main":
         else:
             data=msgUpload.value().decode('utf-8')
             if data["fileName"]!="":
-                if data["request"]=="download":
-                    download_file(data["fileName"],topicNumber)
-                elif data["request"]=="delete":
-                    delete_file(data["fileName"])
+                
                 upload_file(data["fileName"],topicNumber)
                 
 
