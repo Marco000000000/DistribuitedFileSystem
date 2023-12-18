@@ -9,9 +9,9 @@ import subprocess
 import base64
 PARTITION_GRANULARITY=1024
 app=Flask(__name__)
-UPLOAD_FOLDER = 'downloadable'
+UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", default = 'downloadable')
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-FILESYSTEM_DIMENSION=100#Mb
+FILESYSTEM_DIMENSION=os.getenv("FILESYSTEM_DIMENSION", default = 100)#Mb
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 p=Producer({'bootstrap.servers':'localhost:9092'})
@@ -63,7 +63,7 @@ def init():
 
 
 #mettere funzione che da un solo pacchetto
-def download(filename,topicName):
+def download_file(filename,topicNumber):
     if filename is not None and  allowed_file(filename):
         directory = os.path.join(current_app.root_path, app.config['UPLOAD_FOLDER'])
         index=0
@@ -79,7 +79,7 @@ def download(filename,topicName):
                 p.flush()
                 return 
         
-def upload_file():
+def upload_file(filename,topicName):
     if request.method == 'POST':
         # check if the post request has the file part
         print(request)
@@ -129,13 +129,23 @@ def first_Call():
     c.close()
     c.unsubscribe()
 
-    return data["responseTopic"],data["requestTopic"]
+    return data["id"],data["topic"]
+
+def delete_file(filename):
+    if os.path.exists(filename):
+        os.remove(filename)
 
 if __name__== "main":
-    responseTopicName,requestTopicName=first_Call()
-    c=c.subscribe(requestTopicName)
+    id,topicNumber=first_Call()
+    uploadConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':str(id),'auto.offset.reset':'earliest'})
+    uploadConsumer.subscribe("Upload"+topicNumber)
+    requestConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':"000",'auto.offset.reset':'earliest'})
+    requestConsumer.subscribe("Request"+topicNumber)
+    deleteConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':"000",'auto.offset.reset':'earliest'})
+    deleteConsumer.subscribe("Delete"+topicNumber)
     while True:
-        msg=c.poll(0.1)
+        msg=requestConsumer.poll(0.1)
+        msgUpload=uploadConsumer.poll(0.1)
         if msg is None:
             continue
         elif msg.error():
@@ -143,7 +153,24 @@ if __name__== "main":
             continue
         else:
             data=msg.value().decode('utf-8')
-            if data["commandTipe"]=="download":
-                download(data["fileName"],responseTopicName)
-            #manca l'upload ed il resto
-            break
+            if data["fileName"]!="":
+                if data["request"]=="download":
+                    download_file(data["fileName"],topicNumber)
+                elif data["request"]=="delete":
+                    delete_file(data["fileName"])
+        if msgUpload is None:
+            continue
+        elif msgUpload.error():
+            print('Error: {}'.format(msg.error()))
+            continue
+        else:
+            data=msgUpload.value().decode('utf-8')
+            if data["fileName"]!="":
+                if data["request"]=="download":
+                    download_file(data["fileName"],topicNumber)
+                elif data["request"]=="delete":
+                    delete_file(data["fileName"])
+                upload_file(data["fileName"],topicNumber)
+                
+
+            
