@@ -1,4 +1,3 @@
-from flask import Flask, flash, request,send_from_directory,current_app ,redirect, url_for
 import os
 from werkzeug.utils import secure_filename
 from confluent_kafka import Producer
@@ -11,7 +10,6 @@ import random
 import string
 
 PARTITION_GRANULARITY=1024
-app=Flask(__name__)
 UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", default = 'downloadable')
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 FILESYSTEM_DIMENSION=os.getenv("FILESYSTEM_DIMENSION", default = 100)#Mb
@@ -146,7 +144,7 @@ if __name__== "main":
         else:
             data=msg.value().decode('utf-8')
             if data["fileName"]!="":
-                download_file(data["fileName"],topicNumber)
+                download_file(secure_filename(data["fileName"]),topicNumber)
 
         if msgUpload is None:
             continue
@@ -156,7 +154,7 @@ if __name__== "main":
         else:
             data=msgUpload.value().decode('utf-8')
             if data["fileName"]!="":
-                upload_file(data["fileName"],data)
+                upload_file(secure_filename(data["fileName"]),data)
                 
         if msgDelete is None:
             continue
@@ -166,6 +164,6 @@ if __name__== "main":
         else:
             data=msgDelete.value().decode('utf-8')
             if data["fileName"]!="":
-                delete_file(data["fileName"])                
+                delete_file(secure_filename(data["fileName"]))                
                 
             
