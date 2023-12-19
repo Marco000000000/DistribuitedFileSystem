@@ -16,7 +16,6 @@ FILESYSTEM_DIMENSION=os.getenv("FILESYSTEM_DIMENSION", default = 100)#Mb
 def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
-    print("Random string of length", length, "is:", result_str)
 
 p=Producer({'bootstrap.servers':'localhost:9092'})
 c=Consumer({'bootstrap.servers':'localhost:9092','group.id':get_random_string(20),'auto.offset.reset':'earliest'})
