@@ -4,7 +4,6 @@ from confluent_kafka import Producer
 from confluent_kafka import Consumer
 import logging
 import json
-import subprocess
 import base64
 import random
 import string
