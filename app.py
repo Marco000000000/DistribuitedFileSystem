@@ -13,7 +13,7 @@ PARTITION_GRANULARITY=1024
 UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", default = 'downloadable')
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 FILESYSTEM_DIMENSION=os.getenv("FILESYSTEM_DIMENSION", default = 100)#Mb
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
@@ -50,29 +50,13 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@app.route("/", methods=["GET"])
-def init():
-
-    dir1=os.listdir( app.config['UPLOAD_FOLDER'])#dir1=uos.ilistdir("/sd")
-    output=" "
-    output="<html> <head></head><body> "
-    for file in dir1:
-        output+=" "
-        output += "<a href=\"download/"
-        output += file#str(file[0])
-        output += "\">"
-        output += "<br>"
-        output +=file[0:]#str(file)
-        output += "</a>"
-    output+="</body> </html>"
-    return output
 
 
 #mettere funzione che da un solo pacchetto
 def download_file(filename,topicNumber):
     topicName="Download"+topicNumber
     if filename is not None and  allowed_file(filename):
-        directory = os.path.join(current_app.root_path, app.config['UPLOAD_FOLDER'],filename)
+        directory = os.path.join( UPLOAD_FOLDER,filename)
         index=0
         with open(directory, "rb") as f:
             while (byte := f.read(PARTITION_GRANULARITY)):
@@ -87,7 +71,7 @@ def download_file(filename,topicNumber):
                 return 
         
 def upload_file(filename,pack):
-    directory = os.path.join(current_app.root_path, app.config['UPLOAD_FOLDER'],filename)
+    directory = os.path.join( UPLOAD_FOLDER,filename)
 
     file = base64.b64decode(pack["data"])
 
@@ -95,7 +79,6 @@ def upload_file(filename,pack):
         f.write(file)
     
 
-app.run(debug=True,port=80)
 def first_Call():
     data={"Name":get_random_string(20),
           "Dim":FILESYSTEM_DIMENSION}
