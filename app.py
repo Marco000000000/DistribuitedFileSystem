@@ -13,10 +13,12 @@ UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", default = 'downloadable')
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 FILESYSTEM_DIMENSION=os.getenv("FILESYSTEM_DIMENSION", default = 100)#Mb
 
+#creazione di una stringa random 
 def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
 
+#prima coppia di producer-consumer
 p=Producer({'bootstrap.servers':'localhost:9092'})
 c=Consumer({'bootstrap.servers':'localhost:9092','group.id':get_random_string(20),'auto.offset.reset':'earliest'})
 
@@ -42,7 +44,7 @@ def receipt(err,msg):
         logger.info(message)
         print(message)
 
-
+#check per le estensioni permesse
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -50,7 +52,7 @@ def allowed_file(filename):
 
 
 
-#mettere funzione che da un solo pacchetto
+#Invio di un file spezzato con la granularità predefinita
 def download_file(filename,topicNumber):
     topicName="Download"+topicNumber
     if filename is not None and  allowed_file(filename):
@@ -67,7 +69,8 @@ def download_file(filename,topicNumber):
                 p.produce(topicName, m.encode('utf-8'),callback=receipt)
                 p.flush()
                 return 
-        
+
+#upload di un singolo pacchetto di dati 
 def upload_file(filename,pack):
     directory = os.path.join( UPLOAD_FOLDER,filename)
 
@@ -76,7 +79,7 @@ def upload_file(filename,pack):
     with open(directory, "ab+") as f:
         f.write(file)
     
-
+#Chiamata per la registrazione nei topic kafka
 def first_Call():
     data={"Code":get_random_string(20),
           "Dim":FILESYSTEM_DIMENSION}
@@ -99,13 +102,13 @@ def first_Call():
     c.unsubscribe()
 
     return data["id"],data["topic"]
-
+#eliminazione file 
 def delete_file(filename):
     if os.path.exists(filename):
         os.remove(filename)
 
 if __name__== "main":
-    id,topicNumber=first_Call()
+    id,topicNumber=first_Call() #ricezione dati necessari per la ricezione
     uploadConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':str(id),'auto.offset.reset':'earliest'})
     uploadConsumer.subscribe("Upload"+topicNumber)
     requestConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':"000",'auto.offset.reset':'earliest'})
