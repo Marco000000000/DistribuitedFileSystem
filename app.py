@@ -35,7 +35,7 @@ logger.setLevel(logging.INFO)
 
 print('Topics disponibili da consumare: ', c.list_topics().topics)
 c.subscribe(['FirstCallAck'])
-# Logging e Stampa dei messaggi prodotti
+# Logging e Stampa dei messaggi prodotti (Callback)
 def receipt(err,msg):
     if err is not None:
         print('Error: {}'.format(err))
@@ -86,7 +86,6 @@ def first_Call():
     m=json.dumps(data)
     p.poll(1)
     p.produce('FirstCall', m.encode('utf-8'),callback=receipt)
-    p.flush()
     while True:
             msg=c.poll(1.0) #timeout
             if msg is None:
