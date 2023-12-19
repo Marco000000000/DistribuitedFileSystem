@@ -80,7 +80,7 @@ def upload_file(filename,pack):
     
 
 def first_Call():
-    data={"Name":get_random_string(20),
+    data={"Code":get_random_string(20),
           "Dim":FILESYSTEM_DIMENSION}
     m=json.dumps(data)
     p.poll(1)
