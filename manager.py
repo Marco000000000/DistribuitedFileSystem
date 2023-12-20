@@ -115,6 +115,12 @@ if __name__ == "main":
 
         print("{} record inserted.".format(cursor.rowcount))
 
+        cursor.execute("SELECT MAX(id) FROM partitions WHERE partition_name = %s", (data["Code"],))
+
+        max_id = cursor.fetchone()[0]
+
+        data["id"] = max_id
+
         producer.poll(1)
         producer.produce('FirstCallAck', json.dumps(data).encode('utf-8'), callback=receipt)
 
