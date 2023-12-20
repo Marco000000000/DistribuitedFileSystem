@@ -40,7 +40,6 @@ def register_filesystem(consumer, topic):
     finally:
         # Chiude il consumer (non fa il commit se enalbe.auto.commit è settato a False)
         consumer.close()
-        consumer.unsubscribe()
         return data
 
 # Configurazione del logger
@@ -69,7 +68,7 @@ admin = AdminClient({'bootstrap.servers': 'localhost:9092'})
 admin.create_topics([NewTopic("FirstCall", num_partitions=1, replication_factor=1), NewTopic("FirstCallAck", num_partitions=1, replication_factor=1)])
 
 
-# Prima di decommetare questa funzione, bisogna vedere se create topics sovrascrive i topic già esistenti
+# Prima di decommentare questa funzione, bisogna vedere se create topics sovrascrive i topic già esistenti
 # ritorna True se il topic esite, False altrimenti
 # def topic_exists(admin, topic):
 #     metadata = admin.list_topics()
@@ -79,7 +78,6 @@ admin.create_topics([NewTopic("FirstCall", num_partitions=1, replication_factor=
 #     return False
 
 if __name__ == "main":
-
     try:
             # Connessione al database
             db = mysql.connector.connect(
@@ -95,29 +93,30 @@ if __name__ == "main":
 
     cursor = db.cursor()
 
-    # Recupero del numero di partizioni
-    cursor.execute("SELECT MAX(topic) FROM partitions")
+    while True:
+        # Recupero del numero di partizioni
+        cursor.execute("SELECT MAX(topic) FROM partitions")
 
-    max_topic = cursor.fetchone()[0]
+        max_topic = cursor.fetchone()[0]
 
-    # Richiesta di registrazione da parte del filesystem + inserimento nel database della partizione
-    data = register_filesystem(consumer, "FirstCall")
+        # Richiesta di registrazione da parte del filesystem + inserimento nel database della partizione
+        data = register_filesystem(consumer, "FirstCall")
 
-    if not cursor.rowcount:
-        # Se non ci sono partizioni assegna il valore 0
-        data["Topic"] = 0
-    else:
-        # Se ci sono partizioni assegna il valore massimo + 1
-        data["Topic"] = max_topic + 1
-    
-    cursor.execute("INSERT INTO partitions (partition_name, used_space, topic) VALUES (%s, %s, %s)", (data["Code"], data["Dim"], data["Topic"]))
+        if not cursor.rowcount:
+            # Se non ci sono partizioni assegna il valore 0
+            data["Topic"] = 0
+        else:
+            # Se ci sono partizioni assegna il valore massimo + 1
+            data["Topic"] = max_topic + 1
+        
+        cursor.execute("INSERT INTO partitions (partition_name, used_space, topic) VALUES (%s, %s, %s)", (data["Code"], data["Dim"], data["Topic"]))
 
-    db.commit()
+        db.commit()
 
-    print("{} record inserted.".format(cursor.rowcount))
+        print("{} record inserted.".format(cursor.rowcount))
 
-    producer.poll(1)
-    producer.produce('FirstCallAck', json.dumps(data).encode('utf-8'), callback=receipt)
+        producer.poll(1)
+        producer.produce('FirstCallAck', json.dumps(data).encode('utf-8'), callback=receipt)
 
-    cursor.close()
-    db.close()
+        cursor.close()
+        db.close()
