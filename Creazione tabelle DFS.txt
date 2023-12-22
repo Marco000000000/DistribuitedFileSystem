@@ -1,0 +1,19 @@
+CREATE DATABASE ds_filesystem;
+
+USE ds_filesystem;
+
+CREATE TABLE partitions (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    partition_name VARCHAR(20) NOT NULL,
+    used_space INT NOT NULL,
+    topic INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE file (
+    file_id INT UNSIGNED AUTO_INCREMENT,
+    partition_id INT UNSIGNED,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (file_id,partition_id),
+    FOREIGN KEY (file_id) REFERENCES partitions (id)
+);
