@@ -4,10 +4,9 @@ from confluent_kafka import Producer
 from confluent_kafka import Consumer
 import logging
 import json
-import base64
+import base64 #si potrebbe passare a base85
 import random
 import string
-
 PARTITION_GRANULARITY=1024
 UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", default = 'downloadable')
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
@@ -17,7 +16,7 @@ FILESYSTEM_DIMENSION=os.getenv("FILESYSTEM_DIMENSION", default = 100)#Mb
 def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
-
+    return result_str
 #prima coppia di producer-consumer
 p=Producer({'bootstrap.servers':'localhost:9092'})
 c=Consumer({'bootstrap.servers':'localhost:9092','group.id':get_random_string(20),'auto.offset.reset':'earliest'})
@@ -78,7 +77,7 @@ def upload_file(filename,pack):
 
     with open(directory, "ab+") as f:
         f.write(file)
-    
+
 #Chiamata per la registrazione nei topic kafka
 def first_Call():
     data={"Code":get_random_string(20),
