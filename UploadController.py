@@ -30,6 +30,23 @@ def produceJson(topicName,dictionaryData):
     p.produce(topicName, m.encode('utf-8'),callback=receipt)
 
 
+def consumeJson(topicName,groupId):
+    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest'})
+    c.subscribe([topicName])
+    while True:
+            msg=c.poll(1.0) #timeout
+            if msg is None:
+                continue
+            elif msg.error():
+                print('Error: {}'.format(msg.error()))
+                continue
+            else:
+                data=json.loads(msg.value().decode('utf-8'))
+               
+                c.close()
+                c.unsubscribe()
+                return data
+
 def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
@@ -54,21 +71,10 @@ def first_Call():
     data={"Code":get_random_string(20),
           "Type":"upload"}
     produceJson("CFirstCall",data)
-    while True:
-            msg=c.poll(1.0) #timeout
-            if msg is None:
-                continue
-            elif msg.error():
-                print('Error: {}'.format(msg.error()))
-                continue
-            else:
-                data=json.loads(msg.value().decode('utf-8'))
-                print(data)
-                break
-    c.close()
-    c.unsubscribe()
+    aList=consumeJson("CFirstCallAck",get_random_string(20))
+    #format per Federico ->jsonStr = '{"cose":"a caso","topics":[1, 2,3, 4]}'
 
-    return data["id"],data["topic"]
+    return json.loads(aList)["topics"]
 
 
 @app.route('/upload', methods=['POST'])
