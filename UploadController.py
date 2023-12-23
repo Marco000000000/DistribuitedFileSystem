@@ -15,13 +15,11 @@ import random
 import string
 import logging
 app=Flask(__name__)
-UPLOAD_FOLDER = 'downloadable'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 PARTITION_GRANULARITY=1024
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 topics=[]
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def produceJson(topicName,dictionaryData):
     p=Producer({'bootstrap.servers':'localhost:9092'})
