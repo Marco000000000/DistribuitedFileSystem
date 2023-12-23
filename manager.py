@@ -124,5 +124,5 @@ if __name__ == "main":
         producer.poll(1)
         producer.produce('FirstCallAck', json.dumps(data).encode('utf-8'), callback=receipt)
 
-        cursor.close()
+        cursor.close()#può essere sbagliato?
         db.close()

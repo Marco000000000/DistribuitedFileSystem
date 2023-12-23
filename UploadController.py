@@ -5,9 +5,9 @@
 # Produrre nei vari topic kafka
 #multithreading
 from flask import Flask, flash, request,send_from_directory,current_app ,redirect, url_for
-import os
 from werkzeug.utils import secure_filename
 import json
+import mysql.connector
 from confluent_kafka import Producer
 from confluent_kafka import Consumer
 import base64
@@ -20,6 +20,14 @@ PARTITION_GRANULARITY=1024
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 topics=[]
+db = mysql.connector.connect(
+                host = "localhost",
+                database = "ds_filesystem",
+                user = "root",
+                password = "giovanni",
+                port = 3307
+            )
+cursor = db.cursor()
 
 def produceJson(topicName,dictionaryData):
     p=Producer({'bootstrap.servers':'localhost:9092'})
@@ -82,9 +90,16 @@ def upload_file():
         print(request)
 
         file = request.files['file']
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
-        if file and allowed_file(file.filename):
+        fileName=secure_filename(file.filename)
+        
+        if file and allowed_file(fileName):
+            
+            cursor.execute("SELECT file_name FROM file where file_name= %s",(fileName[:99]))
+            
+            if cursor.rowcount:
+                cursor.execute("delete from file where file_name= %s",(fileName[:99]))
+            for topic in topics:
+                cursor.execute("INSERT INTO file (file_name ,partition_id) VALUES (%s, %s)",(fileName,topic))
             count=0
             fileNotFinished=True
             while fileNotFinished:
@@ -95,12 +110,15 @@ def upload_file():
                         fileNotFinished=False
                         break
                     data={
-                    "fileName": secure_filename(file.filename),
+                    "fileName": secure_filename(fileName),
                     "data":str(base64.b64encode(chunk),"UTF-8"),
                     "count":count
                     }
                     count+=1
                     produceJson("Upload"+topic,data)  
+            
+            db.commit()
+
             return "ok"
 
         else:
