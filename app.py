@@ -107,43 +107,44 @@ def delete_file(filename):
 
 if __name__== "main":
     id,topicNumber=first_Call() #ricezione dati necessari per la ricezione
-    uploadConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':str(id),'auto.offset.reset':'earliest'})
-    uploadConsumer.subscribe("Upload"+topicNumber)
-    requestConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':"000",'auto.offset.reset':'earliest'})
-    requestConsumer.subscribe("Request"+topicNumber)
-    deleteConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':"000",'auto.offset.reset':'earliest'})
-    deleteConsumer.subscribe("Delete"+topicNumber)
     while True:
-        msg=requestConsumer.poll(0.1)
-        msgUpload=uploadConsumer.poll(0.1)
-        msgDelete=deleteConsumer.poll(0.1)
+        uploadConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':str(id),'auto.offset.reset':'earliest'})
+        uploadConsumer.subscribe("Upload"+topicNumber)
+        requestConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':"000",'auto.offset.reset':'earliest'})
+        requestConsumer.subscribe("Request"+topicNumber)
+        deleteConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':"000",'auto.offset.reset':'earliest'})
+        deleteConsumer.subscribe("Delete"+topicNumber)
+        while True:
+            msg=requestConsumer.poll(0.1)
+            msgUpload=uploadConsumer.poll(0.1)
+            msgDelete=deleteConsumer.poll(0.1)
 
-        if msg is None:
-            continue
-        elif msg.error():
-            print('Error: {}'.format(msg.error()))
-            continue
-        else:
-            data=json.loads(msg.value().decode('utf-8'))
-            if data["fileName"]!="":
-                download_file(secure_filename(data["fileName"]),topicNumber)
+            if msg is None:
+                continue
+            elif msg.error():
+                print('Error: {}'.format(msg.error()))
+                continue
+            else:
+                data=json.loads(msg.value().decode('utf-8'))
+                if data["fileName"]!="":
+                    download_file(secure_filename(data["fileName"]),topicNumber)
 
-        if msgUpload is None:
-            continue
-        elif msgUpload.error():
-            print('Error: {}'.format(msg.error()))
-            continue
-        else:
-            data=json.loads(msgUpload.value().decode('utf-8'))
-            if data["fileName"]!="":
-                upload_file(secure_filename(data["fileName"]),data)
-                
-        if msgDelete is None:
-            continue
-        elif msgDelete.error():
-            print('Error: {}'.format(msg.error()))
-            continue
-        else:
-            data=json.loads(msgDelete.value().decode('utf-8'))
-            if data["fileName"]!="":
-                delete_file(secure_filename(data["fileName"]))   
+            if msgUpload is None:
+                continue
+            elif msgUpload.error():
+                print('Error: {}'.format(msg.error()))
+                continue
+            else:
+                data=json.loads(msgUpload.value().decode('utf-8'))
+                if data["fileName"]!="":
+                    upload_file(secure_filename(data["fileName"]),data)
+                    
+            if msgDelete is None:
+                continue
+            elif msgDelete.error():
+                print('Error: {}'.format(msg.error()))
+                continue
+            else:
+                data=json.loads(msgDelete.value().decode('utf-8'))
+                if data["fileName"]!="":
+                    delete_file(secure_filename(data["fileName"]))   
