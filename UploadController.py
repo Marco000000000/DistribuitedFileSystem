@@ -22,7 +22,7 @@ PARTITION_GRANULARITY=os.getenv("PARTITION_GRANULARITY", default = 1024)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 topics=[]
-db = mysql.connector.connect(
+db = mysql.connector.connect(#mi servono credenziali con permesso di modifica solo nella tabella file
                 host = "localhost",
                 database = "ds_filesystem",
                 user = "root",
@@ -31,14 +31,14 @@ db = mysql.connector.connect(
             )
 cursor = db.cursor()
 
-def produceJson(topicName,dictionaryData):
+def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
     p=Producer({'bootstrap.servers':'localhost:9092'})
     m=json.dumps(dictionaryData)
     p.poll(1)
     p.produce(topicName, m.encode('utf-8'),callback=receipt)
 
 
-def consumeJson(topicName,groupId):
+def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un gruppo
     c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest'})
     c.subscribe([topicName])
     while True:
@@ -55,7 +55,7 @@ def consumeJson(topicName,groupId):
                 c.unsubscribe()
                 return data
 
-def get_random_string(length):
+def get_random_string(length):#creazione stringa random 
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
@@ -75,7 +75,7 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def first_Call():
+def first_Call():#funzione per la ricezione di topic iniziali
     data={"Code":get_random_string(20),
           "Type":"upload"}
     produceJson("CFirstCall",data)
@@ -86,10 +86,8 @@ def first_Call():
 
 
 @app.route('/upload', methods=['POST'])
-def upload_file():
+def upload_file():#gestione di un file in upload 
 
-        # check if the post request has the file part
-        print(request)
 
         file = request.files['file']
         fileName=secure_filename(file.filename)
@@ -108,7 +106,7 @@ def upload_file():
                     }
                     produceJson("Delete"+topic,data)  
             for topic in topics:
-                cursor.execute("INSERT INTO file (file_name ,partition_id,ready) VALUES (%s, %s,%s)",(fileName,topic,False))
+                cursor.execute("INSERT INTO file (file_name ,partition_id,ready) VALUES (%s, %s,%s)",(fileName[:99],topic,False))
                 #problema possibile di request mentre è ancora in corso l'upload
                 db.commit()
             count=0
@@ -122,17 +120,17 @@ def upload_file():
                         fileNotFinished=False
                         returnTopic=get_random_string(20)
                         data={
-                        "fileName": secure_filename(fileName),
+                        "fileName": secure_filename(fileName[:99]),
                         "last":True,
                         "returnTopic":returnTopic
                         }
                         produceJson("Upload"+topic,data)  
                         consumeJson(returnTopic,"1")
-                        cursor.execute("UPDATE file SET ready = 'true' WHERE file_name= %s",(fileName))
+                        cursor.execute("UPDATE file SET ready = 'true' WHERE file_name= %s",(fileName[:99]))
 
                         break
                     data={
-                    "fileName": secure_filename(fileName),
+                    "fileName": secure_filename(fileName[:99]),
                     "data":str(base64.b64encode(chunk),"UTF-8"),
                     "count":count
                     }
