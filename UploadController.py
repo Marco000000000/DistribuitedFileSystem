@@ -129,7 +129,7 @@ def upload_file():
                         produceJson("Upload"+topic,data)  
                         consumeJson(returnTopic,"1")
                         cursor.execute("UPDATE file SET ready = 'true' WHERE file_name= %s",(fileName))
-                        
+
                         break
                     data={
                     "fileName": secure_filename(fileName),
@@ -149,7 +149,7 @@ def upload_file():
 
 if __name__=="__main__":
     topics=first_Call() #ricezione dati necessari per la ricezione
-    app.run(debug=True,port=80)
+    app.run(debug=False,port=80)
 
 
 
