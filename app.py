@@ -7,7 +7,7 @@ import json
 import base64 #si potrebbe passare a base85
 import random
 import string
-PARTITION_GRANULARITY=1024
+PARTITION_GRANULARITY=os.getenv("PARTITION_GRANULARITY", default = 1024)
 UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", default = 'downloadable')
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 FILESYSTEM_DIMENSION=os.getenv("FILESYSTEM_DIMENSION", default = 100)#Mb
@@ -19,7 +19,7 @@ def get_random_string(length):
     return result_str
 #prima coppia di producer-consumer
 p=Producer({'bootstrap.servers':'localhost:9092'})
-c=Consumer({'bootstrap.servers':'localhost:9092','group.id':get_random_string(20),'auto.offset.reset':'earliest'})
+c=Consumer({'bootstrap.servers':'localhost:9092','group.id':get_random_string(20),'auto.offset.reset':'earliest','enable.auto.commit': False})
 
 logging.basicConfig(format='%(asctime)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
@@ -68,10 +68,18 @@ def download_file(filename,topicNumber):
                 p.produce(topicName, m.encode('utf-8'),callback=receipt)
                 p.flush()
                 return 
+def produceJson(topicName,dictionaryData):
+    p=Producer({'bootstrap.servers':'localhost:9092'})
+    m=json.dumps(dictionaryData)
+    p.poll(1)
+    p.produce(topicName, m.encode('utf-8'),callback=receipt)
 
 #upload di un singolo pacchetto di dati 
 def upload_file(filename,pack):
     directory = os.path.join( UPLOAD_FOLDER,filename)
+    if(pack["last"]==True):
+        data={"commit":True}
+        produceJson(pack["returnTopic"],data)
 
     file = base64.b64decode(pack["data"])
 
@@ -96,9 +104,10 @@ def first_Call():
                 data=json.loads(msg.value().decode('utf-8'))
                 print(data)
                 break
+    c.commit()        
     c.close()
     c.unsubscribe()
-
+    
     return data["id"],data["topic"]
 #eliminazione file 
 def delete_file(filename):
@@ -108,11 +117,11 @@ def delete_file(filename):
 if __name__== "main":
     id,topicNumber=first_Call() #ricezione dati necessari per la ricezione
     while True:
-        uploadConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':str(id),'auto.offset.reset':'earliest'})
+        uploadConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':str(id),'auto.offset.reset':'earliest','enable.auto.commit': False})
         uploadConsumer.subscribe("Upload"+topicNumber)
-        requestConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':"000",'auto.offset.reset':'earliest'})
+        requestConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
         requestConsumer.subscribe("Request"+topicNumber)
-        deleteConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':"000",'auto.offset.reset':'earliest'})
+        deleteConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
         deleteConsumer.subscribe("Delete"+topicNumber)
         while True:
             msg=requestConsumer.poll(0.1)
@@ -128,6 +137,7 @@ if __name__== "main":
                 data=json.loads(msg.value().decode('utf-8'))
                 if data["fileName"]!="":
                     download_file(secure_filename(data["fileName"]),topicNumber)
+                    requestConsumer.commit()
 
             if msgUpload is None:
                 continue
@@ -138,7 +148,7 @@ if __name__== "main":
                 data=json.loads(msgUpload.value().decode('utf-8'))
                 if data["fileName"]!="":
                     upload_file(secure_filename(data["fileName"]),data)
-                    
+                    uploadConsumer.commit()
             if msgDelete is None:
                 continue
             elif msgDelete.error():
@@ -148,3 +158,4 @@ if __name__== "main":
                 data=json.loads(msgDelete.value().decode('utf-8'))
                 if data["fileName"]!="":
                     delete_file(secure_filename(data["fileName"]))   
+                    deleteConsumer.commit()

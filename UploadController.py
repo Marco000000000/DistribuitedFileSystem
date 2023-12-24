@@ -7,6 +7,7 @@
 from flask import Flask, flash, request,send_from_directory,current_app ,redirect, url_for
 from werkzeug.utils import secure_filename
 import json
+import os
 import mysql.connector
 from confluent_kafka import Producer
 from confluent_kafka import Consumer
@@ -16,7 +17,8 @@ import string
 import logging
 app=Flask(__name__)
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-PARTITION_GRANULARITY=1024
+PARTITION_GRANULARITY=os.getenv("PARTITION_GRANULARITY", default = 1024)
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 topics=[]
@@ -48,7 +50,7 @@ def consumeJson(topicName,groupId):
                 continue
             else:
                 data=json.loads(msg.value().decode('utf-8'))
-               
+                c.commit()
                 c.close()
                 c.unsubscribe()
                 return data
@@ -94,20 +96,40 @@ def upload_file():
         
         if file and allowed_file(fileName):
             
-            cursor.execute("SELECT file_name FROM file where file_name= %s",(fileName[:99]))
+            cursor.execute("SELECT file_name,ready FROM file where file_name= %s",(fileName[:99]))
             
             if cursor.rowcount:
+                if(cursor.fetchone()["ready"]==False):
+                    return {"error":"File in updating"}
                 cursor.execute("delete from file where file_name= %s",(fileName[:99]))
+                for topic in topics:
+                    data={
+                        "fileName": secure_filename(fileName[:99]),
+                    }
+                    produceJson("Delete"+topic,data)  
             for topic in topics:
-                cursor.execute("INSERT INTO file (file_name ,partition_id) VALUES (%s, %s)",(fileName,topic))
+                cursor.execute("INSERT INTO file (file_name ,partition_id,ready) VALUES (%s, %s,%s)",(fileName,topic,False))
+                #problema possibile di request mentre è ancora in corso l'upload
+                db.commit()
             count=0
             fileNotFinished=True
+
             while fileNotFinished:
                 
                 for topic in topics:
                     chunk=file.stream.read(PARTITION_GRANULARITY)
                     if len(chunk)== 0:
                         fileNotFinished=False
+                        returnTopic=get_random_string(20)
+                        data={
+                        "fileName": secure_filename(fileName),
+                        "last":True,
+                        "returnTopic":returnTopic
+                        }
+                        produceJson("Upload"+topic,data)  
+                        consumeJson(returnTopic,"1")
+                        cursor.execute("UPDATE file SET ready = 'true' WHERE file_name= %s",(fileName))
+                        
                         break
                     data={
                     "fileName": secure_filename(fileName),
