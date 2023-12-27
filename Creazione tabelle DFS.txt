@@ -18,3 +18,21 @@ CREATE TABLE file (
     PRIMARY KEY (file_id,partition_id),
     FOREIGN KEY (file_id) REFERENCES partitions (id)
 );
+
+CREATE TABLE controller(
+    id_controller INT UNSIGNED AUTO_INCREMENT KEY,
+    controller_code VARCHAR (20),
+    type INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+);
+
+CREATE TABLE controller-topic(
+    id_controller INT UNSIGNED,
+    topic INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id_controller,topic),
+    FOREIGN KEY (id_controller) REFERENCES Controller (id_controller)
+
+)

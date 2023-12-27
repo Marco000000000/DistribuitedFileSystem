@@ -50,6 +50,8 @@ def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un 
                 continue
             else:
                 data=json.loads(msg.value().decode('utf-8'))
+                if data["Code"]!=groupId:
+                    continue
                 c.commit()
                 c.close()
                 c.unsubscribe()
@@ -76,10 +78,11 @@ def allowed_file(filename):
 
 
 def first_Call():#funzione per la ricezione di topic iniziali
-    data={"Code":get_random_string(20),
+    code=get_random_string(20)
+    data={"Code":code,
           "Type":"upload"}
     produceJson("CFirstCall",data)
-    aList=consumeJson("CFirstCallAck",get_random_string(20))
+    aList=consumeJson("CFirstCallAck",code)
     #format per Federico ->jsonStr = '{"cose":"a caso","topics":[1, 2,3, 4]}'
 
     return json.loads(aList)["topics"]
