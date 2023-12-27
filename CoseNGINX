@@ -1,0 +1,52 @@
+set $httphost $http_host; # create and initialize var
+        set $docroot "";
+
+    # begin LUA scripting
+    rewrite_by_lua '
+                    -- make sure http host is defined
+                    if not ngx.var.httphost then
+                      ngx.log(ngx.ERR,"ERROR - no httphost defined")
+                      return
+                    end
+
+                       -- begin mysql
+                    local mysql = require "resty.mysql"
+                    local db, err = mysql:new()
+
+                    db:set_timeout(1000) -- 1 sec
+
+                    local ok, err, errno, sqlstate = db:connect
+                    {
+                            host = "127.0.0.1",
+                            port = 3306,
+                            database = "db",
+                            user = "user",
+                            password = "password",
+                            max_packet_size = 1024 * 1024
+                    }
+
+                    if not ok then
+                      ngx.log(ngx.ERR,"MySQL failed to connect: ", err, ": ", errno, " ", sqlstate)
+                      return
+                    end
+
+                    -- prevent injection attack
+                    local hname = ngx.unescape_uri(client)
+                    local quoted_name = ngx.quote_sql_str(hname)
+
+                    local sql = "select docroot from users where customer =" .. quoted_name
+                    result,err,errno,sqlstate = db:query(sql,1)
+                    if not result then
+                       ngx.log(ngx.ERR,"MySQL bad result: ", err, ": ", errno, ": ", sqlstate, ".")
+                       return
+                    end
+
+                    if not result[1].docroot then
+                      ngx.log(ngx.ERR,"MySQL ERROR - no docroot was returned")
+                      return
+                    end
+
+                    ngx.var.docroot = result[1].docroot
+            ';
+           # now we can set the docroot for this host
+          root           /var/www/$docroot;
