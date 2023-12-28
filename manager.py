@@ -30,7 +30,7 @@ def register_filesystem(consumer, topic):
             if msg.error():
                 if msg.error().code() == KafkaError._PARTITION_EOF:
                     # Evento "end of partition"
-                    sys.stderr.write('%% %s [%d] reached end at offset %d\n' %
+                    sys.stderr.write('%% %s [%d] ha raggiunto la fine dell\'offset %d\n' %
                                      (msg.topic(), msg.partition(), msg.offset()))
                 elif msg.error():
                     raise KafkaException(msg.error())
@@ -89,7 +89,8 @@ if __name__ == "main":
             port = 3307
         )
     except mysql.connector.Error as err:
-        print("Failed to connect to database {}".format(err))
+        print("Errore durante la connessione al database {}".format(err))
+        exit(1)
 
     cursor = db.cursor()
 
