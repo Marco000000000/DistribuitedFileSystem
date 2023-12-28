@@ -14,6 +14,12 @@ GRANT INSERT ON ds_filesystem.file TO file_manager@localhost; # Permesso di inse
 GRANT UPDATE ON ds_filesystem.file TO file_manager@localhost; # Permesso di modifica dei record presenti nella tabella
 GRANT DELETE ON ds_filesystem.file TO file_manager@localhost; # Permesso di eliminazione dei record dalla tabella
 
+# Versione "Copia e Incolla" in un solo comando
+GRANT SELECT ON ds_filesystem.file TO file_manager@localhost
+GRANT INSERT ON ds_filesystem.file TO file_manager@localhost
+GRANT UPDATE ON ds_filesystem.file TO file_manager@localhost
+GRANT DELETE ON ds_filesystem.file TO file_manager@localhost;
+
 # Per rimuovere in caso dei permessi basta usare la stessa sintassi precedente e sostituire il comando GRANT con REVOKE e TO con FROM
 
 # Aggiornamento interno al DB dei privilegi assegnati:
