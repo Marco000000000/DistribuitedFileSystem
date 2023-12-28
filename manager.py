@@ -6,17 +6,17 @@ import json
 import logging
 
 # Configurazione del producer e instanziazione
-conf = {'bootstrap.servers': 'localhost:9092'}
+prod_conf = {'bootstrap.servers': 'localhost:9092'}
 
-producer = Producer(conf)
+producer = Producer(prod_conf)
 
 # Configurazione del consumer e instanziazione
-conf = {'bootstrap.servers': 'localhost:9092',
+cons_conf = {'bootstrap.servers': 'localhost:9092',
         'group.id': 'manager',
         'auto.offset.reset': 'earliest',
         'enable.auto.commit': False}
 
-consumer = Consumer(conf)
+consumer = Consumer(cons_conf)
 
 # Funzione che elabora il messaggio ricevuto dal consumer
 def register_filesystem(consumer, topic):
@@ -48,7 +48,7 @@ logging.basicConfig(format='%(asctime)s %(message)s',
                     filename='producer.log',
                     filemode='w')
 
-logger = logging.getLogger()
+logger = logging.getLogger('producer')
 logger.setLevel(logging.INFO)
 
 # Logging e Stampa dei messaggi prodotti (Callback)
@@ -64,8 +64,9 @@ def receipt(err,msg):
 # Instanziazione dell'oggetto AdminClient per le operazioni di creazione dei topic
 admin = AdminClient({'bootstrap.servers': 'localhost:9092'})
 
-# Creazione "hard-coded" dei topic "FirstCall" e "FirstCallAck
-admin.create_topics([NewTopic("FirstCall", num_partitions=1, replication_factor=1), NewTopic("FirstCallAck", num_partitions=1, replication_factor=1)])
+# Creazione "hardcoded" dei topic "FirstCall" e "FirstCallAck
+hardcoded_topics = [NewTopic("FirstCall", num_partitions=1, replication_factor=1), NewTopic("FirstCallAck", num_partitions=1, replication_factor=1)]
+admin.create_topics(hardcoded_topics)
 
 
 # Prima di decommentare questa funzione, bisogna vedere se create topics sovrascrive i topic già esistenti
@@ -79,15 +80,14 @@ admin.create_topics([NewTopic("FirstCall", num_partitions=1, replication_factor=
 
 if __name__ == "main":
     try:
-            # Connessione al database
-            db = mysql.connector.connect(
-                host = "localhost",
-                database = "ds_filesystem",
-                user = "root",
-                password = "giovanni",
-                port = 3307
-            )
-
+        # Connessione al database
+        db = mysql.connector.connect(
+            host = "localhost",
+            database = "ds_filesystem",
+            user = "root",
+            password = "giovanni",
+            port = 3307
+        )
     except mysql.connector.Error as err:
         print("Failed to connect to database {}".format(err))
 
