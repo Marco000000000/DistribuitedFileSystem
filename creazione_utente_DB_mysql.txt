@@ -1,0 +1,16 @@
+# Accedere alla tab "Exec" nel container di mysql in Docker
+
+# Creazione utente 'file_manager' con password 'file'
+CREATE USER 'file_manager'@'localhost' IDENTIFIED BY 'file';
+#              username                             password
+
+# Effettiva assegnazione dei privilegi all'utente del DB "file_manager" sulla tabella "file" del database "ds_filesystem"
+GRANT SELECT ON ds_filesystem.file TO ‘file_manager’ @'localhost’; # Permesso di lettura
+GRANT INSERT ON ds_filesystem.file TO ‘file_manager’ @'localhost’; # Permesso di inserimento di record all'interno della tabella
+GRANT UPDATE ON ds_filesystem.file TO ‘file_manager’ @'localhost’; # Permesso di modifica dei record presenti nella tabella
+GRANT DELETE ON ds_filesystem.file TO ‘file_manager’ @'localhost’; # Permesso di eliminazione dei record dalla tabella
+
+# Per rimuovere in caso dei permessi basta usare la stessa sintassi precedente e sostituire il comando GRANT con REVOKE e TO con FROM
+
+# Aggiornamento interno al DB dei privilegi assegnati:
+FLUSH PRIVILEGES;
