@@ -133,7 +133,7 @@ if __name__ == "main":
             min_topic = cursor.fetchone()[0]
             if not cursor.rowcount:
                 # Se non ci sono partizioni assegna il valore 0
-                cursor.execute("SELECT MIN(mycount) FROM (SELECT topic,COUNT(topic) mycount FROM controller-topic GROUP BY topic);")
+                cursor.execute("SELECT MIN(mycount) FROM (SELECT topic,COUNT(topic) as mycount FROM controller-topic GROUP BY topic);")
                 min_topic=cursor.fetchone()[0]
 
             cursor.execute("INSERT INTO controller (controller_code, type) VALUES (%s, %s)", (data["Code"], data["Type"]))
