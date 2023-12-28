@@ -128,7 +128,7 @@ if __name__ == "main":
             continue
         elif data["type"]=="Download":
             # Recupero topic per download
-            cursor.execute("SELECT min(topic) FROM partitions where topic not in (Select topic from controller-topic)") # Non ho capito perché ti devi assicurare che il topic non sia presente in controllore-topic
+            cursor.execute("SELECT min(topic) FROM partitions where topic not in (Select topic from controller-topic)")
 
             min_topic = cursor.fetchone()[0]
             if not cursor.rowcount:
