@@ -27,7 +27,7 @@ CREATE TABLE controller(
 
 );
 
-CREATE TABLE controller-topic(
+CREATE TABLE controllertopic(
     id_controller INT UNSIGNED,
     topic INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -35,4 +35,4 @@ CREATE TABLE controller-topic(
     PRIMARY KEY (id_controller,topic),
     FOREIGN KEY (id_controller) REFERENCES Controller (id_controller)
 
-)
+);
