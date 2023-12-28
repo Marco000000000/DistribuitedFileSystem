@@ -1,5 +1,9 @@
 # Accedere alla tab "Exec" nel container di mysql in Docker
 
+# Inserire prima di tutto il seguente comando per accedere a mysql
+mysql -u root -p # Premere Invio
+# Inserire poi la password(="giovanni")
+
 # Creazione utente 'file_manager' con password 'file'
 CREATE USER 'file_manager'@'localhost' IDENTIFIED BY 'file';
 #              username                             password
