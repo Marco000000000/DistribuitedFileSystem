@@ -25,8 +25,8 @@ topics=[]
 db = mysql.connector.connect(#mi servono credenziali con permesso di modifica solo nella tabella file
                 host = "localhost",
                 database = "ds_filesystem",
-                user = "root",
-                password = "giovanni",
+                user = "file_manager",
+                password = "file",
                 port = 3307
             )
 cursor = db.cursor()
