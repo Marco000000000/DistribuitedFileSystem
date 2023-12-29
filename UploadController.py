@@ -139,7 +139,7 @@ def upload_file():#gestione di un file in upload
                     }
                     count+=1
                     produceJson("Upload"+topic,data)  
-            
+                
             db.commit()
 
             return "ok"
