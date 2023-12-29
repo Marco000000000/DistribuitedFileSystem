@@ -59,10 +59,17 @@ def download_file(filename,topicNumber):
         index=0
         with open(directory, "rb") as f:
             while (byte := f.read(PARTITION_GRANULARITY)):
-                #if byte < PARTITION_GRANULARITY ecc.
-                data={
+                if byte < PARTITION_GRANULARITY:
+                    data={
                     
                     "data":str(base64.b64encode(byte),"UTF-8"),
+                    "last":True
+                    }
+                else:
+                    data={
+                    
+                    "data":str(base64.b64encode(byte),"UTF-8"),
+                    "last":False
                     }
                 m=json.dumps(data)
                 p.poll(1)
