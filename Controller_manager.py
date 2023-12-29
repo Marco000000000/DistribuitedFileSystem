@@ -137,7 +137,7 @@ if __name__ == "main":
                 min_topic=cursor.fetchone()[0]
 
             cursor.execute("INSERT INTO controller (controller_code, type) VALUES (%s, %s)", (data["Code"], data["Type"]))
-            cursor.execute("select id_controller where controller_code=%s and type=%s",(data["Code"], data["Type"]))
+            cursor.execute("select id_controller from controller where controller_code=%s and type=%s",(data["Code"], data["Type"]))
             id=cursor.fetchone()[0]
             cursor.execute("INSERT INTO controller-topic (id_controller, topic) VALUES (%s, %s)", (id, min_topic))
 
