@@ -39,7 +39,7 @@ def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json
 
 
 def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un gruppo
-    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest'})
+    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout

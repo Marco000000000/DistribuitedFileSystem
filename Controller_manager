@@ -33,7 +33,7 @@ def receipt(err,msg):
 
 
 def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un gruppo
-    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest'}) # Qui l'enable.auto.commit è settato a True di default
+    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Qui l'enable.auto.commit è settato a True di default, l'ho messo a False
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
