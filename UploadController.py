@@ -135,6 +135,7 @@ def upload_file():#gestione di un file in upload
                     data={
                     "fileName": secure_filename(fileName[:99]),
                     "data":str(base64.b64encode(chunk),"UTF-8"),
+                    "last":False, # è utile oppure non ha senso?
                     "count":count
                     }
                     count+=1

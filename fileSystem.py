@@ -75,7 +75,7 @@ def download_file(filename,topicNumber):
                 p.poll(1)
                 p.produce(topicName, m.encode('utf-8'),callback=receipt)
                 p.flush()
-                return 
+                return # è indentato bene o mi sto sbagliando invece?
 def produceJson(topicName,dictionaryData):
     p=Producer({'bootstrap.servers':'localhost:9092'})
     m=json.dumps(dictionaryData)
