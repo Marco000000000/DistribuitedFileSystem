@@ -9,7 +9,7 @@ CREATE TABLE partitions (
     topic INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
+select distinct topic from partitions join file on partition_id=id where file_name=%s 
 CREATE TABLE file (
     file_name VARCHAR(100) NOT NULL,
     partition_id INT UNSIGNED,
