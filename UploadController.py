@@ -7,6 +7,7 @@
 from flask import Flask, flash, request,send_from_directory,current_app ,redirect, url_for
 from werkzeug.utils import secure_filename
 import json
+import docker
 import os
 import mysql.connector
 from confluent_kafka import Producer
@@ -95,10 +96,16 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
+def getName():
+    client = docker.from_env()
+    container_id = client.containers.get(socket.gethostname()).id
+    return client.containers.get(container_id)
+    
 def first_Call():#funzione per la ricezione di topic iniziali
     code=get_random_string(20)
+    name=getName()
     data={"Code":code,
+          "Host":name,
           "Type":"upload"}
     produceJson("CFirstCall",data)
     aList=consumeJsonFirstCall("CFirstCallAck",code)
