@@ -3,8 +3,9 @@
 
 local mysql = require("resty.mysql")
 local cjson = require("cjson")
+local original_request_uri_args = ngx.req.get_uri_args()
 
-local mysql_query = "select controller_name from controller join controllertopic on controller.id_controller=controllertopic.id_controller where topic in (select distinct topic from partitions join file on partition_id=id where file_name=%s) order by topic"
+local mysql_query = "select distinct topic from partitions join file on partition_id=id where file_name=" .. original_request_uri_args
 
 -- MySQL connection settings
 local db, err = mysql:new()
@@ -39,11 +40,10 @@ end
 
 local len=#res
 local toCapture={}
-local original_request_uri_args = ngx.req.get_uri_args()
 
 for i, raw in pairs(res) do
 
-    local subrequest_uri = raw["controller_name"] .. ngx.var.uri
+    local subrequest_uri = "dManager".. raw["topic"] .. ngx.var.uri
     local subrequest_args = ngx.encode_args(original_request_uri_args)
     if subrequest_args ~= "" then
         subrequest_uri = subrequest_uri .. "?" .. subrequest_args
