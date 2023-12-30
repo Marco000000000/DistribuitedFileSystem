@@ -117,31 +117,31 @@ if __name__ == "main":
         if data is None:
             continue
         if data["type"]=="Upload":
-            cursor.execute("INSERT INTO controller (controller_code, type) VALUES (%s, %s)", (data["Code"], data["Type"]))
-            cursor.execute("select id_controller FROM controller where controller_code=%s and type=%s",(data["Code"], data["Type"]))
+            cursor.execute("INSERT INTO controller (controller_name, type) VALUES (%s, %s)", (data["Host"], data["Type"]))
+            cursor.execute("select id_controller FROM controller where controller_name=%s and type=%s",(data["Host"], data["Type"]))
             id=cursor.fetchone()[0]
             for topic in topics:
-                cursor.execute("INSERT INTO controller-topic (id_controller, topic) VALUES (%s, %s)", (id, topic))
-            produceJson("CFirstCallAck",{"id":id, "Code":data["Code"],"topics":topics})
+                cursor.execute("INSERT INTO controllertopic (id_controller, topic) VALUES (%s, %s)", (id, topic))
+            produceJson("CFirstCallAck",{"id":id, "Host":data["Host"],"topics":topics})
             db.commit()
             consumer.commit()
             continue
         elif data["type"]=="Download":
             # Recupero topic per download
-            cursor.execute("SELECT min(topic) FROM partitions where topic not in (Select topic from controller-topic)")
+            cursor.execute("SELECT min(topic) FROM partitions where topic not in (Select topic from controllertopic)")
 
             min_topic = cursor.fetchone()[0]
             if not cursor.rowcount:
                 # Se non ci sono partizioni assegna il valore 0
-                cursor.execute("SELECT MIN(mycount) FROM (SELECT topic,COUNT(topic) as mycount FROM controller-topic GROUP BY topic);")
+                cursor.execute("SELECT MIN(mycount) FROM (SELECT topic,COUNT(topic) as mycount FROM controllertopic GROUP BY topic);")
                 min_topic=cursor.fetchone()[0]
 
-            cursor.execute("INSERT INTO controller (controller_code, type) VALUES (%s, %s)", (data["Code"], data["Type"]))
-            cursor.execute("select id_controller from controller where controller_code=%s and type=%s",(data["Code"], data["Type"]))
+            cursor.execute("INSERT INTO controller (controller_name, type) VALUES (%s, %s)", (data["Host"], data["Type"]))
+            cursor.execute("select id_controller from controller where controller_name=%s and type=%s",(data["Host"], data["Type"]))
             id=cursor.fetchone()[0]
-            cursor.execute("INSERT INTO controller-topic (id_controller, topic) VALUES (%s, %s)", (id, min_topic))
+            cursor.execute("INSERT INTO controllertopic (id_controller, topic) VALUES (%s, %s)", (id, min_topic))
 
-            produceJson("CFirstCallAck",{"id":id, "Code":data["Code"],"topics":min_topic})
+            produceJson("CFirstCallAck",{"id":id, "Host":data["Host"],"topics":min_topic})
             db.commit()
             consumer.commit()
 

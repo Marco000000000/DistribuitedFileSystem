@@ -21,7 +21,7 @@ CREATE TABLE file (
 
 CREATE TABLE controller (
     id_controller INT UNSIGNED AUTO_INCREMENT KEY,
-    controller_code VARCHAR (20),
+    controller_name VARCHAR (255),
     type INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

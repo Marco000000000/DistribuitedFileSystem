@@ -7,7 +7,7 @@
 from flask import Flask, flash, request,send_from_directory,current_app ,redirect, url_for
 from werkzeug.utils import secure_filename
 import json
-import docker
+import socket
 import os
 import mysql.connector
 from confluent_kafka import Producer
@@ -51,7 +51,7 @@ def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic
                 continue
             else:
                 data=json.loads(msg.value().decode('utf-8'))
-                if data["Code"]!=groupId:
+                if data["Host"]!=groupId:
                     continue
                 c.commit()
                 c.close()
@@ -96,19 +96,14 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def getName():
-    client = docker.from_env()
-    container_id = client.containers.get(socket.gethostname()).id
-    return client.containers.get(container_id)
-    
+
 def first_Call():#funzione per la ricezione di topic iniziali
-    code=get_random_string(20)
-    name=getName()
-    data={"Code":code,
+    name=socket.gethostname()
+    data={
           "Host":name,
           "Type":"upload"}
     produceJson("CFirstCall",data)
-    aList=consumeJsonFirstCall("CFirstCallAck",code)
+    aList=consumeJsonFirstCall("CFirstCallAck",name)
     #format per Federico ->jsonStr = '{"cose":"a caso","topics":[1, 2,3, 4]}'
 
     return json.loads(aList)["topics"]
