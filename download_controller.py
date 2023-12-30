@@ -1,6 +1,6 @@
 # Fare controller download F
 # 	- Produrre la richiesta file in uno o più topic
-# 	- Consuma file di ritorno (retain)
+# 	- Consuma file di ritorno
 # 	- Ritorna i file all'api gateway
 # 	- Multithreading
 # 	- Fornisce api per richiesta file
@@ -11,20 +11,14 @@ import base64
 import random
 import string
 import logging
-from flask import Flask, request
-import os
+from flask import Flask, Response
 import mysql.connector
-import threading
-import time
 from werkzeug.utils import secure_filename
 
 # Variabili globali
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-PARTITION_GRANULARITY=os.getenv("PARTITION_GRANULARITY", default = 1024)
 
 topics = []
-retained_messages = []
-threads = []
 
 
 # Instanzio l'applicazione Flask
@@ -66,7 +60,7 @@ def produceJson(topic, dictionaryData):
     p.close() 
 
 
-# Consuma json da un consumer di un dato gruppo
+# Consuma json da un consumer di un dato gruppo (solo per first_Call())
 def consumeJson(topicName, groupId):
     c = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
     c.subscribe([topicName])
@@ -79,7 +73,7 @@ def consumeJson(topicName, groupId):
                 continue
             else:
                 data=json.loads(msg.value().decode('utf-8'))
-                if data["Code"]!=groupId:
+                if data["Code"]!=groupId: # Funziona solo con la funzione first_Call() dato che "Code" coincide con groupId durante la first call di un download controller
                     continue
                 c.commit()
                 c.close()
@@ -119,18 +113,29 @@ def first_Call():#funzione per la ricezione di topic iniziali
 
     return json.loads(aList)["topics"]
 
+def generate_data(topics):
+    # Generazione dati per il download
+    c = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+    c.subscribe("Download" + topics) # Topics è solo uno effettivamente (il minimo tra i topics disponibili)
+    while True:
+            msg=c.poll(1.0)
+            if msg is None:
+                continue
+            elif msg.error():
+                print('Error: {}'.format(msg.error()))
+                continue
+            else:
+                data=json.loads(msg.value().decode('utf-8'))
+                yield base64.b64decode(data["data"])
+                c.commit()
+                if data["last"] == True:
+                    c.close()
+                    c.unsubscribe()
+                    break      
+
 
 # Endpoint per il download di un file (filename è il nome del file)
 @app.route("/download/<path:filename>", methods=['GET'])
-def start_download(filename):
-    download_thread = threading.Thread(target=download_file, args=(filename,))
-    threads.append(download_thread)
-    
-    download_thread.start()
-    
-    for thread in threads:
-        thread.join()
-    
 # Gestione di un file in download
 def download_file(filename):
     if allowed_file(filename) == False:
@@ -144,20 +149,17 @@ def download_file(filename):
             # Se il file è presente nel database, controllo se è pronto per il download
             if cursor.fetchone()["ready"] == False:
                 return {"error":"File not ready for download!", "HTTP_status_code:": 400}
-            for topic in topics: # Per ogni topic
-                data = {
-                    "fileName" : secure_filename(filename[:99]),
-                }
-                produceJson("Request" + topic, data)
-                retained_messages.append(consumeJson("Download" + topic, )) # è giusto? Sia per il code che per l'append alla lista per ottenere il retain dei messaggi consumati
-            return {"file":retained_messages, "HTTP_status_code:": 200}
+            data = {
+                "fileName" : secure_filename(filename[:99]),
+            }
+            produceJson("Request" + topics, data)
+            generate_data(topics)
+            return Response(generate_data(topics), mimetype='application/octet-stream')
         else:
             return {"error":"File not found!", "HTTP_status_code:": 400}
 
 
 if __name__ == "__main__":
-    # Ricezione dati necessari per il download
+    # Ricezione topics necessari per il download
     topics = first_Call()
-    # TO-DO: Settare a True il parametro debug
-    # TO-DO: Multithreading (Mi sembra che l'ho fatto totalmente)
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5000)
