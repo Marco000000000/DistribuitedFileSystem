@@ -8,6 +8,7 @@
 import json
 from confluent_kafka import Producer, Consumer
 import base64
+import docker
 import random
 import string
 import logging
@@ -102,10 +103,16 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
+def getName():
+    client = docker.from_env()
+    container_id = client.containers.get(socket.gethostname()).id
+    return client.containers.get(container_id)
+    
 def first_Call():#funzione per la ricezione di topic iniziali
     code=get_random_string(20)
+    name=getName()
     data={"Code":code,
+          "Host":name,
           "Type":"upload"}
     produceJson("CFirstCall",data)
     aList=consumeJson("CFirstCallAck",code)
