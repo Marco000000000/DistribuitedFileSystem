@@ -38,7 +38,7 @@ def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json
     p.produce(topicName, m.encode('utf-8'),callback=receipt)
 
 
-def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un gruppo
+def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic e in un gruppo controllando il codice
     c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
     c.subscribe([topicName])
     while True:
@@ -56,6 +56,25 @@ def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un 
                 c.close()
                 c.unsubscribe()
                 return data
+            
+
+def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un gruppo
+    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
+    c.subscribe([topicName])
+    while True:
+            msg=c.poll(1.0) #timeout
+            if msg is None:
+                continue
+            elif msg.error():
+                print('Error: {}'.format(msg.error()))
+                continue
+            else:
+                data=json.loads(msg.value().decode('utf-8'))
+                c.commit()
+                c.close()
+                c.unsubscribe()
+                return data
+            
 
 def get_random_string(length):#creazione stringa random 
     letters = string.ascii_lowercase
@@ -82,7 +101,7 @@ def first_Call():#funzione per la ricezione di topic iniziali
     data={"Code":code,
           "Type":"upload"}
     produceJson("CFirstCall",data)
-    aList=consumeJson("CFirstCallAck",code)
+    aList=consumeJsonFirstCall("CFirstCallAck",code)
     #format per Federico ->jsonStr = '{"cose":"a caso","topics":[1, 2,3, 4]}'
 
     return json.loads(aList)["topics"]
