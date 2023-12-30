@@ -4,7 +4,7 @@
 # Dividere file
 # Produrre nei vari topic kafka
 #multithreading
-from flask import Flask, flash, request,send_from_directory,current_app ,redirect, url_for
+from flask import Flask, request
 from werkzeug.utils import secure_filename
 import json
 import socket
