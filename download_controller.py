@@ -23,7 +23,6 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 PARTITION_GRANULARITY=os.getenv("PARTITION_GRANULARITY", default = 1024)
 
 topics = []
-codes = []
 retained_messages = []
 threads = []
 
@@ -118,7 +117,7 @@ def first_Call():#funzione per la ricezione di topic iniziali
     aList=consumeJson("CFirstCallAck",code)
     #format per Federico ->jsonStr = '{"cose":"a caso","topics":[1, 2, 3, 4]}'
 
-    return json.loads(aList)["topics"], json.loads(aList)["codes"]
+    return json.loads(aList)["topics"]
 
 
 # Endpoint per il download di un file (filename è il nome del file)
@@ -145,12 +144,12 @@ def download_file(filename):
             # Se il file è presente nel database, controllo se è pronto per il download
             if cursor.fetchone()["ready"] == False:
                 return {"error":"File not ready for download!", "HTTP_status_code:": 400}
-            for topic, code in zip(topics, codes): # Per ogni topic e code
+            for topic in topics: # Per ogni topic
                 data = {
                     "fileName" : secure_filename(filename[:99]),
                 }
                 produceJson("Request" + topic, data)
-                retained_messages.append(consumeJson("Download" + topic, code)) # è giusto? Sia per il code che per l'append alla lista per ottenere il retain dei messaggi consumati
+                retained_messages.append(consumeJson("Download" + topic, )) # è giusto? Sia per il code che per l'append alla lista per ottenere il retain dei messaggi consumati
             return {"file":retained_messages, "HTTP_status_code:": 200}
         else:
             return {"error":"File not found!", "HTTP_status_code:": 400}
@@ -158,7 +157,7 @@ def download_file(filename):
 
 if __name__ == "__main__":
     # Ricezione dati necessari per il download
-    topics, codes = first_Call()
+    topics = first_Call()
     # TO-DO: Settare a True il parametro debug
     # TO-DO: Multithreading (Mi sembra che l'ho fatto totalmente)
     app.run(debug=True, port=5000)
