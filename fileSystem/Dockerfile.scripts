@@ -1,0 +1,14 @@
+# Base image with necessary dependencies
+FROM python:3.12
+
+# Set working directory
+WORKDIR /app
+
+# Copy and install requirements for each Python application
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application files for each Python application
+COPY fileSystem.py .
+
+CMD ["python", "fileSystem.py"]

@@ -44,42 +44,37 @@ services:
     ports:
       - "3307:3306"
   
-  fileSystem:
-    build: ./fileSystem
-    command: python /app/fileSystem/fileSystem.py
-    depends_on:
-      - manager
+  filesystem:
+    build:
+      context: ./filesystem
+      dockerfile: Dockerfile.scripts
     volumes: 
-      - ./fileSystem:/app/fileSystem
+      - ./filesystem:/app/filesystem
   
   manager:
-    build: ./manager
-    command: python /app/manager/manager.py
-    depends_on:
-      - Controller_manager
+    build:
+      context: ./manager
+      dockerfile: Dockerfile.scripts
     volumes: 
       - ./manager:/app/manager
   
-  Controller_manager:
-    build: ./Controller_manager
-    command: python /app/Controller_manager/Controller_manager.py
-    depends_on:
-      - Controller
+  controller_manager:
+    build:
+      context: ./controller_manager
+      dockerfile: Dockerfile.scripts
     volumes: 
-      - ./Controller_manager:/app/Controller_manager
+      - ./controller_manager:/app/controller_manager
   
   download_controller:
-    build: ./download_controller
-    command: python /app/download_controller/download_controller.py
-    depends_on:
-      - Controller
+    build:
+      context: ./download_controller
+      dockerfile: Dockerfile.scripts
     volumes: 
       - ./download_controller:/app/download_controller
   
-  UploadController:
-    build: ./UploadController
-    command: python /app/UploadController/UploadController.py
-    depends_on:
-      - Controller
+  uploadcontroller:
+    build:
+      context: ./uploadcontroller
+      dockerfile: Dockerfile.scripts
     volumes: 
-      - ./UploadController:/app/UploadController
+      - ./uploadcontroller:/app/uploadcontroller
