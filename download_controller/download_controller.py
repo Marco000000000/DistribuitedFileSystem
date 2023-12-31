@@ -35,25 +35,19 @@ logger = logging.getLogger('download_manager')
 logger.setLevel(logging.INFO)
 
 
-# Connessione al database
-try:
-    db = mysql.connector.connect(
-        host = "localhost",
-        database = "ds_filesystem",
-        user = "root",
-        password = "giovanni",
-        port = 3307
-    )
-except mysql.connector.Error as err:
-    print("Errore durante la connessione al database: {}".format(err))
-    exit(1)
-finally:
-    cursor = db.cursor()
+db = mysql.connector.connect(
+    host = "mysql",
+    database = "ds_filesystem",
+    user = "root",
+    password = "giovanni",
+    port = 3307
+)
 
+cursor=db.cursor()
 
 # Produzione json su un topic
 def produceJson(topic, dictionaryData):
-    p = Producer({'bootstrap.servers': 'localhost:9092'})
+    p = Producer({'bootstrap.servers': 'kafka:9092'})
     m = json.dumps(dictionaryData)
     p.poll(1)
     p.produce(topic, m.encode('utf-8'), callback=receipt)
@@ -63,7 +57,7 @@ def produceJson(topic, dictionaryData):
 
 # Consuma json da un consumer di un dato gruppo (solo per first_Call())
 def consumeJson(topicName, groupId):
-    c = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+    c = Consumer({'bootstrap.servers': 'kafka:9092', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -117,7 +111,7 @@ def first_Call():#funzione per la ricezione di topic iniziali
 
 def generate_data(topics):
     # Generazione dati per il download
-    c = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+    c = Consumer({'bootstrap.servers': 'kafka:9092', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
     c.subscribe("Download" + topics) # Topics è solo uno effettivamente (il minimo tra i topics disponibili)
     while True:
             msg=c.poll(1.0)

@@ -21,15 +21,20 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://0.0.0.0:9092 
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092 
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_JMX_PORT: 9101
-      KAFKA_JMX_HOSTNAME: localhost
-  
+      KAFKA_JMX_HOSTNAME: kafka
+    hostname: "kafka"
+    networks:
+           default:
+                aliases:
+                   - myalias
   db:
     build:
       context: .
@@ -43,7 +48,11 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3307:3307"
-  
+    hostname: "mysql"
+    networks:
+           default:
+                aliases:
+                   - myalias
   filesystem:
     build:
       context: ./filesystem
@@ -51,8 +60,14 @@ services:
     depends_on:
       - zookeeper
       - broker
+      - manager
     volumes: 
       - ./filesystem:/app/filesystem
+    hostname: "filesystem"
+    networks:
+           default:
+                aliases:
+                   - myalias
   
   manager:
     build:
@@ -64,7 +79,12 @@ services:
       - db
     volumes: 
       - ./manager:/app/manager
-  
+    hostname: "Manager"
+    networks:
+           default:
+                aliases:
+                   - myalias
+
   controller_manager:
     build:
       context: ./controller_manager
@@ -73,19 +93,32 @@ services:
       - zookeeper
       - broker
       - db
+      - manager
     volumes: 
       - ./controller_manager:/app/controller_manager
+    hostname: "cManager"
+    networks:
+           default:
+                aliases:
+                   - myalias
   
   download_controller:
     build:
       context: ./download_controller
       dockerfile: Dockerfile.scripts
+      
     depends_on:
       - zookeeper
       - broker
       - db
+      - controller_manager
     volumes: 
       - ./download_controller:/app/download_controller
+    hostname: "cDownload"
+    networks:
+           default:
+                aliases:
+                   - myalias
   
   uploadcontroller:
     build:
@@ -95,5 +128,11 @@ services:
       - zookeeper
       - broker
       - db
+      - controller_manager
     volumes: 
       - ./uploadcontroller:/app/uploadcontroller
+    hostname: "cUpload"
+    networks:
+           default:
+                aliases:
+                   - myalias

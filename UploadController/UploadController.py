@@ -24,7 +24,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 topics=[]
 db = mysql.connector.connect(#mi servono credenziali con permesso di modifica solo nella tabella file
-                host = "localhost",
+                host = "mysql",
                 database = "ds_filesystem",
                 user = "file_manager",
                 password = "file",
@@ -33,14 +33,14 @@ db = mysql.connector.connect(#mi servono credenziali con permesso di modifica so
 cursor = db.cursor()
 
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
-    p=Producer({'bootstrap.servers':'localhost:9092'})
+    p=Producer({'bootstrap.servers':'kafka:9092'})
     m=json.dumps(dictionaryData)
     p.poll(1)
     p.produce(topicName, m.encode('utf-8'),callback=receipt)
 
 
 def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic e in un gruppo controllando il codice
-    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
+    c=Consumer({'bootstrap.servers':'kafka:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -60,7 +60,7 @@ def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic
             
 
 def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un gruppo
-    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
+    c=Consumer({'bootstrap.servers':'kafka:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
