@@ -43,3 +43,43 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3307:3306"
+  
+  fileSystem:
+    build: ./fileSystem
+    command: python /app/fileSystem/fileSystem.py
+    depends_on:
+      - manager
+    volumes: 
+      - ./fileSystem:/app/fileSystem
+  
+  manager:
+    build: ./manager
+    command: python /app/manager/manager.py
+    depends_on:
+      - Controller_manager
+    volumes: 
+      - ./manager:/app/manager
+  
+  Controller_manager:
+    build: ./Controller_manager
+    command: python /app/Controller_manager/Controller_manager.py
+    depends_on:
+      - Controller
+    volumes: 
+      - ./Controller_manager:/app/Controller_manager
+  
+  download_controller:
+    build: ./download_controller
+    command: python /app/download_controller/download_controller.py
+    depends_on:
+      - Controller
+    volumes: 
+      - ./download_controller:/app/download_controller
+  
+  UploadController:
+    build: ./UploadController
+    command: python /app/UploadController/UploadController.py
+    depends_on:
+      - Controller
+    volumes: 
+      - ./UploadController:/app/UploadController

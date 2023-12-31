@@ -5,22 +5,24 @@ FROM python:3.12.0-alpine3.13
 WORKDIR /app
 
 # Copy and install requirements for each Python application
-COPY app1/requirements.txt /app/app1/requirements.txt
-RUN pip install --no-cache-dir -r app1/requirements.txt
+COPY fileSystem/requirements.txt /app/fileSystem/requirements.txt
+RUN pip install --no-cache-dir -r fileSystem/requirements.txt
 
-COPY app2/requirements.txt /app/app2/requirements.txt
-RUN pip install --no-cache-dir -r app2/requirements.txt
+COPY Controller_manager/requirements.txt /app/Controller_manager/requirements.txt
+RUN pip install --no-cache-dir -r Controller_manager/requirements.txt
+
+COPY download_controller/requirements.txt /app/download_controller/requirements.txt
+RUN pip install --no-cache-dir -r download_controller/requirements.txt
+
+COPY UploadController/requirements.txt /app/UploadController/requirements.txt
+RUN pip install --no-cache-dir -r UploadController/requirements.txt
+
+COPY manager/requirements.txt /app/manager/requirements.txt
+RUN pip install --no-cache-dir -r manager/requirements.txt
 
 # Copy application files for each Python application
-COPY app1 /app/app1
-COPY app2 /app/app2
-COPY app3 /app/app3
-COPY app4 /app/app4
-COPY app5 /app/app5
-
-# Set entry points for each application
-CMD ["python", "/app/app1/fileSystem.py"]
-CMD ["python", "/app/app2/.py"]
-CMD ["python", "/app/app3/fileSystem.py"]
-CMD ["python", "/app/app4/fileSystem.py"]
-CMD ["python", "/app/app5/fileSystem.py"]
+COPY fileSystem /app/fileSystem
+COPY Controller_manager /app/Controller_manager
+COPY download_controller /app/download_controller
+COPY UploadController /app/UploadController
+COPY manager /app/manager
