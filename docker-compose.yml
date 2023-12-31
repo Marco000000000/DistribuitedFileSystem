@@ -48,6 +48,9 @@ services:
     build:
       context: ./filesystem
       dockerfile: Dockerfile.scripts
+    depends_on:
+      - zookeeper
+      - broker
     volumes: 
       - ./filesystem:/app/filesystem
   
@@ -55,6 +58,10 @@ services:
     build:
       context: ./manager
       dockerfile: Dockerfile.scripts
+    depends_on:
+      - zookeeper
+      - broker
+      - db
     volumes: 
       - ./manager:/app/manager
   
@@ -62,6 +69,10 @@ services:
     build:
       context: ./controller_manager
       dockerfile: Dockerfile.scripts
+    depends_on:
+      - zookeeper
+      - broker
+      - db
     volumes: 
       - ./controller_manager:/app/controller_manager
   
@@ -69,6 +80,10 @@ services:
     build:
       context: ./download_controller
       dockerfile: Dockerfile.scripts
+    depends_on:
+      - zookeeper
+      - broker
+      - db
     volumes: 
       - ./download_controller:/app/download_controller
   
@@ -76,5 +91,9 @@ services:
     build:
       context: ./uploadcontroller
       dockerfile: Dockerfile.scripts
+    depends_on:
+      - zookeeper
+      - broker
+      - db
     volumes: 
       - ./uploadcontroller:/app/uploadcontroller
