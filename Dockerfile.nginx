@@ -1,15 +1,16 @@
-# Use an official Nginx image as the base image
-FROM nginx:latest
+FROM fabiocicerchia/nginx-lua
 
-# Copy your Nginx configuration file
+
+# Create directories for Nginx configuration and Lua scripts
+RUN mkdir -p /etc/nginx/lua-scripts
+
+# Copy Nginx configuration file
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Create the directory for Lua scripts
-RUN mkdir -p /etc/nginx/lua-scripts
+# Copy Lua scri
 
 # Copy the Lua script
 COPY lua-scripts/ /etc/nginx/lua-scripts
-
 # Expose port 80
 EXPOSE 80
 
