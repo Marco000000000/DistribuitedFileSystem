@@ -1,0 +1,26 @@
+# Base image with necessary dependencies
+FROM python:3.12.0-alpine3.13
+
+# Set working directory
+WORKDIR /app
+
+# Copy and install requirements for each Python application
+COPY app1/requirements.txt /app/app1/requirements.txt
+RUN pip install --no-cache-dir -r app1/requirements.txt
+
+COPY app2/requirements.txt /app/app2/requirements.txt
+RUN pip install --no-cache-dir -r app2/requirements.txt
+
+# Copy application files for each Python application
+COPY app1 /app/app1
+COPY app2 /app/app2
+COPY app3 /app/app3
+COPY app4 /app/app4
+COPY app5 /app/app5
+
+# Set entry points for each application
+CMD ["python", "/app/app1/fileSystem.py"]
+CMD ["python", "/app/app2/.py"]
+CMD ["python", "/app/app3/fileSystem.py"]
+CMD ["python", "/app/app4/fileSystem.py"]
+CMD ["python", "/app/app5/fileSystem.py"]
