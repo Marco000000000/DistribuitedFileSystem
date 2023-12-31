@@ -8,6 +8,9 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - ./zookeeper/data:/var/lib/zookeeper/data
+      - ./zookeeper/datalog:/var/lib/zookeeper/log
 
   broker:
     image: confluentinc/cp-kafka:7.0.1
@@ -31,11 +34,15 @@ services:
       KAFKA_JMX_PORT: 9101
       KAFKA_JMX_HOSTNAME: kafka
     hostname: kafka
+    volumes:
+      - ./kafka/data:/var/lib/kafka/data
+      - ./kafka/logs:/var/lib/kafka/logs
     
   db:
     build:
       context: .
       dockerfile: Dockerfile.mysql
+    container_name: mysql
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
@@ -46,6 +53,9 @@ services:
     ports:
       - "3307:3307"
     hostname: mysql
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/logs:/var/log/mysql
 
   filesystem:
     build:
@@ -58,6 +68,7 @@ services:
     volumes: 
       - ./filesystem:/app/filesystem
     hostname: filesystem
+    container_name: filesystem
 
   
   manager:
@@ -71,6 +82,7 @@ services:
     volumes: 
       - ./manager:/app/manager
     hostname: Manager
+    container_name: manager
 
 
   controller_manager:
@@ -85,6 +97,7 @@ services:
     volumes: 
       - ./controller_manager:/app/controller_manager
     hostname: cManager
+    container_name: controller_manager
 
   
   download_controller:
@@ -100,6 +113,7 @@ services:
     volumes: 
       - ./download_controller:/app/download_controller
     hostname: cDownload
+    container_name: download_controller
 
   
   uploadcontroller:
@@ -114,3 +128,14 @@ services:
     volumes: 
       - ./uploadcontroller:/app/uploadcontroller
     hostname: cUpload
+    container_name: uploadcontroller
+
+volumes:
+  zookeeper:
+  broker:
+  db:
+  filesystem:
+  manager:
+  controller_manager:
+  download_controller:
+  uploadcontroller:
