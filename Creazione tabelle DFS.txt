@@ -32,5 +32,5 @@ CREATE TABLE controllertopic (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (id_controller,topic),
-    FOREIGN KEY (id_controller) REFERENCES Controller (id_controller)
+    FOREIGN KEY (id_controller) REFERENCES controller (id_controller)
 );
