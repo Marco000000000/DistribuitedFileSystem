@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS partitions (
 );
 
 CREATE TABLE IF NOT EXISTS files (
+	file_id INT UNSIGNED AUTO_INCREMENT,
     file_name VARCHAR(100) NOT NULL,
     partition_id INT UNSIGNED,
     ready BOOL ,
@@ -20,7 +21,7 @@ CREATE TABLE IF NOT EXISTS files (
 );
 
 CREATE TABLE IF NOT EXISTS controller (
-    id_controller INT UNSIGNED AUTO_INCREMENT KEY,
+    id_controller INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     controller_name VARCHAR (255),
     type INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -36,11 +37,11 @@ CREATE TABLE IF NOT EXISTS controllertopic (
 
 
 -- Creazione utente file_manager
-CREATE USER 'file_manager'@'localhost' IDENTIFIED BY 'file';
+CREATE USER IF NOT EXISTS 'file_manager'@'localhost' IDENTIFIED BY 'file';
 
-GRANT SELECT ON ds_filesystem.file TO file_manager@localhost; -- Permesso di lettura
-GRANT INSERT ON ds_filesystem.file TO file_manager@localhost; -- Permesso di inserimento di record all'interno della tabella
-GRANT UPDATE ON ds_filesystem.file TO file_manager@localhost; -- Permesso di modifica dei record presenti nella tabella
-GRANT DELETE ON ds_filesystem.file TO file_manager@localhost; -- Permesso di eliminazione dei record dalla tabella
+GRANT SELECT ON ds_filesystem.files TO file_manager@localhost; -- Permesso di lettura
+GRANT INSERT ON ds_filesystem.files TO file_manager@localhost; -- Permesso di inserimento di record all'interno della tabella
+GRANT UPDATE ON ds_filesystem.files TO file_manager@localhost; -- Permesso di modifica dei record presenti nella tabella
+GRANT DELETE ON ds_filesystem.files TO file_manager@localhost; -- Permesso di eliminazione dei record dalla tabella
 
 FLUSH PRIVILEGES;

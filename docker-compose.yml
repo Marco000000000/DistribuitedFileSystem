@@ -130,6 +130,17 @@ services:
     hostname: cUpload
     container_name: uploadcontroller
 
+  testmysql:
+    build:
+      context: ./testmysql
+      dockerfile: Dockerfile.scripts
+    depends_on:
+      - db
+    volumes:
+      - ./testmysql:/app/testmysql
+    hostname: testmysql
+    container_name: testmysql
+
 volumes:
   zookeeper:
   broker:
@@ -139,3 +150,4 @@ volumes:
   controller_manager:
   download_controller:
   uploadcontroller:
+  testmysql:
