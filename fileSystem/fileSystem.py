@@ -122,7 +122,7 @@ def delete_file(filename):
     if os.path.exists(filename):
         os.remove(filename)
 
-if __name__== "main":
+if __name__== "__main__":
     id,topicNumber=first_Call() #ricezione dati necessari per la ricezione
     while True:
         uploadConsumer=Consumer({'bootstrap.servers':'kafka:9092','group.id':str(id),'auto.offset.reset':'earliest','enable.auto.commit': False})
