@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS partitions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS file (
+CREATE TABLE IF NOT EXISTS files (
     file_name VARCHAR(100) NOT NULL,
     partition_id INT UNSIGNED,
     ready BOOL ,

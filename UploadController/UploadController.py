@@ -118,19 +118,19 @@ def upload_file():#gestione di un file in upload
         
         if file and allowed_file(fileName):
             
-            cursor.execute("SELECT file_name,ready FROM file where file_name= %s",(fileName[:99]))
+            cursor.execute("SELECT file_name,ready FROM files where file_name= %s",(fileName[:99]))
             
             if cursor.rowcount:
                 if(cursor.fetchone()["ready"]==False):
                     return {"error":"File in updating"}
-                cursor.execute("delete from file where file_name= %s",(fileName[:99]))
+                cursor.execute("delete from files where file_name= %s",(fileName[:99]))
                 for topic in topics:
                     data={
                         "fileName": secure_filename(fileName[:99]),
                     }
                     produceJson("Delete"+topic,data)  
             for topic in topics:
-                cursor.execute("INSERT INTO file (file_name ,partition_id,ready) VALUES (%s, %s,%s)",(fileName[:99],topic,False))
+                cursor.execute("INSERT INTO files (file_name ,partition_id,ready) VALUES (%s, %s,%s)",(fileName[:99],topic,False))
                 #problema possibile di request mentre è ancora in corso l'upload
                 db.commit()
             count=0
@@ -150,7 +150,7 @@ def upload_file():#gestione di un file in upload
                         }
                         produceJson("Upload"+topic,data)  
                         consumeJson(returnTopic,"1")
-                        cursor.execute("UPDATE file SET ready = 'true' WHERE file_name= %s",(fileName[:99]))
+                        cursor.execute("UPDATE files SET ready = 'true' WHERE file_name= %s",(fileName[:99]))
 
                         break
                     data={
