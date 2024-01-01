@@ -29,7 +29,7 @@ def mysql_custom_connect(conf, tries=10):
 if __name__ == '__main__':
     
     conf = {
-            'host':'mysql',
+            'host':'db',
             'port':3306,
             'database':'ds_filesystem',
             'user':'root',
