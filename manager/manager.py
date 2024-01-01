@@ -6,12 +6,12 @@ import json
 import logging
 
 # Configurazione del producer e instanziazione
-prod_conf = {'bootstrap.servers': 'broker:29092'}
-
+prod_conf = {'bootstrap.servers': 'kafka:9093'}
+print("aaa")
 producer = Producer(prod_conf)
 
 # Configurazione del consumer e instanziazione
-cons_conf = {'bootstrap.servers': 'broker:29092',
+cons_conf = {'bootstrap.servers': 'kafka:9093',
         'group.id': 'manager',
         'auto.offset.reset': 'earliest',
         'enable.auto.commit': False}
@@ -21,30 +21,25 @@ consumer = Consumer(cons_conf)
 # Funzione che elabora il messaggio ricevuto dal consumer
 def register_filesystem(consumer, topic):
     data={}
-    try:
-        consumer.subscribe(topic)
 
-        while True:
-            msg = consumer.poll(timeout=1.0)
-            if msg is None: continue
+    consumer.subscribe(topic)
 
-            if msg.error():
-                if msg.error().code() == KafkaError._PARTITION_EOF:
-                    # Evento "end of partition"
-                    sys.stderr.write('%% %s [%d] ha raggiunto la fine dell\'offset %d\n' %
-                                     (msg.topic(), msg.partition(), msg.offset()))
-                elif msg.error():
-                    raise KafkaException(msg.error())
-            else:
-                data = json.loads(msg)
-                break
-    except:
-        consumer.close()
-        return
-    finally:
-        # Chiude il consumer (non fa il commit se enalbe.auto.commit è settato a False)
-        consumer.close()
-        return data
+    while True:
+        msg = consumer.poll(1.0)
+        if msg is None: continue
+
+        if msg.error():
+            if msg.error().code() == KafkaError._PARTITION_EOF:
+                # Evento "end of partition"
+                sys.stderr.write('%% %s [%d] ha raggiunto la fine dell\'offset %d\n' %
+                                    (msg.topic(), msg.partition(), msg.offset()))
+            elif msg.error():
+                raise KafkaException(msg.error())
+        else:
+            data = json.loads(msg.value().decode('utf-8'))
+            consumer.commit()
+            return data
+    
 
 # Configurazione del logger
 logging.basicConfig(format='%(asctime)s %(message)s',
@@ -66,7 +61,7 @@ def receipt(err,msg):
 
 
 # Instanziazione dell'oggetto AdminClient per le operazioni di creazione dei topic
-admin = AdminClient({'bootstrap.servers': 'broker:29092'})
+admin = AdminClient({'bootstrap.servers': 'kafka:9093'})
 
 # Creazione "hardcoded" dei topic "FirstCall" e "FirstCallAck
 hardcoded_topics = [NewTopic("FirstCall", num_partitions=1, replication_factor=1), NewTopic("FirstCallAck", num_partitions=1, replication_factor=1)]
@@ -104,10 +99,13 @@ if __name__ == "__main__":
 
         max_topic = cursor.fetchone()[0]
         # Richiesta di registrazione da parte del filesystem + inserimento nel database della partizione
-        data = register_filesystem(consumer, "FirstCall")
+        data = register_filesystem(consumer, ["FirstCall"])
         
         if len(data)==0:
             continue
+        print(data) 
+        producer.produce('FirstCallAck', json.dumps(data).encode('utf-8'), callback=receipt)
+
         print(data)
         if not cursor.rowcount or max_topic is None:
             # Se non ci sono partizioni assegna il valore 0

@@ -19,6 +19,7 @@ import logging
 app=Flask(__name__)
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 PARTITION_GRANULARITY=os.getenv("PARTITION_GRANULARITY", default = 1024)
+print("aaa")
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
