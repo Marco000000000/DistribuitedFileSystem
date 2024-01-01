@@ -101,6 +101,7 @@ def first_Call():
     m=json.dumps(data)
     p.poll(1)
     p.produce('FirstCall', m.encode('utf-8'),callback=receipt)
+    print(m)
     while True:
             msg=c.poll(1.0) #timeout
             if msg is None:
@@ -110,13 +111,17 @@ def first_Call():
                 continue
             else:
                 data=json.loads(msg.value().decode('utf-8'))
-                print(data)
+                print(m,data)
+                if(data["Code"]!=m["Code"]):
+                    print(data)
+                    continue
+                
                 break
     c.commit()        
     
     c.unsubscribe()
     
-    return data["id"],data["topic"]
+    return data["id"],data["Topic"]
 #eliminazione file 
 def delete_file(filename):
     if os.path.exists(filename):
