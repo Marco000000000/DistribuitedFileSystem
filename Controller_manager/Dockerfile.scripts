@@ -11,4 +11,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application files for each Python application
 COPY Controller_manager.py .
 
-CMD ["python", "-m", "Controller_manager.py"]
+CMD ["python", "Controller_manager.py"]

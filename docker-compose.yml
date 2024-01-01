@@ -32,8 +32,8 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_JMX_PORT: 9101
-      KAFKA_JMX_HOSTNAME: kafka
-    hostname: kafka
+      KAFKA_JMX_HOSTNAME: broker
+    hostname: broker
     volumes:
       - ./kafka/data:/var/lib/kafka/data
       - ./kafka/logs:/var/lib/kafka/logs
@@ -42,7 +42,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.mysql
-    container_name: mysql
+    container_name: db
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
@@ -51,7 +51,7 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "3307:3307"
+      - "3306:3306"
     hostname: mysql
     volumes:
       - ./mysql/data:/var/lib/mysql

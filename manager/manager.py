@@ -6,12 +6,12 @@ import json
 import logging
 
 # Configurazione del producer e instanziazione
-prod_conf = {'bootstrap.servers': 'kafka:9092'}
+prod_conf = {'bootstrap.servers': 'broker:9092'}
 
 producer = Producer(prod_conf)
 
 # Configurazione del consumer e instanziazione
-cons_conf = {'bootstrap.servers': 'kafka:9092',
+cons_conf = {'bootstrap.servers': 'broker:9092',
         'group.id': 'manager',
         'auto.offset.reset': 'earliest',
         'enable.auto.commit': False}
@@ -20,6 +20,7 @@ consumer = Consumer(cons_conf)
 
 # Funzione che elabora il messaggio ricevuto dal consumer
 def register_filesystem(consumer, topic):
+    data={}
     try:
         consumer.subscribe(topic)
 
@@ -37,6 +38,9 @@ def register_filesystem(consumer, topic):
             else:
                 data = json.loads(msg)
                 break
+    except:
+        consumer.close()
+        return
     finally:
         # Chiude il consumer (non fa il commit se enalbe.auto.commit è settato a False)
         consumer.close()
@@ -62,7 +66,7 @@ def receipt(err,msg):
 
 
 # Instanziazione dell'oggetto AdminClient per le operazioni di creazione dei topic
-admin = AdminClient({'bootstrap.servers': 'kafka:9092'})
+admin = AdminClient({'bootstrap.servers': 'broker:9092'})
 
 # Creazione "hardcoded" dei topic "FirstCall" e "FirstCallAck
 hardcoded_topics = [NewTopic("FirstCall", num_partitions=1, replication_factor=1), NewTopic("FirstCallAck", num_partitions=1, replication_factor=1)]
@@ -78,15 +82,15 @@ admin.create_topics(hardcoded_topics)
 #             return True
 #     return False
 
-if __name__ == "main":
+if __name__ == "__main__":
     try:
         # Connessione al database
         db = mysql.connector.connect(
-            host = "mysql",
+            host = "db",
             database = "ds_filesystem",
             user = "root",
             password = "giovanni",
-            port = 3307
+            port = 3306
         )
     except mysql.connector.Error as err:
         print("Errore durante la connessione al database {}".format(err))
@@ -99,11 +103,12 @@ if __name__ == "main":
         cursor.execute("SELECT MAX(topic) FROM partitions")
 
         max_topic = cursor.fetchone()[0]
-
         # Richiesta di registrazione da parte del filesystem + inserimento nel database della partizione
         data = register_filesystem(consumer, "FirstCall")
-
-        if not cursor.rowcount:
+        
+        if len(data)==0:
+            continue
+        if not cursor.rowcount or max_topic is None:
             # Se non ci sono partizioni assegna il valore 0
             data["Topic"] = 0
         else:

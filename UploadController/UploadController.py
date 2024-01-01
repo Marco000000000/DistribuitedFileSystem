@@ -24,11 +24,11 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 topics=[]
 db = mysql.connector.connect(#mi servono credenziali con permesso di modifica solo nella tabella file
-                host = "mysql",
+                host = "db",
                 database = "ds_filesystem",
-                user = "file_manager",
-                password = "file",
-                port = 3307
+                user = "root",
+                password = "giovanni",
+                port = 3306
             )
 cursor = db.cursor()
 

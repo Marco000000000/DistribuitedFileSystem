@@ -1,8 +1,8 @@
 import mysql.connector
 
 conf = {
-    'host':'mysql',
-    'port':3307,
+    'host':'db',
+    'port':3306,
     'database':'ds_filesystem',
     'user':'root',
     'password':'giovanni'

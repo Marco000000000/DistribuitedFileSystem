@@ -39,9 +39,9 @@ CREATE TABLE IF NOT EXISTS controllertopic (
 -- Creazione utente file_manager
 CREATE USER IF NOT EXISTS 'file_manager'@'localhost' IDENTIFIED BY 'file';
 
-GRANT SELECT ON ds_filesystem.files TO file_manager@localhost; -- Permesso di lettura
-GRANT INSERT ON ds_filesystem.files TO file_manager@localhost; -- Permesso di inserimento di record all'interno della tabella
-GRANT UPDATE ON ds_filesystem.files TO file_manager@localhost; -- Permesso di modifica dei record presenti nella tabella
-GRANT DELETE ON ds_filesystem.files TO file_manager@localhost; -- Permesso di eliminazione dei record dalla tabella
+GRANT SELECT ON ds_filesystem.files TO file_manager@uploadcontroller; -- Permesso di lettura
+GRANT INSERT ON ds_filesystem.files TO file_manager@uploadcontroller; -- Permesso di inserimento di record all'interno della tabella
+GRANT UPDATE ON ds_filesystem.files TO file_manager@uploadcontroller; -- Permesso di modifica dei record presenti nella tabella
+GRANT DELETE ON ds_filesystem.files TO file_manager@uploadcontroller; -- Permesso di eliminazione dei record dalla tabella
 
 FLUSH PRIVILEGES;
