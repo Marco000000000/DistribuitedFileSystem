@@ -34,7 +34,6 @@ services:
       KAFKA_JMX_PORT: 9101
       KAFKA_JMX_HOSTNAME: broker
     hostname: broker
-    restart: always
     volumes:
       - ./kafka/data:/var/lib/kafka/data
       - ./kafka/logs:/var/lib/kafka/logs
@@ -45,7 +44,6 @@ services:
       dockerfile: Dockerfile.mysql
     container_name: db
     command: --default-authentication-plugin=mysql_native_password
-    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -71,7 +69,7 @@ services:
       - ./filesystem:/app/filesystem
     hostname: filesystem
     container_name: filesystem
-    command: ["sleep", "20s"]
+    
 
   
   manager:
@@ -103,7 +101,7 @@ services:
       - ./controller_manager:/app/controller_manager
     hostname: cManager
     container_name: controller_manager
-    command: ["sleep", "20s"]
+    
 
   
   download_controller:
@@ -120,7 +118,7 @@ services:
       - ./download_controller:/app/download_controller
     hostname: cDownload
     container_name: download_controller
-    command: ["sleep", "20s"]
+    
   
   uploadcontroller:
     build:
@@ -136,7 +134,7 @@ services:
       - ./uploadcontroller:/app/uploadcontroller
     hostname: cUpload
     container_name: uploadcontroller
-    command: ["sleep", "20s"]
+    
 
   testmysql:
     build:
