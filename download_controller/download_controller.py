@@ -112,7 +112,7 @@ def first_Call():#funzione per la ricezione di topic iniziali
 def generate_data(topics):
     # Generazione dati per il download
     c = Consumer({'bootstrap.servers': 'broker:29092', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
-    c.subscribe("Download" + topics) # Topics è solo uno effettivamente (il minimo tra i topics disponibili)
+    c.subscribe(["Download" + topics]) # Topics è solo uno effettivamente (il minimo tra i topics disponibili)
     while True:
             msg=c.poll(1.0)
             if msg is None:
