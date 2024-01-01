@@ -6,12 +6,12 @@ import json
 import logging
 
 # Configurazione del producer e instanziazione
-prod_conf = {'bootstrap.servers': 'broker:9092'}
+prod_conf = {'bootstrap.servers': 'broker:29092'}
 
 producer = Producer(prod_conf)
 
 # Configurazione del consumer e instanziazione
-cons_conf = {'bootstrap.servers': 'broker:9092',
+cons_conf = {'bootstrap.servers': 'broker:29092',
         'group.id': 'manager',
         'auto.offset.reset': 'earliest',
         'enable.auto.commit': False}
@@ -66,7 +66,7 @@ def receipt(err,msg):
 
 
 # Instanziazione dell'oggetto AdminClient per le operazioni di creazione dei topic
-admin = AdminClient({'bootstrap.servers': 'broker:9092'})
+admin = AdminClient({'bootstrap.servers': 'broker:29092'})
 
 # Creazione "hardcoded" dei topic "FirstCall" e "FirstCallAck
 hardcoded_topics = [NewTopic("FirstCall", num_partitions=1, replication_factor=1), NewTopic("FirstCallAck", num_partitions=1, replication_factor=1)]
@@ -81,7 +81,7 @@ admin.create_topics(hardcoded_topics)
 #         if t.topic == topic:
 #             return True
 #     return False
-
+print("manager")
 if __name__ == "__main__":
     try:
         # Connessione al database
@@ -108,6 +108,7 @@ if __name__ == "__main__":
         
         if len(data)==0:
             continue
+        print(data)
         if not cursor.rowcount or max_topic is None:
             # Se non ci sono partizioni assegna il valore 0
             data["Topic"] = 0

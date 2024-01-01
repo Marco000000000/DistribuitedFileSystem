@@ -10,14 +10,14 @@ import logging
 #	- Dare tutti i topic al controller di upload ( quello di aggiornamento )
 #	- Creazione topic di aggiornamento per I controller di upload
 #	- Vede se ci sono filesystem con topic senza un controller e glielo ritorna
-conf = {'bootstrap.servers': 'broker:9092',
+conf = {'bootstrap.servers': 'broker:29092',
         'group.id': 'manager',
         'auto.offset.reset': 'earliest',
         'enable.auto.commit': False}
 
 
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
-    p=Producer({'bootstrap.servers':'broker:9092'})
+    p=Producer({'bootstrap.servers':'broker:29092'})
     m=json.dumps(dictionaryData)
     p.poll(1)
     p.produce(topicName, m.encode('utf-8'),callback=receipt)
@@ -32,7 +32,7 @@ def receipt(err,msg):
 
 
 def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un gruppo
-    c=Consumer({'bootstrap.servers':'broker:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Qui l'enable.auto.commit è settato a True di default, l'ho messo a False
+    c=Consumer({'bootstrap.servers':'broker:29092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Qui l'enable.auto.commit è settato a True di default, l'ho messo a False
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -79,7 +79,7 @@ logger.info("prima dell'admin consumer creato")
 print("admin")
 
 # Instanziazione dell'oggetto AdminClient per le operazioni di creazione dei topic
-admin = AdminClient({'bootstrap.servers': 'broker:9092'})
+admin = AdminClient({'bootstrap.servers': 'broker:29092'})
 
 # Creazione "hard-coded" dei topic "CFirstCall" e "CFirstCallAck
 admin.create_topics([NewTopic("CFirstCall", num_partitions=1, replication_factor=1), NewTopic("CFirstCallAck", num_partitions=1, replication_factor=1),NewTopic("UpdateTopics", num_partitions=1, replication_factor=1)])

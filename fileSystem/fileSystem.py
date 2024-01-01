@@ -18,8 +18,8 @@ def get_random_string(length):
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
 #prima coppia di producer-consumer
-p=Producer({'bootstrap.servers':'kafka:9092'})
-c=Consumer({'bootstrap.servers':'kafka:9092','group.id':get_random_string(20),'auto.offset.reset':'earliest','enable.auto.commit': False})
+p=Producer({'bootstrap.servers':'broker:29092'})
+c=Consumer({'bootstrap.servers':'broker:29092','group.id':get_random_string(20),'auto.offset.reset':'earliest','enable.auto.commit': False})
 
 logging.basicConfig(format='%(asctime)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
@@ -77,7 +77,7 @@ def download_file(filename,topicNumber):
                 p.flush()
                 return # è indentato bene o mi sto sbagliando invece?
 def produceJson(topicName,dictionaryData):
-    p=Producer({'bootstrap.servers':'kafka:9092'})
+    p=Producer({'bootstrap.servers':'broker:29092'})
     m=json.dumps(dictionaryData)
     p.poll(1)
     p.produce(topicName, m.encode('utf-8'),callback=receipt)
@@ -125,11 +125,11 @@ def delete_file(filename):
 if __name__== "__main__":
     id,topicNumber=first_Call() #ricezione dati necessari per la ricezione
     while True:
-        uploadConsumer=Consumer({'bootstrap.servers':'kafka:9092','group.id':str(id),'auto.offset.reset':'earliest','enable.auto.commit': False})
+        uploadConsumer=Consumer({'bootstrap.servers':'broker:29092','group.id':str(id),'auto.offset.reset':'earliest','enable.auto.commit': False})
         uploadConsumer.subscribe("Upload"+topicNumber)
-        requestConsumer=Consumer({'bootstrap.servers':'kafka:9092','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
+        requestConsumer=Consumer({'bootstrap.servers':'broker:29092','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
         requestConsumer.subscribe("Request"+topicNumber)
-        deleteConsumer=Consumer({'bootstrap.servers':'kafka:9092','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
+        deleteConsumer=Consumer({'bootstrap.servers':'broker:29092','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
         deleteConsumer.subscribe("Delete"+topicNumber)
         while True:
             msg=requestConsumer.poll(0.1)

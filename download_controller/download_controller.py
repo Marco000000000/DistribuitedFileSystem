@@ -47,7 +47,7 @@ cursor=db.cursor()
 
 # Produzione json su un topic
 def produceJson(topic, dictionaryData):
-    p = Producer({'bootstrap.servers': 'broker:9092'})
+    p = Producer({'bootstrap.servers': 'broker:29092'})
     m = json.dumps(dictionaryData)
     p.poll(1)
     p.produce(topic, m.encode('utf-8'), callback=receipt)
@@ -57,7 +57,7 @@ def produceJson(topic, dictionaryData):
 
 # Consuma json da un consumer di un dato gruppo (solo per first_Call())
 def consumeJson(topicName, groupId):
-    c = Consumer({'bootstrap.servers': 'broker:9092', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+    c = Consumer({'bootstrap.servers': 'broker:29092', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -111,7 +111,7 @@ def first_Call():#funzione per la ricezione di topic iniziali
 
 def generate_data(topics):
     # Generazione dati per il download
-    c = Consumer({'bootstrap.servers': 'broker:9092', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+    c = Consumer({'bootstrap.servers': 'broker:29092', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
     c.subscribe("Download" + topics) # Topics è solo uno effettivamente (il minimo tra i topics disponibili)
     while True:
             msg=c.poll(1.0)
