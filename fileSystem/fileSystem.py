@@ -6,6 +6,7 @@ import logging
 import json
 import base64 #si potrebbe passare a base85
 import random
+import time
 import string
 PARTITION_GRANULARITY=os.getenv("PARTITION_GRANULARITY", default = 1024)
 UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", default = 'downloadable')
@@ -19,7 +20,7 @@ def get_random_string(length):
     return result_str
 #prima coppia di producer-consumer
 p=Producer({'bootstrap.servers':'kafka:9093'})
-c=Consumer({'bootstrap.servers':'kafka:9093','group.id':get_random_string(20),'auto.offset.reset':'earliest','enable.auto.commit': False})
+c=Consumer({'bootstrap.servers':'kafka:9093','group.id':get_random_string(20),'auto.offset.reset':'latest','enable.auto.commit': False})
 
 logging.basicConfig(format='%(asctime)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
@@ -32,7 +33,6 @@ logger.setLevel(logging.INFO)
 
 
 
-print('Topics disponibili da consumare: ', c.list_topics().topics)
 c.subscribe(['FirstCallAck'])
 # Logging e Stampa dei messaggi prodotti (Callback)
 def receipt(err,msg):
@@ -102,6 +102,7 @@ def first_Call():
     p.poll(1)
     p.produce('FirstCall', m.encode('utf-8'),callback=receipt)
     print(m)
+    code=data["Code"]
     while True:
             msg=c.poll(1.0) #timeout
             if msg is None:
@@ -111,9 +112,8 @@ def first_Call():
                 continue
             else:
                 data=json.loads(msg.value().decode('utf-8'))
-                print(m,data)
-                if(data["Code"]!=m["Code"]):
-                    print(data)
+                if(data["Code"]!=code):
+                    c.commit()
                     continue
                 
                 break
@@ -128,48 +128,57 @@ def delete_file(filename):
         os.remove(filename)
 
 if __name__== "__main__":
+
     id,topicNumber=first_Call() #ricezione dati necessari per la ricezione
     print(id,topicNumber)
+    while c.list_topics().topics["Upload"+str(topicNumber)] is None:
+        time.sleep(0.2)
+        print("in attesa del manager")
+
+    uploadConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':str(id),'auto.offset.reset':'latest','enable.auto.commit': False})
+
+    uploadConsumer.subscribe(["Upload"+str(topicNumber)])
+    requestConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':"000",'auto.offset.reset':'latest','enable.auto.commit': False})
+    requestConsumer.subscribe(["Request"+str(topicNumber)])
+    deleteConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':"000",'auto.offset.reset':'latest','enable.auto.commit': False})
+    deleteConsumer.subscribe(["Delete"+str(topicNumber)])
+    print("ho fatto l'inizio")
     while True:
-        uploadConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':str(id),'auto.offset.reset':'earliest','enable.auto.commit': False})
-        uploadConsumer.subscribe(["Upload"+topicNumber])
-        requestConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
-        requestConsumer.subscribe(["Request"+topicNumber])
-        deleteConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
-        deleteConsumer.subscribe(["Delete"+topicNumber])
-        while True:
-            msg=requestConsumer.poll(0.1)
-            msgUpload=uploadConsumer.poll(0.1)
-            msgDelete=deleteConsumer.poll(0.1)
+        msg=requestConsumer.poll(0.1)
+        msgUpload=uploadConsumer.poll(0.1)
+        msgDelete=deleteConsumer.poll(0.1)
 
-            if msg is None:
-                continue
-            elif msg.error():
-                print('Error: {}'.format(msg.error()))
-                continue
-            else:
-                data=json.loads(msg.value().decode('utf-8'))
-                if data["fileName"]!="":
-                    download_file(secure_filename(data["fileName"]),topicNumber)
-                    requestConsumer.commit()
+        if msg is None:
+            continue
+        elif msg.error():
+            print('Error: {}'.format(msg.error()))
+            continue
+        else:
+            data=json.loads(msg.value().decode('utf-8'))
+            if data["fileName"]!="":
+                download_file(secure_filename(data["fileName"]),topicNumber)
+                requestConsumer.commit()
 
-            if msgUpload is None:
-                continue
-            elif msgUpload.error():
-                print('Error: {}'.format(msg.error()))
-                continue
-            else:
-                data=json.loads(msgUpload.value().decode('utf-8'))
-                if data["fileName"]!="":
-                    upload_file(secure_filename(data["fileName"]),data)
-                    uploadConsumer.commit()
-            if msgDelete is None:
-                continue
-            elif msgDelete.error():
-                print('Error: {}'.format(msg.error()))
-                continue
-            else:
-                data=json.loads(msgDelete.value().decode('utf-8'))
-                if data["fileName"]!="":
-                    delete_file(secure_filename(data["fileName"]))   
-                    deleteConsumer.commit()
+
+        if msgUpload is None:
+            continue
+        elif msgUpload.error():
+            print('Error: {}'.format(msg.error()))
+            continue
+        else:
+            data=json.loads(msgUpload.value().decode('utf-8'))
+            if data["fileName"]!="":
+                upload_file(secure_filename(data["fileName"]),data)
+                uploadConsumer.commit()
+
+
+        if msgDelete is None:
+            continue
+        elif msgDelete.error():
+            print('Error: {}'.format(msg.error()))
+            continue
+        else:
+            data=json.loads(msgDelete.value().decode('utf-8'))
+            if data["fileName"]!="":
+                delete_file(secure_filename(data["fileName"]))   
+                deleteConsumer.commit()

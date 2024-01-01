@@ -9,7 +9,7 @@ conf = {
 consumer = Consumer(conf)
 
 # Subscribe to the 'example-topic' topic
-consumer.subscribe(['FirstCall'])
+consumer.subscribe(['FirstCallAck'])
 
 try:
     while True:

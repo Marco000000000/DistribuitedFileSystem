@@ -53,7 +53,7 @@ services:
       - ./filesystem:/app/filesystem
     hostname: filesystem
     container_name: filesystem
-    command: ["sleep", "20s"]
+ 
 
   
   manager:

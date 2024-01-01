@@ -11,4 +11,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application files for each Python application
 COPY fileSystem.py .
 
-CMD ["python", "fileSystem.py"]
+CMD ["python" ,"fileSystem.py"]
