@@ -22,7 +22,7 @@ consumer = Consumer(cons_conf)
 def register_filesystem(consumer, topic):
     data={}
 
-    consumer.subscribe(topic)
+    consumer.subscribe([topic])
 
     while True:
         msg = consumer.poll(1.0)

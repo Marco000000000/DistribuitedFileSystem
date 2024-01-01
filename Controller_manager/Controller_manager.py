@@ -107,7 +107,7 @@ if __name__ == "__main__":
         cursor.execute("SELECT DISTINCT topic FROM partitions")
         topics=cursor.fetchall()
         oldTopics=len(topics)
-    consumer.subscribe("CFirstCall")
+    consumer.subscribe(["CFirstCall"])
     while True:
         
         cursor.execute("SELECT DISTINCT topic FROM partitions")

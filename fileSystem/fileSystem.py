@@ -127,11 +127,11 @@ if __name__== "__main__":
     print(id,topicNumber)
     while True:
         uploadConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':str(id),'auto.offset.reset':'earliest','enable.auto.commit': False})
-        uploadConsumer.subscribe("Upload"+topicNumber)
+        uploadConsumer.subscribe(["Upload"+topicNumber])
         requestConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
-        requestConsumer.subscribe("Request"+topicNumber)
+        requestConsumer.subscribe(["Request"+topicNumber])
         deleteConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
-        deleteConsumer.subscribe("Delete"+topicNumber)
+        deleteConsumer.subscribe(["Delete"+topicNumber])
         while True:
             msg=requestConsumer.poll(0.1)
             msgUpload=uploadConsumer.poll(0.1)
