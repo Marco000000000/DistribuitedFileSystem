@@ -22,7 +22,7 @@ consumer = Consumer(cons_conf)
 def register_filesystem(consumer, topic):
     data={}
 
-    consumer.subscribe(topic)
+    consumer.subscribe([topic])
 
     while True:
         msg = consumer.poll(1.0)
@@ -99,14 +99,12 @@ if __name__ == "__main__":
 
         max_topic = cursor.fetchone()[0]
         # Richiesta di registrazione da parte del filesystem + inserimento nel database della partizione
-        data = register_filesystem(consumer, ["FirstCall"])
+        data = register_filesystem(consumer, "FirstCall")
         
         if len(data)==0:
             continue
         print(data) 
-        producer.produce('FirstCallAck', json.dumps(data).encode('utf-8'), callback=receipt)
 
-        print(data)
         if not cursor.rowcount or max_topic is None:
             # Se non ci sono partizioni assegna il valore 0
             data["Topic"] = 0
