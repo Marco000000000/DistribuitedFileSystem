@@ -111,7 +111,7 @@ if __name__ == "__main__":
     except mysql.connector.Error as err:
         print("Failed to connect to database {}".format(err))
         exit(1)
-    cursor = db.cursor(buffered=True)
+    cursor = db.cursor()
 
     while len(topics)==0:
         db.commit()
