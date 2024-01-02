@@ -61,6 +61,11 @@ def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json
 
 def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic e in un gruppo controllando il codice
     c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
+    
+    while c.list_topics().topics["CFirstCall"] is None:
+        print("in attesa del manager")
+        sleep(0.2)
+        
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
