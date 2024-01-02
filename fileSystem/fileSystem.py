@@ -134,13 +134,13 @@ def delete_file(filename):
         os.remove(filename)
 
 if __name__== "__main__":
-    while c.list_topics().topics["FirstCall"] is None:
+    while "FirstCall" not in c.list_topics().topics:
         print("in attesa del manager")
         time.sleep(0.2)
 
     id,topicNumber=first_Call() #ricezione dati necessari per la ricezione
     print(id,topicNumber)
-    while c.list_topics().topics["Upload"+str(topicNumber)] is None:
+    while "Upload"+str(topicNumber) not in c.list_topics():
         print("in attesa del manager")
         time.sleep(0.2)
         
