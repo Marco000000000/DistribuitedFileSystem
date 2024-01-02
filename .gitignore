@@ -3,3 +3,7 @@ zookeeper/
 mysql/
 kafka/
 .vscode/
+Controller_manager/producer.log
+manager/producer.log
+fileSystem/producer.log
+download_controller/download_manager.log
