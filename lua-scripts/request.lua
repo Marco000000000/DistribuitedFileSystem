@@ -1,8 +1,8 @@
 -- lua-scripts/main.lua
 
 
-local mysql = require("resty.mysql")
-local cjson = require("cjson")
+local mysql = require('resty.mysql')
+local cjson = require('cjson')
 local original_request_uri_args = ngx.req.get_uri_args()
 
 local mysql_query = "select distinct topic from partitions join file on partition_id=id where file_name=" .. original_request_uri_args
@@ -57,8 +57,8 @@ db:close()
 local response={}
 
 for i,raw in pairs(toCapture) do
-
-    local response[i], err = ngx.location.capture(subrequest_uri)
+    local err
+    response[i], err = ngx.location.capture(subrequest_uri)
     if err then
         ngx.status = 500
         ngx.say("Internal Server Error")
@@ -71,7 +71,7 @@ ngx.status = 200
 local e=0
 -- Concatenate chunks of responses into a single body
 local condiction=true
-while condiction then
+while condiction  do
 
     local concatenated_body = ""
     for i,res in pairs(response) do

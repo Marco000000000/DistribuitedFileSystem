@@ -1,10 +1,34 @@
 version: '3'
 services:
+ 
   nginx:
-    build:
-        dockerfile: Dockerfile.nginx
+    build: Dockerfile.nginx
     ports:
-      - "80:80"
+      - "8080:80"
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.2
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile.mysql
+    container_name: db
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    hostname: mysql
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/logs:/var/log/mysql
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.6
 
   zookeeper:
     image: wurstmeister/zookeeper:3.4.6
@@ -26,24 +50,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
-  db:
-    build:
-      context: .
-      dockerfile: Dockerfile.mysql
-    container_name: db
-    command: --default-authentication-plugin=mysql_native_password
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    ports:
-      - "3306:3306"
-    hostname: mysql
-    volumes:
-      - ./mysql/data:/var/lib/mysql
-      - ./mysql/logs:/var/log/mysql
 
   filesystem:
     build:
@@ -105,7 +111,9 @@ services:
       - ./download_controller:/app/download_controller
     hostname: cDownload1
     container_name: download_controller1
-
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.8
   download_controller2:
     build:
       context: ./download_controller
@@ -120,7 +128,9 @@ services:
       - ./download_controller:/app/download_controller
     hostname: cDownload2
     container_name: download_controller2
-  
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.9
   uploadcontroller:
     build:
       context: ./uploadcontroller
@@ -135,18 +145,9 @@ services:
       - ./uploadcontroller:/app/uploadcontroller
     hostname: cUpload
     container_name: uploadcontroller
-
-  testmysql:
-    build:
-      context: ./testmysql
-      dockerfile: Dockerfile.scripts
-    
-    depends_on:
-      - db
-    volumes:
-      - ./testmysql:/app/testmysql
-    hostname: testmysql
-    container_name: testmysql
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.10
 
 volumes:
   zookeeper:
@@ -158,3 +159,10 @@ volumes:
   download_controller:
   uploadcontroller:
   testmysql:
+  networks:
+  vpcbr:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.5.0.0/16
+         gateway: 10.5.0.1

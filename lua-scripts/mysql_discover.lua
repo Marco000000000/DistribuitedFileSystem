@@ -17,7 +17,7 @@ db:set_timeout(1000) -- 1 sec
 
 local ok, err, errno, sqlstate = db:connect{
     host = "localhost",
-    port = 3307,
+    port = 3306,
     database = "ds_filesystem",
     user = "root",
     password = "giovanni",

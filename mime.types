@@ -1,15 +1,15 @@
 types {
-    text/html                        html htm
-    text/css                         css
-    application/javascript           js
-    application/json                 json
-    application/xml                  xml
-    image/jpeg                       jpg jpeg
-    image/png                        png
-    image/gif                        gif
-    image/svg+xml                    svg
-    application/pdf                  pdf
-    video/mp4                        mp4
-    audio/mpeg                       mp3
-    text/plain                       txt
+    text/html                        html htm;
+    text/css                         css;
+    application/javascript           js;
+    application/json                 json;
+    application/xml                  xml;
+    image/jpeg                       jpg jpeg;
+    image/png                        png;
+    image/gif                        gif;
+    image/svg+xml                    svg;
+    application/pdf                  pdf;
+    video/mp4                        mp4;
+    audio/mpeg                       mp3;
+    text/plain                       txt;
 }

@@ -7,7 +7,7 @@ RUN apt-get update \
 
 # Create a directory for Lua scripts
 RUN mkdir /usr/local/openresty/nginx/lua-scripts
-COPY mime.types /etc/nginx/mime.types
+
 # Copy Lua script and Nginx configuration
 COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
 COPY lua-scripts /usr/local/openresty/nginx/lua-scripts
