@@ -52,7 +52,7 @@ db = mysql_custom_connect(db_conf)
 cursor=db.cursor()
 
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
-    p=Producer({'bootstrap.servers':'localhost:9092'})
+    p=Producer({'bootstrap.servers':'kafka:9093'})
     m=json.dumps(dictionaryData)
     p.poll(0.001)
     p.produce(topicName, m.encode('utf-8'),callback=receipt)
@@ -60,7 +60,7 @@ def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json
 
 
 def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic e in un gruppo controllando il codice
-    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
+    c=Consumer({'bootstrap.servers':'kafka:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
         
     c.subscribe([topicName])
     while True:
@@ -83,7 +83,7 @@ def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic
             
 
 def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un gruppo
-    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
+    c=Consumer({'bootstrap.servers':'kafka:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -163,7 +163,7 @@ def upload_file():#gestione di un file in upload
                 db.commit()
             count=0
             fileNotFinished=True
-            p=Producer({'bootstrap.servers':'localhost:9092'})
+            p=Producer({'bootstrap.servers':'kafka:9093'})
 
             while fileNotFinished:
 
