@@ -3,6 +3,7 @@ from confluent_kafka import Consumer, Producer, KafkaException, KafkaError
 import mysql.connector
 import sys
 import json
+import time
 import logging
 #Fare gestore dei controller F
 #	- Creare topic iniziali (CFirstCall(nome, tipo = download, upload), CFirstCallAck(nome, topics))
@@ -10,18 +11,18 @@ import logging
 #	- Dare tutti i topic al controller di upload ( quello di aggiornamento )
 #	- Creazione topic di aggiornamento per I controller di upload
 #	- Vede se ci sono filesystem con topic senza un controller e glielo ritorna
-conf = {'bootstrap.servers': 'broker:29092',
+conf = {'bootstrap.servers': 'localhost:9092',
         'group.id': 'manager',
         'auto.offset.reset': 'earliest',
         'enable.auto.commit': False}
 
 
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
-    p=Producer({'bootstrap.servers':'broker:29092'})
+    p=Producer({'bootstrap.servers':'localhost:9092'})
     m=json.dumps(dictionaryData)
     p.poll(1)
     p.produce(topicName, m.encode('utf-8'),callback=receipt)
-
+    p.flush()
 def receipt(err,msg):
     if err is not None:
         print('Error: {}'.format(err))
@@ -32,7 +33,7 @@ def receipt(err,msg):
 
 
 def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un gruppo
-    c=Consumer({'bootstrap.servers':'broker:29092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Qui l'enable.auto.commit è settato a True di default, l'ho messo a False
+    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Qui l'enable.auto.commit è settato a True di default, l'ho messo a False
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -62,9 +63,9 @@ def register_controller(consumer):
             elif msg.error():
                 raise KafkaException(msg.error())
         else:
-            data = json.loads(msg)
-            break
-    return data
+            data = json.loads(msg.value().decode('utf-8'))
+            return data
+    
             
 logging.basicConfig(format='%(asctime)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
@@ -79,7 +80,7 @@ logger.info("prima dell'admin consumer creato")
 print("admin")
 
 # Instanziazione dell'oggetto AdminClient per le operazioni di creazione dei topic
-admin = AdminClient({'bootstrap.servers': 'broker:29092'})
+admin = AdminClient({'bootstrap.servers': 'localhost:9092'})
 
 # Creazione "hard-coded" dei topic "CFirstCall" e "CFirstCallAck
 admin.create_topics([NewTopic("CFirstCall", num_partitions=1, replication_factor=1), NewTopic("CFirstCallAck", num_partitions=1, replication_factor=1),NewTopic("UpdateTopics", num_partitions=1, replication_factor=1)])
@@ -90,7 +91,7 @@ if __name__ == "__main__":
     try:
             # Connessione al database
             db = mysql.connector.connect(
-                host = "db",
+                host = "localhost",
                 database = "ds_filesystem",
                 user = "root",
                 password = "giovanni",
@@ -100,37 +101,44 @@ if __name__ == "__main__":
     except mysql.connector.Error as err:
         print("Failed to connect to database {}".format(err))
         exit(1)
-    cursor = db.cursor()
+    cursor = db.cursor(buffered=True)
     topics=[]
     oldTopics=[]
     while len(topics)==0:
         cursor.execute("SELECT DISTINCT topic FROM partitions")
-        topics=cursor.fetchall()
+        topics=cursor.fetchall()[0]
+        print("topics",topics)
         oldTopics=len(topics)
+        time.sleep(1)
     consumer.subscribe(["CFirstCall"])
     while True:
         
         cursor.execute("SELECT DISTINCT topic FROM partitions")
         topics=cursor.fetchall()
-        
         if len(topics)!=oldTopics:
-             produceJson("UpdateTopics",topics)
-        
-        
+            produceJson("UpdateTopics",topics)
+            oldTopics=len(topics)
+
+        unpacked_list = [item[0] for item in topics]
+
         data = register_controller(consumer)
         if data is None:
             continue
-        if data["type"]=="Upload":
-            cursor.execute("INSERT INTO controller (controller_name, type) VALUES (%s, %s)", (data["Host"], data["Type"]))
-            cursor.execute("select id_controller FROM controller where controller_name=%s and type=%s",(data["Host"], data["Type"]))
+        
+        if data["Type"]=="Upload":
+            cursor.execute("INSERT INTO controller (controller_name, cType) VALUES (%s, %s)", (data["Host"], data["Type"]))
+            cursor.execute("select id_controller FROM controller where controller_name=%s and cType=%s",(data["Host"], data["Type"]))
             id=cursor.fetchone()[0]
-            for topic in topics:
-                cursor.execute("INSERT INTO controllertopic (id_controller, topic) VALUES (%s, %s)", (id, topic))
+
+            for num in unpacked_list:
+                print(num)
+                cursor.execute("INSERT INTO controllertopic (id_controller, topic) VALUES (%s, %s)", (id, num))
+        
             produceJson("CFirstCallAck",{"id":id, "Host":data["Host"],"topics":topics})
             db.commit()
             consumer.commit()
             continue
-        elif data["type"]=="Download":
+        elif data["Type"]=="Download":
             # Recupero topic per download
             cursor.execute("SELECT min(topic) FROM partitions where topic not in (Select topic from controllertopic)")
 
@@ -140,8 +148,8 @@ if __name__ == "__main__":
                 cursor.execute("SELECT MIN(mycount) FROM (SELECT topic,COUNT(topic) as mycount FROM controllertopic GROUP BY topic);")
                 min_topic=cursor.fetchone()[0]
 
-            cursor.execute("INSERT INTO controller (controller_name, type) VALUES (%s, %s)", (data["Host"], data["Type"]))
-            cursor.execute("select id_controller from controller where controller_name=%s and type=%s",(data["Host"], data["Type"]))
+            cursor.execute("INSERT INTO controller (controller_name, cType) VALUES (%s, %s)", (data["Host"], data["Type"]))
+            cursor.execute("select id_controller from controller where controller_name=%s and cType=%s",(data["Host"], data["Type"]))
             id=cursor.fetchone()[0]
             cursor.execute("INSERT INTO controllertopic (id_controller, topic) VALUES (%s, %s)", (id, min_topic))
 

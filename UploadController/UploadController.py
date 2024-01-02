@@ -25,7 +25,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 topics=[]
 db = mysql.connector.connect(#mi servono credenziali con permesso di modifica solo nella tabella file
-                host = "db",
+                host = "localhost",
                 database = "ds_filesystem",
                 user = "root",
                 password = "giovanni",
@@ -34,14 +34,15 @@ db = mysql.connector.connect(#mi servono credenziali con permesso di modifica so
 cursor = db.cursor()
 
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
-    p=Producer({'bootstrap.servers':'broker:29092'})
+    p=Producer({'bootstrap.servers':'localhost:9092'})
     m=json.dumps(dictionaryData)
     p.poll(1)
     p.produce(topicName, m.encode('utf-8'),callback=receipt)
+    p.flush()
 
 
 def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic e in un gruppo controllando il codice
-    c=Consumer({'bootstrap.servers':'broker:29092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
+    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -55,13 +56,12 @@ def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic
                 if data["Host"]!=groupId:
                     continue
                 c.commit()
-                c.close()
                 c.unsubscribe()
                 return data
             
 
 def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un gruppo
-    c=Consumer({'bootstrap.servers':'broker:29092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
+    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -102,11 +102,12 @@ def first_Call():#funzione per la ricezione di topic iniziali
     name=socket.gethostname()
     data={
           "Host":name,
-          "Type":"upload"}
+          "Type":"Upload"}
+    print(data)
     produceJson("CFirstCall",data)
     aList=consumeJsonFirstCall("CFirstCallAck",name)
     #format per Federico ->jsonStr = '{"cose":"a caso","topics":[1, 2,3, 4]}'
-
+    print(aList)
     return json.loads(aList)["topics"]
 
 

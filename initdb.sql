@@ -22,8 +22,8 @@ CREATE TABLE IF NOT EXISTS files (
 
 CREATE TABLE IF NOT EXISTS controller (
     id_controller INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    controller_name VARCHAR (255),
-    type INT NOT NULL,
+    controller_name VARCHAR (255) UNIQUE,
+    cType VARCHAR(20)  NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
