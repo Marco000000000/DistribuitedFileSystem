@@ -134,6 +134,9 @@ def delete_file(filename):
         os.remove(filename)
 
 if __name__== "__main__":
+    while c.list_topics().topics["FirstCall"] is None:
+        print("in attesa del manager")
+        time.sleep(0.2)
 
     id,topicNumber=first_Call() #ricezione dati necessari per la ricezione
     print(id,topicNumber)
