@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
         if not cursor.rowcount or max_topic is None:
             # Se non ci sono partizioni assegna il valore 0
-            data["Topic"] = 0
+            data["Topic"] = 1
         else:
             # Se ci sono partizioni assegna il valore massimo + 1
             data["Topic"] = max_topic + 1

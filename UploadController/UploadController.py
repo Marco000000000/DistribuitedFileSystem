@@ -31,7 +31,7 @@ db = mysql.connector.connect(#mi servono credenziali con permesso di modifica so
                 password = "giovanni",
                 port = 3306
             )
-cursor = db.cursor()
+cursor = db.cursor(buffered=True)
 
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
     p=Producer({'bootstrap.servers':'localhost:9092'})
@@ -99,7 +99,7 @@ def allowed_file(filename):
 
 
 def first_Call():#funzione per la ricezione di topic iniziali
-    name=socket.gethostname()
+    name="aasa1a1s233d63245544s"#socket.gethostname()
     data={
           "Host":name,
           "Type":"Upload"}
@@ -108,7 +108,7 @@ def first_Call():#funzione per la ricezione di topic iniziali
     aList=consumeJsonFirstCall("CFirstCallAck",name)
     #format per Federico ->jsonStr = '{"cose":"a caso","topics":[1, 2,3, 4]}'
     print(aList)
-    return json.loads(aList)["topics"]
+    return aList["topics"]
 
 
 @app.route('/upload', methods=['POST'])
@@ -120,27 +120,31 @@ def upload_file():#gestione di un file in upload
         
         if file and allowed_file(fileName):
             
-            cursor.execute("SELECT file_name,ready FROM files where file_name= %s",(fileName[:99]))
+            cursor.execute("SELECT file_name,ready FROM files where file_name= %s",(fileName[:99],))
             
-            if cursor.rowcount:
-                if(cursor.fetchone()["ready"]==False):
+            if cursor.rowcount<0:
+                fetch=cursor.fetchone()
+                print(fetch)
+                if(fetch[1]==False):
                     return {"error":"File in updating"}
                 cursor.execute("delete from files where file_name= %s",(fileName[:99]))
                 for topic in topics:
                     data={
                         "fileName": secure_filename(fileName[:99]),
                     }
-                    produceJson("Delete"+topic,data)  
+                    produceJson("Delete"+str(topic),data)  
             for topic in topics:
-                cursor.execute("INSERT INTO files (file_name ,partition_id,ready) VALUES (%s, %s,%s)",(fileName[:99],topic,False))
+                print("asds32432432?")
+                cursor.execute("INSERT INTO files (file_name ,partition_id,ready) VALUES (%s, %s,%s)",(fileName[:99],1,False))
                 #problema possibile di request mentre è ancora in corso l'upload
                 db.commit()
             count=0
             fileNotFinished=True
-
+            print("asdsa?")
             while fileNotFinished:
-                
+                print("finished?")
                 for topic in topics:
+                    print(topic)
                     chunk=file.stream.read(PARTITION_GRANULARITY)
                     if len(chunk)== 0:
                         fileNotFinished=False
@@ -152,7 +156,7 @@ def upload_file():#gestione di un file in upload
                         }
                         produceJson("Upload"+topic,data)  
                         consumeJson(returnTopic,"1")
-                        cursor.execute("UPDATE files SET ready = 'true' WHERE file_name= %s",(fileName[:99]))
+                        cursor.execute("UPDATE files SET ready = 'true' WHERE file_name= %s",(fileName[:99],))
 
                         break
                     data={
@@ -161,8 +165,9 @@ def upload_file():#gestione di un file in upload
                     "last":False, # è utile oppure non ha senso?
                     "count":count
                     }
+                    print(data)
                     count+=1
-                    produceJson("Upload"+topic,data)  
+                    produceJson("Upload"+str(topic),data)  
                 
             db.commit()
 

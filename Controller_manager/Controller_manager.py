@@ -106,9 +106,11 @@ if __name__ == "__main__":
     oldTopics=[]
     while len(topics)==0:
         cursor.execute("SELECT DISTINCT topic FROM partitions")
-        topics=cursor.fetchall()[0]
-        print("topics",topics)
-        oldTopics=len(topics)
+        fetch=cursor.fetchall()
+        if len(fetch) > 0:
+            topics=fetch[0]
+            print("topics",topics)
+            oldTopics=len(topics)
         time.sleep(1)
     consumer.subscribe(["CFirstCall"])
     while True:
@@ -120,7 +122,7 @@ if __name__ == "__main__":
             oldTopics=len(topics)
 
         unpacked_list = [item[0] for item in topics]
-
+        topics=unpacked_list
         data = register_controller(consumer)
         if data is None:
             continue
