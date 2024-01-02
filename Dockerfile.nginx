@@ -7,5 +7,7 @@ RUN useradd -r nginx
 # Copy your Nginx configuration and Lua scripts
 COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
 COPY lua-scripts /usr/local/openresty/nginx/lua-scripts
+COPY mime.types /etc/nginx/mime.types   
+
 # CMD to start Nginx in the foreground
 CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
