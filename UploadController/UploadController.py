@@ -15,12 +15,12 @@ from confluent_kafka import Consumer
 import base64
 import random
 import string
+from time import sleep
 import logging
 app=Flask(__name__)
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-PARTITION_GRANULARITY=os.getenv("PARTITION_GRANULARITY", default = 1024)
+PARTITION_GRANULARITY=os.getenv("PARTITION_GRANULARITY", default = 131072)
 print("aaa")
-
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 topics=[]
@@ -36,7 +36,7 @@ cursor = db.cursor(buffered=True)
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
     p=Producer({'bootstrap.servers':'localhost:9092'})
     m=json.dumps(dictionaryData)
-    p.poll(1)
+    p.poll(0.001)
     p.produce(topicName, m.encode('utf-8'),callback=receipt)
     p.flush()
 
@@ -55,6 +55,9 @@ def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic
                 data=json.loads(msg.value().decode('utf-8'))
                 if data["Host"]!=groupId:
                     continue
+                while c.list_topics().topics[groupId] is None:
+                    print("in attesa del manager")
+                    sleep(0.2)
                 c.commit()
                 c.unsubscribe()
                 return data
@@ -73,8 +76,8 @@ def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un 
             else:
                 data=json.loads(msg.value().decode('utf-8'))
                 c.commit()
-                c.close()
                 c.unsubscribe()
+                c.close()
                 return data
             
 
@@ -83,6 +86,7 @@ def get_random_string(length):#creazione stringa random
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
 
+caso=get_random_string(4)
 
 def receipt(err,msg):
     if err is not None:
@@ -99,7 +103,7 @@ def allowed_file(filename):
 
 
 def first_Call():#funzione per la ricezione di topic iniziali
-    name="aasa1a1s233d63245544s"#socket.gethostname()
+    name=socket.gethostname()+caso
     data={
           "Host":name,
           "Type":"Upload"}
@@ -140,23 +144,25 @@ def upload_file():#gestione di un file in upload
                 db.commit()
             count=0
             fileNotFinished=True
-            print("asdsa?")
+            p=Producer({'bootstrap.servers':'localhost:9092'})
+
             while fileNotFinished:
-                print("finished?")
+
                 for topic in topics:
                     print(topic)
                     chunk=file.stream.read(PARTITION_GRANULARITY)
                     if len(chunk)== 0:
                         fileNotFinished=False
-                        returnTopic=get_random_string(20)
+                        returnTopic=socket.gethostname()+caso
+                        p.flush()
                         data={
                         "fileName": secure_filename(fileName[:99]),
                         "last":True,
                         "returnTopic":returnTopic
                         }
-                        produceJson("Upload"+topic,data)  
+                        produceJson("Upload"+str(topic),data)  
                         consumeJson(returnTopic,"1")
-                        cursor.execute("UPDATE files SET ready = 'true' WHERE file_name= %s",(fileName[:99],))
+                        cursor.execute("UPDATE files SET ready = true WHERE file_name= %s",(fileName[:99],))
 
                         break
                     data={
@@ -167,7 +173,10 @@ def upload_file():#gestione di un file in upload
                     }
                     print(data)
                     count+=1
-                    produceJson("Upload"+str(topic),data)  
+                    m=json.dumps(data)
+                    p.poll(0.001)
+                    p.produce("Upload"+str(topic), m.encode('utf-8'),callback=receipt)
+                    
                 
             db.commit()
 
@@ -179,6 +188,7 @@ def upload_file():#gestione di un file in upload
 
 if __name__=="__main__":
     topics=first_Call() #ricezione dati necessari per la ricezione
+    
     app.run(debug=False,port=80)
 
 

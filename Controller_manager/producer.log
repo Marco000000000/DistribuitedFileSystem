@@ -1,1 +1,11 @@
-2024-01-02 01:53:14 prima dell'admin consumer creato
+2024-01-02 15:35:33 prima dell'admin consumer creato
+2024-01-02 15:35:35 Prodotto un messaggio sul topic UpdateTopics con il valore [[1], [2], [3], [4], [5]]
+
+2024-01-02 15:37:03 Prodotto un messaggio sul topic UpdateTopics con il valore [[1], [2], [3], [4], [5], [6]]
+
+2024-01-02 15:37:05 Prodotto un messaggio sul topic UpdateTopics con il valore [[1], [2], [3], [4], [5], [6], [7], [8]]
+
+2024-01-02 15:37:56 Prodotto un messaggio sul topic CFirstCallAck con il valore {"id": 8, "Host": "DESKTOP-9RKP43Pfyggi", "topics": 5}
+
+2024-01-02 15:38:05 Prodotto un messaggio sul topic CFirstCallAck con il valore {"id": 9, "Host": "DESKTOP-9RKP43Piiqyr", "topics": 6}
+

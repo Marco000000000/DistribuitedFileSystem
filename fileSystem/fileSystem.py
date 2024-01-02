@@ -8,7 +8,7 @@ import base64 #si potrebbe passare a base85
 import random
 import time
 import string
-PARTITION_GRANULARITY=os.getenv("PARTITION_GRANULARITY", default = 1024)
+PARTITION_GRANULARITY=os.getenv("PARTITION_GRANULARITY", default = 131072)
 UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", default = 'downloadable')
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 FILESYSTEM_DIMENSION=os.getenv("FILESYSTEM_DIMENSION", default = 100)#Mb
@@ -19,8 +19,8 @@ def get_random_string(length):
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
 #prima coppia di producer-consumer
-p=Producer({'bootstrap.servers':'kafka:9093'})
-c=Consumer({'bootstrap.servers':'kafka:9093','group.id':get_random_string(20),'auto.offset.reset':'latest','enable.auto.commit': False})
+p=Producer({'bootstrap.servers':'localhost:9092'})
+c=Consumer({'bootstrap.servers':'localhost:9092','group.id':get_random_string(20),'auto.offset.reset':'latest','enable.auto.commit': False})
 
 logging.basicConfig(format='%(asctime)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
@@ -30,7 +30,8 @@ logging.basicConfig(format='%(asctime)s %(message)s',
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 
 c.subscribe(['FirstCallAck'])
@@ -53,34 +54,36 @@ def allowed_file(filename):
 
 #Invio di un file spezzato con la granularità predefinita
 def download_file(filename,topicNumber):
-    topicName="Download"+topicNumber
+    topicName="Download"+str(topicNumber)
     if filename is not None and  allowed_file(filename):
         directory = os.path.join( UPLOAD_FOLDER,filename)
         index=0
         with open(directory, "rb") as f:
             while (byte := f.read(PARTITION_GRANULARITY)):
-                if byte < PARTITION_GRANULARITY:
-                    data={
-                    
-                    "data":str(base64.b64encode(byte),"UTF-8"),
+                
+                data={
+                
+                "data":str(base64.b64encode(byte),"UTF-8"),
+                "last":False
+                }
+                m=json.dumps(data)
+                p.poll(1)
+                p.produce(topicName, m.encode('utf-8'),callback=receipt)
+            else:
+                data={
                     "last":True
-                    }
-                else:
-                    data={
-                    
-                    "data":str(base64.b64encode(byte),"UTF-8"),
-                    "last":False
                     }
                 m=json.dumps(data)
                 p.poll(1)
                 p.produce(topicName, m.encode('utf-8'),callback=receipt)
                 p.flush()
-                return # è indentato bene o mi sto sbagliando invece?
+            return
 def produceJson(topicName,dictionaryData):
-    p=Producer({'bootstrap.servers':'kafka:9093'})
+    p=Producer({'bootstrap.servers':'localhost:9092'})
     m=json.dumps(dictionaryData)
     p.poll(1)
     p.produce(topicName, m.encode('utf-8'),callback=receipt)
+    p.flush()
 
 #upload di un singolo pacchetto di dati 
 def upload_file(filename,pack):
@@ -88,6 +91,7 @@ def upload_file(filename,pack):
     if(pack["last"]==True):
         data={"commit":True}
         produceJson(pack["returnTopic"],data)
+        return
 
     file = base64.b64decode(pack["data"])
 
@@ -132,27 +136,28 @@ if __name__== "__main__":
     id,topicNumber=first_Call() #ricezione dati necessari per la ricezione
     print(id,topicNumber)
     while c.list_topics().topics["Upload"+str(topicNumber)] is None:
-        time.sleep(0.2)
         print("in attesa del manager")
+        time.sleep(0.2)
+        
 
-    uploadConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':str(id),'auto.offset.reset':'latest','enable.auto.commit': False})
+    uploadConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':str(id),'auto.offset.reset':'earliest','enable.auto.commit': False})
 
     uploadConsumer.subscribe(["Upload"+str(topicNumber)])
-    requestConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':"000",'auto.offset.reset':'latest','enable.auto.commit': False})
+    requestConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
     requestConsumer.subscribe(["Request"+str(topicNumber)])
-    deleteConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':"000",'auto.offset.reset':'latest','enable.auto.commit': False})
+    deleteConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
     deleteConsumer.subscribe(["Delete"+str(topicNumber)])
     print("ho fatto l'inizio")
     while True:
-        msg=requestConsumer.poll(0.1)
-        msgUpload=uploadConsumer.poll(0.1)
-        msgDelete=deleteConsumer.poll(0.1)
+        msg=requestConsumer.poll(0.001)
+        msgUpload=uploadConsumer.poll(0.001)
+        msgDelete=deleteConsumer.poll(0.001)
 
         if msg is None:
-            continue
+            pass
         elif msg.error():
             print('Error: {}'.format(msg.error()))
-            continue
+            pass
         else:
             data=json.loads(msg.value().decode('utf-8'))
             if data["fileName"]!="":
@@ -161,13 +166,17 @@ if __name__== "__main__":
 
 
         if msgUpload is None:
-            continue
+            pass
         elif msgUpload.error():
             print('Error: {}'.format(msg.error()))
-            continue
+            pass
         else:
             data=json.loads(msgUpload.value().decode('utf-8'))
+            print(data)
             if data["fileName"]!="":
+                if not os.path.exists(UPLOAD_FOLDER):
+                    os.makedirs(UPLOAD_FOLDER)
+
                 upload_file(secure_filename(data["fileName"]),data)
                 uploadConsumer.commit()
 

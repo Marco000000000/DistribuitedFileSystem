@@ -6,12 +6,12 @@ import json
 import logging
 
 # Configurazione del producer e instanziazione
-prod_conf = {'bootstrap.servers': 'kafka:9093'}
+prod_conf = {'bootstrap.servers': 'localhost:9092'}
 print("aaa")
 producer = Producer(prod_conf)
 
 # Configurazione del consumer e instanziazione
-cons_conf = {'bootstrap.servers': 'kafka:9093',
+cons_conf = {'bootstrap.servers': 'localhost:9092',
         'group.id': 'manager',
         'auto.offset.reset': 'earliest',
         'enable.auto.commit': False}
@@ -61,7 +61,7 @@ def receipt(err,msg):
 
 
 # Instanziazione dell'oggetto AdminClient per le operazioni di creazione dei topic
-admin = AdminClient({'bootstrap.servers': 'kafka:9093'})
+admin = AdminClient({'bootstrap.servers': 'localhost:9092'})
 
 # Creazione "hardcoded" dei topic "FirstCall" e "FirstCallAck
 hardcoded_topics = [NewTopic("FirstCall", num_partitions=1, replication_factor=1), NewTopic("FirstCallAck", num_partitions=1, replication_factor=1)]
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     try:
         # Connessione al database
         db = mysql.connector.connect(
-            host = "db",
+            host = "localhost",
             database = "ds_filesystem",
             user = "root",
             password = "giovanni",
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         new_topics = [NewTopic("Upload"+str(data["Topic"]), num_partitions=1, replication_factor=1), NewTopic("Request"+str(data["Topic"]), num_partitions=1, replication_factor=1),NewTopic("Delete"+str(data["Topic"]), num_partitions=1, replication_factor=1)]
         admin.create_topics(new_topics)
         cursor.execute("INSERT INTO partitions (partition_name, used_space, topic) VALUES (%s, %s, %s)", (data["Code"], data["Dim"], data["Topic"]))
-
+        
         db.commit()
 
         print("{} record inserted.".format(cursor.rowcount))

@@ -11,6 +11,7 @@ import base64
 import socket
 import random
 import string
+from time import sleep
 import logging
 from flask import Flask, Response
 import mysql.connector
@@ -36,7 +37,7 @@ logger.setLevel(logging.INFO)
 
 
 db = mysql.connector.connect(
-    host = "db",
+    host = "localhost",
     database = "ds_filesystem",
     user = "root",
     password = "giovanni",
@@ -47,17 +48,37 @@ cursor=db.cursor()
 
 # Produzione json su un topic
 def produceJson(topic, dictionaryData):
-    p = Producer({'bootstrap.servers': 'broker:29092'})
+    print("a")
+    p = Producer({'bootstrap.servers': 'localhost:9092'})
+    
     m = json.dumps(dictionaryData)
+    print(m)
     p.poll(1)
     p.produce(topic, m.encode('utf-8'), callback=receipt)
     p.flush() # Serve per attendere la ricezione di tutti i messaggi
     
 
-
+def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic e in un gruppo controllando il codice
+    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
+    c.subscribe([topicName])
+    while True:
+            msg=c.poll(1.0) #timeout
+            if msg is None:
+                continue
+            elif msg.error():
+                print('Error: {}'.format(msg.error()))
+                continue
+            else:
+                data=json.loads(msg.value().decode('utf-8'))
+                if data["Host"]!=groupId:
+                    continue
+                c.commit()
+                c.unsubscribe()
+                return data
+            
 # Consuma json da un consumer di un dato gruppo (solo per first_Call())
 def consumeJson(topicName, groupId):
-    c = Consumer({'bootstrap.servers': 'broker:29092', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+    c = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -71,8 +92,8 @@ def consumeJson(topicName, groupId):
                 if data["Host"]!=groupId: # Funziona solo con la funzione first_Call() dato che "Host" coincide con groupId durante la first call di un download controller
                     continue
                 c.commit()
-                c.close()
                 c.unsubscribe()
+                c.close()
                 return data
 
 
@@ -99,20 +120,21 @@ def allowed_file(filename):
 
 
 def first_Call():#funzione per la ricezione di topic iniziali
-    name=socket.gethostname()
+    name=socket.gethostname()+get_random_string(5)
     data={
           "Host":name,
-          "Type":"upload"}
+          "Type":"Download"}
+    print(data)
     produceJson("CFirstCall",data)
-    aList=consumeJson("CFirstCallAck",name)
-    #format per Federico ->jsonStr = '{"cose":"a caso","topics":[1, 2, 3, 4]}'
-
-    return json.loads(aList)["topics"]
+    aList=consumeJsonFirstCall("CFirstCallAck",name)
+    #format per Federico ->jsonStr = '{"cose":"a caso","topics":[1, 2,3, 4]}'
+    print(aList)
+    return aList["topics"]
 
 def generate_data(topics):
     # Generazione dati per il download
-    c = Consumer({'bootstrap.servers': 'broker:29092', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
-    c.subscribe(["Download" + topics]) # Topics è solo uno effettivamente (il minimo tra i topics disponibili)
+    c = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+    c.subscribe(["Download" + str(topics)]) # Topics è solo uno effettivamente (il minimo tra i topics disponibili)
     while True:
             msg=c.poll(1.0)
             if msg is None:
@@ -122,34 +144,41 @@ def generate_data(topics):
                 continue
             else:
                 data=json.loads(msg.value().decode('utf-8'))
+                print(data)
+                if data["last"] == True:
+                    c.unsubscribe()
+                    c.close()
+                    break  
                 yield base64.b64decode(data["data"])
                 c.commit()
-                if data["last"] == True:
-                    c.close()
-                    c.unsubscribe()
-                    break      
+                    
 
 
 # Endpoint per il download di un file (filename è il nome del file)
 @app.route("/download/<path:filename>", methods=['GET'])
 # Gestione di un file in download
 def download_file(filename):
-    if allowed_file(filename) == False:
+    print(filename[:99])
+    if not allowed_file(filename):
         return {"error":"File extension not allowed!", "HTTP_status_code:": 400}
     elif filename is None:
         return {"error":"Missing filename!", "HTTP_status_code:": 400}
     else:
+        print("dentro")
         # Controllo se il file è presente nel database
-        cursor.execute("SELECT file_name,ready FROM file where file_name= %s",(filename[:99]))
+        
+        cursor.execute("SELECT file_name,ready FROM files where file_name= %s",(filename[:99],))
+        
         if cursor.rowcount:
+            print("dentroif")
             # Se il file è presente nel database, controllo se è pronto per il download
-            if cursor.fetchone()["ready"] == False:
+            if cursor.fetchone()[1] == False:
                 return {"error":"File not ready for download!", "HTTP_status_code:": 400}
             data = {
                 "fileName" : secure_filename(filename[:99]),
             }
-            produceJson("Request" + topics, data)
-            generate_data(topics)
+            print(data)
+            produceJson("Request" + str(topics), data)
             return Response(generate_data(topics), mimetype='application/octet-stream')
         else:
             return {"error":"File not found!", "HTTP_status_code:": 400}

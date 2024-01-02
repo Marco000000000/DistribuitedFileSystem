@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS files (
     ready BOOL ,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (file_id,partition_id),
-    FOREIGN KEY (file_id) REFERENCES partitions (id)
+    FOREIGN KEY (partition_id) REFERENCES partitions (id)
 );
 
 CREATE TABLE IF NOT EXISTS controller (

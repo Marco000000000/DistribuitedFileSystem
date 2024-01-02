@@ -1,6 +1,10 @@
 version: '3'
 services:
-  
+  nginx:
+    build:
+        dockerfile: Dockerfile.nginx
+    ports:
+      - "9092:9092"
   zookeeper:
     image: wurstmeister/zookeeper:3.4.6
     ports:
@@ -85,10 +89,8 @@ services:
       - ./controller_manager:/app/controller_manager
     hostname: cManager
     container_name: controller_manager
-    command: ["sleep", "20s"]
 
-  
-  download_controller:
+  download_controller1:
     build:
       context: ./download_controller
       dockerfile: Dockerfile.scripts
@@ -100,9 +102,23 @@ services:
       - controller_manager
     volumes: 
       - ./download_controller:/app/download_controller
-    hostname: cDownload
-    container_name: download_controller
-    command: ["sleep", "20s"]
+    hostname: cDownload1
+    container_name: download_controller1
+
+  download_controller2:
+    build:
+      context: ./download_controller
+      dockerfile: Dockerfile.scripts
+    
+    depends_on:
+      - zookeeper
+      - kafka
+      - db
+      - controller_manager
+    volumes: 
+      - ./download_controller:/app/download_controller
+    hostname: cDownload2
+    container_name: download_controller2
   
   uploadcontroller:
     build:
@@ -118,7 +134,6 @@ services:
       - ./uploadcontroller:/app/uploadcontroller
     hostname: cUpload
     container_name: uploadcontroller
-    command: ["sleep", "20s"]
 
   testmysql:
     build:
