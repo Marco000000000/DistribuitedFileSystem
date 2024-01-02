@@ -2,7 +2,6 @@
 
 
 local mysql = require('resty.mysql')
-local cjson = require('cjson')
 local original_request_uri_args = ngx.req.get_uri_args()
 
 local mysql_query = "select distinct topic from partitions join file on partition_id=id where file_name=" .. original_request_uri_args

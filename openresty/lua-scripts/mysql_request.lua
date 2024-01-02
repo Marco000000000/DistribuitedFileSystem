@@ -1,7 +1,6 @@
 local mysql = require("resty.mysql")
-local mysql = require("cjson")
 
-local mysql_query = "SELECT file_name FROM file WHERE ready=true;"
+local mysql_query = "SELECT file_name FROM files WHERE ready=true;"
 
 -- Create MySQL connection
 local db, err = mysql:new()

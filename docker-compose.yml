@@ -2,7 +2,9 @@ version: '3'
 services:
  
   nginx:
-    build: Dockerfile.nginx
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
     ports:
       - "8080:80"
     networks:
@@ -148,7 +150,13 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.10
-
+networks:
+  vpcbr:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.5.0.0/16
+         gateway: 10.5.0.1
 volumes:
   zookeeper:
   kafka:
@@ -159,10 +167,4 @@ volumes:
   download_controller:
   uploadcontroller:
   testmysql:
-  networks:
-  vpcbr:
-    driver: bridge
-    ipam:
-     config:
-       - subnet: 10.5.0.0/16
-         gateway: 10.5.0.1
+  
