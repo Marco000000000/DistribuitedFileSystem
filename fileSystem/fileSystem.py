@@ -8,6 +8,8 @@ import base64 #si potrebbe passare a base85
 import random
 import time
 import string
+import socket
+
 PARTITION_GRANULARITY=os.getenv("PARTITION_GRANULARITY", default = 131072)
 UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", default = 'downloadable')
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
@@ -100,7 +102,7 @@ def upload_file(filename,pack):
 
 #Chiamata per la registrazione nei topic kafka
 def first_Call():
-    data={"Code":get_random_string(20),
+    data={"Code":socket.gethostname(),
           "Dim":FILESYSTEM_DIMENSION}
     m=json.dumps(data)
     p.poll(1)
