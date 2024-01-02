@@ -1,12 +1,7 @@
 import mysql.connector
 import time
 
-def mysql_custom_connect(conf, tries=10):
-    i = 0
-
-    if tries < 0:
-        tries = 0
-
+def mysql_custom_connect(conf):
     while True:
         try:
 
@@ -20,11 +15,6 @@ def mysql_custom_connect(conf, tries=10):
         
         print("Trying again...")
         time.sleep(5)
-        i += 1
-
-        if i >= tries:
-            print("Giving up")
-            exit(1)
 
 if __name__ == '__main__':
     
