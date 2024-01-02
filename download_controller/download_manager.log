@@ -1,5 +1,90 @@
-2024-01-02 15:38:04 Prodotto un messaggio sul topic CFirstCall con il valore {"Host": "DESKTOP-9RKP43Piiqyr", "Type": "Download"}
+2024-01-02 15:43:48 Prodotto un messaggio sul topic CFirstCall con il valore {"Host": "DESKTOP-9RKP43Pirdlm", "Type": "Download"}
 
-2024-01-02 15:38:05 [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2024-01-02 15:43:49 [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on http://127.0.0.1:5000
-2024-01-02 15:38:05 [33mPress CTRL+C to quit[0m
+2024-01-02 15:43:49 [33mPress CTRL+C to quit[0m
+2024-01-02 15:44:25 Exception on /download/Immagine WhatsApp 2023-11-04 ore 01.44.40_30999d3c.jpg [GET]
+Traceback (most recent call last):
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "C:\Users\Utente\Downloads\ecommerce-demo-main\random-exporter-main\Nuova cartella\download_controller\download_controller.py", line 175, in download_file
+    if cursor.fetchone()[1] == False:
+TypeError: 'NoneType' object is not subscriptable
+2024-01-02 15:44:25 127.0.0.1 - - [02/Jan/2024 15:44:25] "[35m[1mGET /download/Immagine%20WhatsApp%202023-11-04%20ore%2001.44.40_30999d3c.jpg HTTP/1.1[0m" 500 -
+2024-01-02 15:44:25 127.0.0.1 - - [02/Jan/2024 15:44:25] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2024-01-02 15:45:10 Exception on /download/Immagine WhatsApp 2023-11-04 ore 01.44.40_30999d3c.jpg [GET]
+Traceback (most recent call last):
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "C:\Users\Utente\Downloads\ecommerce-demo-main\random-exporter-main\Nuova cartella\download_controller\download_controller.py", line 175, in download_file
+    if cursor.fetchone()[1] == False:
+TypeError: 'NoneType' object is not subscriptable
+2024-01-02 15:45:10 127.0.0.1 - - [02/Jan/2024 15:45:10] "[35m[1mGET /download/Immagine%20WhatsApp%202023-11-04%20ore%2001.44.40_30999d3c.jpg HTTP/1.1[0m" 500 -
+2024-01-02 15:45:11 Exception on /download/Immagine WhatsApp 2023-11-04 ore 01.44.40_30999d3c.jpg [GET]
+Traceback (most recent call last):
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "C:\Users\Utente\Downloads\ecommerce-demo-main\random-exporter-main\Nuova cartella\download_controller\download_controller.py", line 175, in download_file
+    if cursor.fetchone()[1] == False:
+TypeError: 'NoneType' object is not subscriptable
+2024-01-02 15:45:11 127.0.0.1 - - [02/Jan/2024 15:45:11] "[35m[1mGET /download/Immagine%20WhatsApp%202023-11-04%20ore%2001.44.40_30999d3c.jpg HTTP/1.1[0m" 500 -
+2024-01-02 15:45:12 Exception on /download/Immagine WhatsApp 2023-11-04 ore 01.44.40_30999d3c.jpg [GET]
+Traceback (most recent call last):
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "C:\Users\Utente\Downloads\ecommerce-demo-main\random-exporter-main\Nuova cartella\download_controller\download_controller.py", line 175, in download_file
+    if cursor.fetchone()[1] == False:
+TypeError: 'NoneType' object is not subscriptable
+2024-01-02 15:45:12 127.0.0.1 - - [02/Jan/2024 15:45:12] "[35m[1mGET /download/Immagine%20WhatsApp%202023-11-04%20ore%2001.44.40_30999d3c.jpg HTTP/1.1[0m" 500 -
+2024-01-02 15:45:13 Exception on /download/Immagine WhatsApp 2023-11-04 ore 01.44.40_30999d3c.jpg [GET]
+Traceback (most recent call last):
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "C:\Users\Utente\Downloads\ecommerce-demo-main\random-exporter-main\Nuova cartella\download_controller\download_controller.py", line 175, in download_file
+    if cursor.fetchone()[1] == False:
+TypeError: 'NoneType' object is not subscriptable
+2024-01-02 15:45:13 127.0.0.1 - - [02/Jan/2024 15:45:13] "[35m[1mGET /download/Immagine%20WhatsApp%202023-11-04%20ore%2001.44.40_30999d3c.jpg HTTP/1.1[0m" 500 -
+2024-01-02 15:46:45 Exception on /download/triennale.jpg [GET]
+Traceback (most recent call last):
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Utente\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "C:\Users\Utente\Downloads\ecommerce-demo-main\random-exporter-main\Nuova cartella\download_controller\download_controller.py", line 175, in download_file
+    if cursor.fetchone()[1] == False:
+TypeError: 'NoneType' object is not subscriptable
+2024-01-02 15:46:45 127.0.0.1 - - [02/Jan/2024 15:46:45] "[35m[1mGET /download/triennale.jpg HTTP/1.1[0m" 500 -

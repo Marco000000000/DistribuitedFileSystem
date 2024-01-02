@@ -114,7 +114,6 @@ if __name__ == "__main__":
     cursor = db.cursor()
 
     while len(topics)==0:
-        db.commit()
 
         cursor.execute("SELECT DISTINCT topic FROM partitions")
         fetch=cursor.fetchall()

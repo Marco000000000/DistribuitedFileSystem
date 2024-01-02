@@ -31,7 +31,7 @@ db = mysql.connector.connect(#mi servono credenziali con permesso di modifica so
                 password = "giovanni",
                 port = 3306
             )
-cursor = db.cursor(buffered=True)
+cursor = db.cursor()
 
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
     p=Producer({'bootstrap.servers':'localhost:9092'})
