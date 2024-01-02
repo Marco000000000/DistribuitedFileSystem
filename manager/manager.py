@@ -4,6 +4,7 @@ import mysql.connector
 import sys
 import json
 import logging
+from time import sleep
 
 # Configurazione del producer e instanziazione
 prod_conf = {'bootstrap.servers': 'localhost:9092'}
@@ -17,6 +18,29 @@ cons_conf = {'bootstrap.servers': 'localhost:9092',
         'enable.auto.commit': False}
 
 consumer = Consumer(cons_conf)
+
+db_conf = {
+            'host':'localhost',
+            'port':3306,
+            'database':'ds_filesystem',
+            'user':'root',
+            'password':'giovanni'
+            }
+
+def mysql_custom_connect(conf):
+    while True:
+        try:
+
+            db = mysql.connector.connect(**conf)
+
+            if db.is_connected():
+                print("Connected to MySQL database")
+                return db
+        except mysql.connector.Error as err:
+            print("Something went wrong: {}".format(err))
+        
+        print("Trying again...")
+        sleep(5)
 
 # Funzione che elabora il messaggio ricevuto dal consumer
 def register_filesystem(consumer, topic):
@@ -78,18 +102,8 @@ admin.create_topics(hardcoded_topics)
 #     return False
 print("manager")
 if __name__ == "__main__":
-    try:
-        # Connessione al database
-        db = mysql.connector.connect(
-            host = "localhost",
-            database = "ds_filesystem",
-            user = "root",
-            password = "giovanni",
-            port = 3306
-        )
-    except mysql.connector.Error as err:
-        print("Errore durante la connessione al database {}".format(err))
-        exit(1)
+    
+    db = mysql_custom_connect(db_conf)
 
     cursor = db.cursor()
 

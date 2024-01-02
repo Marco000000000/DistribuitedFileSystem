@@ -24,14 +24,32 @@ print("aaa")
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 topics=[]
-db = mysql.connector.connect(#mi servono credenziali con permesso di modifica solo nella tabella file
-                host = "localhost",
-                database = "ds_filesystem",
-                user = "root",
-                password = "giovanni",
-                port = 3306
-            )
-cursor = db.cursor()
+db_conf = {
+            'host':'db',
+            'port':3306,
+            'database':'ds_filesystem',
+            'user':'root',
+            'password':'giovanni'
+            }
+
+def mysql_custom_connect(conf):
+    while True:
+        try:
+
+            db = mysql.connector.connect(**conf)
+
+            if db.is_connected():
+                print("Connected to MySQL database")
+                return db
+        except mysql.connector.Error as err:
+            print("Something went wrong: {}".format(err))
+        
+        print("Trying again...")
+        sleep(5)
+
+db = mysql_custom_connect(db_conf)
+
+cursor=db.cursor()
 
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
     p=Producer({'bootstrap.servers':'localhost:9092'})

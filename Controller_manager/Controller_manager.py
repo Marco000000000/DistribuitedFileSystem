@@ -16,6 +16,21 @@ conf = {'bootstrap.servers': 'localhost:9092',
         'auto.offset.reset': 'earliest',
         'enable.auto.commit': False}
 
+def mysql_custom_connect(conf):
+        while True:
+            try:
+
+                db = mysql.connector.connect(**conf)
+
+                if db.is_connected():
+                    print("Connected to MySQL database")
+                    return db
+            except mysql.connector.Error as err:
+                print("Something went wrong: {}".format(err))
+            
+            print("Trying again...")
+            sleep(5)
+
 
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
     p=Producer({'bootstrap.servers':'localhost:9092'})
@@ -98,20 +113,17 @@ admin.create_topics([NewTopic("CFirstCall", num_partitions=1, replication_factor
 if __name__ == "__main__":
     print("main")
 
-    try:
-            # Connessione al database
-            db = mysql.connector.connect(
-                host = "localhost",
-                database = "ds_filesystem",
-                user = "root",
-                password = "giovanni",
-                port = 3306
-            )
+    db_conf = {
+            'host':'db',
+            'port':3306,
+            'database':'ds_filesystem',
+            'user':'root',
+            'password':'giovanni'
+            }
 
-    except mysql.connector.Error as err:
-        print("Failed to connect to database {}".format(err))
-        exit(1)
-    cursor = db.cursor()
+    db = mysql_custom_connect(db_conf)
+
+    cursor=db.cursor()
 
     while len(topics)==0:
 
