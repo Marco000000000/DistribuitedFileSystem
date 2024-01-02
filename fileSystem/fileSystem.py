@@ -36,7 +36,7 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 
-c.subscribe(['FirstCallAck'])
+
 # Logging e Stampa dei messaggi prodotti (Callback)
 def receipt(err,msg):
     if err is not None:
@@ -134,13 +134,13 @@ def delete_file(filename):
         os.remove(filename)
 
 if __name__== "__main__":
-    while "FirstCall" not in c.list_topics().topics:
+    while "FirstCall" not in c.list_topics().topics or "FirstCallAck" not in c.list_topics().topics:
         print("in attesa del manager")
         time.sleep(0.2)
-
+    c.subscribe(['FirstCallAck'])
     id,topicNumber=first_Call() #ricezione dati necessari per la ricezione
     print(id,topicNumber)
-    while "Upload"+str(topicNumber) not in c.list_topics():
+    while "Upload"+str(topicNumber) not in c.list_topics().topics:
         print("in attesa del manager")
         time.sleep(0.2)
         

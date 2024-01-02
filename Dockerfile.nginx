@@ -1,18 +1,11 @@
-FROM fabiocicerchia/nginx-lua
+FROM openresty/openresty:latest
+
+# Set the user to "nginx"
+RUN useradd -r nginx
 
 
-# Create directories for Nginx configuration and Lua scripts
-RUN mkdir -p /etc/nginx/lua-scripts
-
-# Copy Nginx configuration file
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Copy Lua scri
-
-# Copy the Lua script
-COPY lua-scripts/ /etc/nginx/lua-scripts
-# Expose port 80
-EXPOSE 80
-
+# Copy your Nginx configuration and Lua scripts
+COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+COPY lua-scripts /usr/local/openresty/nginx/lua-scripts
 # CMD to start Nginx in the foreground
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
