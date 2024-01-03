@@ -74,7 +74,7 @@ def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic
                 data=json.loads(msg.value().decode('utf-8'))
                 if data["Host"]!=groupId:
                     continue
-                while c.list_topics().topics[groupId] is None:
+                while groupId not in c.list_topics().topics:
                     print("in attesa del manager")
                     sleep(0.2)
                 c.commit()
