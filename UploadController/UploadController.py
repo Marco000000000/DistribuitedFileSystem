@@ -105,7 +105,6 @@ def get_random_string(length):#creazione stringa random
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
 
-caso=get_random_string(4)
 
 def receipt(err,msg):
     if err is not None:
@@ -122,7 +121,7 @@ def allowed_file(filename):
 
 
 def first_Call():#funzione per la ricezione di topic iniziali
-    name=socket.gethostname()+caso
+    name=socket.gethostname()
     data={
           "Host":name,
           "Type":"Upload"}
@@ -172,7 +171,7 @@ def upload_file():#gestione di un file in upload
                     chunk=file.stream.read(PARTITION_GRANULARITY)
                     if len(chunk)== 0:
                         fileNotFinished=False
-                        returnTopic=socket.gethostname()+caso
+                        returnTopic=socket.gethostname()
                         p.flush()
                         data={
                         "fileName": secure_filename(fileName[:99]),
@@ -208,7 +207,7 @@ def upload_file():#gestione di un file in upload
 if __name__=="__main__":
     topics=first_Call() #ricezione dati necessari per la ricezione
     
-    app.run(debug=False,port=80)
+    app.run(debug=False,host='0.0.0.0',port=80)
 
 
 

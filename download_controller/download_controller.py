@@ -137,7 +137,7 @@ def allowed_file(filename):
 
 
 def first_Call():#funzione per la ricezione di topic iniziali
-    name=socket.gethostname()+get_random_string(5)
+    name=socket.gethostname()
     data={
           "Host":name,
           "Type":"Download"}
@@ -204,4 +204,4 @@ def download_file(filename):
 if __name__ == "__main__":
     # Ricezione topics necessari per il download
     topics = first_Call()
-    app.run(debug=False, port=5000)
+    app.run(debug=False,host='0.0.0.0', port=80)

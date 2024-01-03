@@ -9,7 +9,7 @@ services:
       - "8080:80"
     networks:
       vpcbr:
-        ipv4_address: 10.5.0.2
+        ipv4_address: 10.5.0.20
   db:
     build:
       context: .
@@ -55,6 +55,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       vpcbr:
+        ipv4_address: 10.5.0.13
 
   filesystem:
     build:
@@ -71,6 +72,7 @@ services:
     container_name: filesystem
     networks:
       vpcbr:
+        ipv4_address: 10.5.0.12
 
   
   manager:
@@ -88,6 +90,7 @@ services:
     container_name: manager
     networks:
       vpcbr:
+        ipv4_address: 10.5.0.11
 
   controller_manager:
     build:
@@ -105,11 +108,14 @@ services:
     container_name: controller_manager
     networks:
       vpcbr:
+        ipv4_address: 10.5.0.30
+
   download_controller1:
     build:
       context: ./download_controller
       dockerfile: Dockerfile.scripts
-    
+    ports:
+      - "80:80"
     depends_on:
       - zookeeper
       - kafka
@@ -122,11 +128,13 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.8
+
   download_controller2:
     build:
       context: ./download_controller
       dockerfile: Dockerfile.scripts
-    
+    ports:
+      - "82:80"
     depends_on:
       - zookeeper
       - kafka
@@ -139,11 +147,13 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.9
+
   uploadcontroller:
     build:
       context: ./uploadcontroller
       dockerfile: Dockerfile.scripts
-    
+    ports:
+      - "81:80"
     depends_on:
       - zookeeper
       - kafka

@@ -3,8 +3,10 @@
 
 local mysql = require('resty.mysql')
 local original_request_uri_args = ngx.req.get_uri_args()
+local last_part = string.match(ngx.var.uri, "[^/]+$")
 
-local mysql_query = "select distinct topic from partitions join file on partition_id=id where file_name=" .. original_request_uri_args
+
+local mysql_query = "select distinct topic from partitions join files on partition_id=id where file_name=\"" .. last_part .."\";"
 
 -- MySQL connection settings
 local db, err = mysql:new()
@@ -17,8 +19,8 @@ end
 db:set_timeout(1000) -- 1 sec
 
 local ok, err, errno, sqlstate = db:connect{
-    host = "localhost",
-    port = 3307,
+    host = "10.5.0.6",
+    port = 3306,
     database = "ds_filesystem",
     user = "root",
     password = "giovanni",
@@ -65,8 +67,14 @@ for i,raw in pairs(toCapture) do
     end
 
 end
+if #toCapture==0 then
+    ngx.status = 404
 
-ngx.status = 200
+    ngx.say("file not found")
+    
+    ngx.eof()
+end
+
 local e=0
 -- Concatenate chunks of responses into a single body
 local condiction=true
@@ -91,8 +99,13 @@ while condiction  do
 
         e = end_index + 1
     end
+    
     ngx.say(concatenated_body)
+    
 end
 ngx.eof()
+
+
+
 
 
