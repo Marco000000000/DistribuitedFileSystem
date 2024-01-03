@@ -92,38 +92,7 @@ for i = 1, maxLen, chunk_size do
         ::continue::
     end
 end
-ngx.eof()
 
-local e=0
-
-local condiction=true
-while condiction  do
-    
-    local concatenated_body = ""
-    for i,res in pairs(response) do
-        
-        local start_index = e
-        local end_index = e + chunk_size - 1
-        local tempString=string.sub(res.body, i, i + tonumber(chunk_size) - 1)
-        ngx.say(tempString)
-
-        
-
-        if string.len(tempString)<chunk_size then
-            condiction=false
-
-            break
-        end
-    -- Check if this is the last chunk
-        if end_index >= length then
-            break
-        end
-
-        e = end_index + 1
-    end
-    
-    
-end
 ngx.eof()
 
 
