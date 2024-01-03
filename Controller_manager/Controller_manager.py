@@ -150,8 +150,22 @@ if __name__ == "__main__":
         data = register_controller(consumer,oldTopics)
         if data is None:
             continue
-        
+        print(data["Host"])
+        cursor.execute("SELECT Distinct topic from controllertopic join controller on (controller.id_controller=controllertopic.id_controller) where controller_name=%s ;",(data["Host"],))
+        topics_temp=cursor.fetchall()
+        print(topics_temp)
+        unpacked_list_temp = [item[0] for item in topics_temp]
+        topics_temp=unpacked_list_temp
+        print(topics_temp)
+
+        if len(topics_temp)>0:
+            cursor.execute("select id_controller FROM controller where controller_name=%s ;",(data["Host"],))
+            id=cursor.fetchone()[0] 
+            produceJson("CFirstCallAck",{"id":id, "Host":data["Host"],"topics":topics_temp})
+            continue
+
         if data["Type"]=="Upload":
+            
             admin.create_topics([NewTopic(data["Host"], num_partitions=1, replication_factor=1)])
             cursor.execute("INSERT INTO controller (controller_name, cType) VALUES (%s, %s)", (data["Host"], data["Type"]))
             cursor.execute("select id_controller FROM controller where controller_name=%s and cType=%s",(data["Host"], data["Type"]))

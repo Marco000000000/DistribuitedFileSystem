@@ -206,4 +206,4 @@ if __name__ == "__main__":
     topics = first_Call()
     hostname = socket.getfqdn()
     print(socket.gethostbyname_ex(hostname))
-    app.run(debug=False,host=socket.gethostbyname_ex(hostname)[2][1],port=80)
+    app.run(debug=False,host=socket.gethostbyname_ex(hostname)[2][0],port=80)
