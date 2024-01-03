@@ -10,6 +10,10 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.20
+    depends_on:
+      - download_controller1
+      - download_controller2
+      - uploadcontroller
   db:
     build:
       context: .
@@ -162,6 +166,8 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.10
+
+
 networks:
   vpcbr:
     driver: bridge
@@ -169,6 +175,8 @@ networks:
      config:
        - subnet: 10.5.0.0/16
          gateway: 10.5.0.1
+
+
 volumes:
   zookeeper:
   kafka:
