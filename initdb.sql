@@ -4,7 +4,7 @@ USE ds_filesystem;
 
 CREATE TABLE IF NOT EXISTS partitions (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    partition_name VARCHAR(20) NOT NULL,
+    partition_name VARCHAR(255) UNIQUE NOT NULL,
     used_space INT NOT NULL,
     topic INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

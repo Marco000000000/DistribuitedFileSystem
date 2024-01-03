@@ -141,7 +141,6 @@ def upload_file():#gestione di un file in upload
         fileName=secure_filename(file.filename)
 
         if file and allowed_file(fileName):
-            db.commit()
 
             cursor.execute("SELECT file_name,ready FROM files where file_name= %s",(fileName[:99],))
             
