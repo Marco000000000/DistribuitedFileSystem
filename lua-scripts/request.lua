@@ -43,14 +43,14 @@ local len=#res
 local toCapture={}
 
 for i, raw in pairs(res) do
-    ngx.say("/dManager".. raw["topic"]  .. ngx.var.uri)
+    
     local subrequest_uri = "/dManager".. raw["topic"]  .. ngx.var.uri
    
     toCapture[i]=subrequest_uri
 end
 
 db:close()
-ngx.say(toCapture)
+
 
 local response={}
 
@@ -84,7 +84,7 @@ while condiction  do
         local end_index = e + chunk_size - 1
         local tempString=string.sub(res.body, i, i + tonumber(chunk_size) - 1)
         concatenated_body = concatenated_body .. tempString
-        ngx.say(concatenated_body)
+        
 
         if string.len(tempString)<chunk_size then
             condiction=false
