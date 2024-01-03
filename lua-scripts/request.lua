@@ -43,23 +43,20 @@ local len=#res
 local toCapture={}
 
 for i, raw in pairs(res) do
-
-    local subrequest_uri = "dManager".. raw["topic"] .. ngx.var.uri
-    local subrequest_args = ngx.encode_args(original_request_uri_args)
-    if subrequest_args ~= "" then
-        subrequest_uri = subrequest_uri .. "?" .. subrequest_args
-    end
-    
+    ngx.say("/dManager".. raw["topic"]  .. ngx.var.uri)
+    local subrequest_uri = "/dManager".. raw["topic"]  .. ngx.var.uri
+   
     toCapture[i]=subrequest_uri
 end
 
 db:close()
+ngx.say(toCapture)
 
 local response={}
 
 for i,raw in pairs(toCapture) do
     local err
-    response[i], err = ngx.location.capture(subrequest_uri)
+    response[i], err = ngx.location.capture(toCapture[i])
     if err then
         ngx.status = 500
         ngx.say("Internal Server Error")
@@ -74,7 +71,7 @@ if #toCapture==0 then
     
     ngx.eof()
 end
-
+local chunk_size=131072
 local e=0
 -- Concatenate chunks of responses into a single body
 local condiction=true
@@ -85,8 +82,10 @@ while condiction  do
 
         local start_index = e
         local end_index = e + chunk_size - 1
-        local tempString=string.sub(res.body, i, i + tonumber(ngx.var.chunk_size) - 1)
+        local tempString=string.sub(res.body, i, i + tonumber(chunk_size) - 1)
         concatenated_body = concatenated_body .. tempString
+        ngx.say(concatenated_body)
+
         if string.len(tempString)<chunk_size then
             condiction=false
 

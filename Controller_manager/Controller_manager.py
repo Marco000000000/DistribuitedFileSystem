@@ -123,10 +123,10 @@ if __name__ == "__main__":
 
     db = mysql_custom_connect(db_conf)
 
-    cursor=db.cursor()
+    cursor=db.cursor(buffered=True)
 
     while len(topics)==0:
-
+        db.commit()
         cursor.execute("SELECT DISTINCT topic FROM partitions")
         fetch=cursor.fetchall()
         if len(fetch) > 0:
@@ -136,6 +136,7 @@ if __name__ == "__main__":
         sleep(1)
     consumer.subscribe(["CFirstCall"])
     while True:
+        db.commit()
         cursor.execute("SELECT DISTINCT topic FROM partitions")
         topics=cursor.fetchall()
         print("tupletopics",topics)
@@ -197,7 +198,7 @@ if __name__ == "__main__":
                 cursor.execute("INSERT INTO controllertopic (id_controller, topic) VALUES (%s, %s)", (id, min_topic))
             except:
                 continue
-            produceJson("CFirstCallAck",{"id":id, "Host":data["Host"],"topics":min_topic})
+            produceJson("CFirstCallAck",{"id":id, "Host":data["Host"],"topics":[min_topic]})
             db.commit()
             consumer.commit()
 

@@ -49,7 +49,7 @@ def mysql_custom_connect(conf):
 
 db = mysql_custom_connect(db_conf)
 
-cursor=db.cursor()
+cursor=db.cursor(buffered=True)
 
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
     p=Producer({'bootstrap.servers':'kafka:9093'})
@@ -139,17 +139,18 @@ def upload_file():#gestione di un file in upload
 
         file = request.files['file']
         fileName=secure_filename(file.filename)
-        
+
         if file and allowed_file(fileName):
-            
+            db.commit()
+
             cursor.execute("SELECT file_name,ready FROM files where file_name= %s",(fileName[:99],))
             
-            if cursor.rowcount<0:
+            if cursor.rowcount>0:
                 fetch=cursor.fetchone()
                 print(fetch)
                 if(fetch[1]==False):
                     return {"error":"File in updating"}
-                cursor.execute("delete from files where file_name= %s",(fileName[:99]))
+                cursor.execute("delete from files where file_name= %s",(fileName[:99],))
                 for topic in topics:
                     data={
                         "fileName": secure_filename(fileName[:99]),

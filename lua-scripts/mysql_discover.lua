@@ -35,9 +35,9 @@ end
 ngx.say("Query result:")
 for i, row in ipairs(res) do
     for name, value in pairs(row) do
-        ngx.say(name, ": ", value, " | ")
+        ngx.say(name, ": ", value, "\n")
     end
-    ngx.say("<br>")
+    
 end
 
 -- Close the MySQL connection
