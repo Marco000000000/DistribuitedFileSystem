@@ -114,8 +114,6 @@ services:
     build:
       context: ./download_controller
       dockerfile: Dockerfile.scripts
-    ports:
-      - "80:80"
     depends_on:
       - zookeeper
       - kafka
@@ -133,8 +131,7 @@ services:
     build:
       context: ./download_controller
       dockerfile: Dockerfile.scripts
-    ports:
-      - "82:80"
+
     depends_on:
       - zookeeper
       - kafka
@@ -152,8 +149,7 @@ services:
     build:
       context: ./uploadcontroller
       dockerfile: Dockerfile.scripts
-    ports:
-      - "81:80"
+
     depends_on:
       - zookeeper
       - kafka

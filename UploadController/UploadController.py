@@ -206,8 +206,10 @@ def upload_file():#gestione di un file in upload
 
 if __name__=="__main__":
     topics=first_Call() #ricezione dati necessari per la ricezione
-    
-    app.run(debug=False,host='0.0.0.0',port=80)
+    hostname = socket.getfqdn()
+    print(socket.gethostbyname_ex(hostname))
+
+    app.run(debug=False,host=socket.gethostbyname_ex(hostname)[2][1],port=80)
 
 
 

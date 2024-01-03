@@ -136,7 +136,6 @@ if __name__ == "__main__":
         sleep(1)
     consumer.subscribe(["CFirstCall"])
     while True:
-        db.commit()
         cursor.execute("SELECT DISTINCT topic FROM partitions")
         topics=cursor.fetchall()
         print("tupletopics",topics)

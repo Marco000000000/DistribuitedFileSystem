@@ -204,4 +204,6 @@ def download_file(filename):
 if __name__ == "__main__":
     # Ricezione topics necessari per il download
     topics = first_Call()
-    app.run(debug=False,host='0.0.0.0', port=80)
+    hostname = socket.getfqdn()
+    print(socket.gethostbyname_ex(hostname))
+    app.run(debug=False,host=socket.gethostbyname_ex(hostname)[2][1],port=80)
