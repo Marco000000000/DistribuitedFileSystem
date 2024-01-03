@@ -123,6 +123,14 @@ if __name__ == "__main__":
             # Se non ci sono partizioni assegna il valore 0
             data["Topic"] = 1
         else:
+            cursor.execute("SELECT id, topic from partitions where partition_name = %s;",(data["Code"],))
+            dati=cursor.fetchone()
+            print(dati)
+            if len(dati)>0:
+                producer.poll(1)
+                data["id"]=dati[0]
+                data["Topic"]=dati[1]
+                producer.produce('FirstCallAck', json.dumps(data).encode('utf-8'), callback=receipt)
             # Se ci sono partizioni assegna il valore massimo + 1
             data["Topic"] = max_topic + 1
         new_topics = [NewTopic("Upload"+str(data["Topic"]), num_partitions=1, replication_factor=1), NewTopic("Request"+str(data["Topic"]), num_partitions=1, replication_factor=1),NewTopic("Delete"+str(data["Topic"]), num_partitions=1, replication_factor=1)]

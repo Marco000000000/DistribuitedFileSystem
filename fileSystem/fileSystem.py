@@ -164,6 +164,8 @@ if __name__== "__main__":
             print('Error: {}'.format(msg.error()))
             pass
         else:
+            print(data)
+
             data=json.loads(msg.value().decode('utf-8'))
             if data["fileName"]!="":
                 download_file(secure_filename(data["fileName"]),topicNumber)
@@ -193,6 +195,8 @@ if __name__== "__main__":
             continue
         else:
             data=json.loads(msgDelete.value().decode('utf-8'))
+            print(data)
+
             if data["fileName"]!="":
                 delete_file(secure_filename(data["fileName"]))   
                 deleteConsumer.commit()

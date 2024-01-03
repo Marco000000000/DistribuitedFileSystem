@@ -69,7 +69,7 @@ services:
         ipv4_address: 10.5.0.13
     
 
-  filesystem:
+  filesystem1:
     build:
       context: ./filesystem
       dockerfile: Dockerfile.scripts
@@ -85,6 +85,22 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.12
+  filesystem2:
+    build:
+      context: ./filesystem
+      dockerfile: Dockerfile.scripts
+    
+    depends_on:
+      - zookeeper
+      - kafka
+      - manager
+    volumes: 
+      - ./filesystem:/app/filesystem
+    hostname: filesystem
+    container_name: filesystem
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.14
 
   
   manager:
