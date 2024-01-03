@@ -18,7 +18,7 @@ import mysql.connector
 from werkzeug.utils import secure_filename
 
 # Variabili globali
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'rar', 'zip', 'mp3'}
 
 topics = []
 

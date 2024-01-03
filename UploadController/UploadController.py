@@ -18,7 +18,7 @@ import string
 from time import sleep
 import logging
 app=Flask(__name__)
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'rar', 'zip', 'mp3'}
 PARTITION_GRANULARITY=os.getenv("PARTITION_GRANULARITY", default = 131072)
 print("aaa")
 logger = logging.getLogger()
