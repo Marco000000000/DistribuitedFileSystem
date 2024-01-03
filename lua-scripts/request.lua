@@ -84,8 +84,12 @@ end
 
 for i = 1, maxLen, chunk_size do
     for _,str in ipairs(response) do
+        if str ==nil then
+            goto continue
+        end
         local slice = str:sub(i, i + chunk_size - 1) or ""
         ngx.say(slice)
+        ::continue::
     end
 end
 ngx.eof()
