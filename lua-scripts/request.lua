@@ -1,6 +1,4 @@
 -- lua-scripts/main.lua
-
-
 local mysql = require('resty.mysql')
 local original_request_uri_args = ngx.req.get_uri_args()
 local last_part = string.match(ngx.var.uri, "[^/]+$")
@@ -48,22 +46,8 @@ for i, raw in pairs(res) do
    
     toCapture[i]=subrequest_uri
 end
-
 db:close()
 
-
-local response={}
-
-for i,raw in pairs(toCapture) do
-    local err
-    response[i], err = ngx.location.capture(toCapture[i])
-    if err then
-        ngx.status = 500
-        ngx.say("Internal Server Error")
-        return ngx.exit(ngx.status)
-    end
-
-end
 if #toCapture==0 then
     ngx.status = 404
 
@@ -71,19 +55,54 @@ if #toCapture==0 then
     
     ngx.eof()
 end
+
+
+
+local response={}
+
+for i,raw in ipairs(toCapture) do
+    
+    local res, err = ngx.location.capture(toCapture[i])
+    if err then
+        ngx.status = 500
+        ngx.say("Internal Server Error")
+        return ngx.exit(ngx.status)
+    end
+    table.insert(response, res.body)
+end
+
+
 local chunk_size=131072
+local maxLen=0
+local str=""
+
+for _, res in ipairs(response) do
+    maxLen = math.max(maxLen, #res)
+end
+
+-- Interleave bytes every specified interval
+
+for i = 1, maxLen, chunk_size do
+    for _,str in ipairs(response) do
+        local slice = str:sub(i, i + chunk_size - 1) or ""
+        ngx.say(slice)
+    end
+end
+ngx.eof()
+
 local e=0
--- Concatenate chunks of responses into a single body
+
 local condiction=true
 while condiction  do
-
+    
     local concatenated_body = ""
     for i,res in pairs(response) do
-
+        
         local start_index = e
         local end_index = e + chunk_size - 1
         local tempString=string.sub(res.body, i, i + tonumber(chunk_size) - 1)
-        concatenated_body = concatenated_body .. tempString
+        ngx.say(tempString)
+
         
 
         if string.len(tempString)<chunk_size then
@@ -99,7 +118,6 @@ while condiction  do
         e = end_index + 1
     end
     
-    ngx.say(concatenated_body)
     
 end
 ngx.eof()
