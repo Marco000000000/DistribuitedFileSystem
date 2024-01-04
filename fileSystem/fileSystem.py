@@ -52,10 +52,10 @@ def allowed_file(filename):
 
 
 #Invio di un file spezzato con la granularità predefinita
-def download_file(filename,topicNumber):
+def download_file(filename,returnTopic):
     #prima coppia di producer-consumer
-    p=Producer({'bootstrap.servers':'localhost:9092'})
-    topicName="Download"+str(topicNumber)
+    p=Producer({'bootstrap.servers':'kafka:9093'})
+    topicName=returnTopic
     if filename is not None and  allowed_file(filename):
         directory = os.path.join( UPLOAD_FOLDER,filename)
         index=0
@@ -82,7 +82,7 @@ def download_file(filename,topicNumber):
                 p.flush()
             return
 def produceJson(topicName,dictionaryData):
-    p=Producer({'bootstrap.servers':'localhost:9092'})
+    p=Producer({'bootstrap.servers':'kafka:9093'})
     m=json.dumps(dictionaryData)
     p.poll(1)
     p.produce(topicName, m.encode('utf-8'),callback=receipt)
@@ -103,7 +103,7 @@ def upload_file(filename,pack):
 
 #Chiamata per la registrazione nei topic kafka
 def first_Call():
-    p=Producer({'bootstrap.servers':'localhost:9092'})
+    p=Producer({'bootstrap.servers':'kafka:9093'})
     data={"Code":gethostname(),
           "Dim":FILESYSTEM_DIMENSION}
     m=json.dumps(data)
@@ -137,7 +137,7 @@ def delete_file(filename):
     if os.path.exists(os.path.join( UPLOAD_FOLDER,filename)):
         os.remove(os.path.join( UPLOAD_FOLDER,filename))
 
-c=Consumer({'bootstrap.servers':'localhost:9092','group.id':get_random_string(20),'auto.offset.reset':'latest','enable.auto.commit': False})
+c=Consumer({'bootstrap.servers':'kafka:9093','group.id':get_random_string(20),'auto.offset.reset':'latest','enable.auto.commit': False})
 
 if __name__== "__main__":
     while "FirstCall" not in c.list_topics().topics or "FirstCallAck" not in c.list_topics().topics:
@@ -150,12 +150,12 @@ if __name__== "__main__":
         print("in attesa del manager")
         time.sleep(0.2)
         
-    uploadConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':str(id),'auto.offset.reset':'earliest','enable.auto.commit': False})
+    uploadConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':str(id),'auto.offset.reset':'earliest','enable.auto.commit': False})
 
     uploadConsumer.subscribe(["Upload"+str(topicNumber)])
-    requestConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
+    requestConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
     requestConsumer.subscribe(["Request"+str(topicNumber)])
-    deleteConsumer=Consumer({'bootstrap.servers':'localhost:9092','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
+    deleteConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
     deleteConsumer.subscribe(["Delete"+str(topicNumber)])
     print("ho fatto l'inizio")
     while True:
@@ -168,11 +168,10 @@ if __name__== "__main__":
             print('Error: {}'.format(msg.error()))
             pass
         else:
-            print(data["fileName"])
 
             data=json.loads(msg.value().decode('utf-8'))
             if data["fileName"]!="":
-                download_file(secure_filename(data["fileName"]),topicNumber)
+                download_file(secure_filename(data["fileName"]),data["returnTopic"])
                 requestConsumer.commit()
 
 

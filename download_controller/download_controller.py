@@ -236,7 +236,7 @@ c = Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': 'download', 'auto.o
 if __name__ == "__main__":
     # Ricezione topics necessari per il download
     returnTopic = first_Call()
-    while returnTopic+str(1) not in c.list_topics().topics:
+    while returnTopic+"1" not in c.list_topics().topics:
         print("in attesa del manager")
         sleep(0.2)
 

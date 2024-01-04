@@ -109,7 +109,8 @@ def updateTopics():
     controllers=cursor.fetchall()
     unpacked_list = [item[0] for item in controllers]
     for controller in unpacked_list:
-        for i in range(len(topics)):
+        for i in (topics):
+            print(controller+str(i))
             try:
                 admin.create_topics([NewTopic(controller+str(i), num_partitions=1, replication_factor=1)],validate_only=False)
             except:
@@ -202,11 +203,14 @@ if __name__ == "__main__":
             
             if cursor.rowcount:
                 id=cursor.fetchone()[0]
+                updateTopics()
                 pass
             else:
                 # Recupero topic per download
-                for i in range(len(topics)):
+                for i in (topics):
+                    data["Host"]+str(i)
                     try:
+                        print(data["Host"]+str(i))
                         admin.create_topics([NewTopic(data["Host"]+str(i), num_partitions=1, replication_factor=1)],validate_only=False)
                     except:
                         pass

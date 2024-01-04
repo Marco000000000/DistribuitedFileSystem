@@ -8,7 +8,7 @@ from time import sleep
 import string
 import random
 # Configurazione del producer e instanziazione
-prod_conf = {'bootstrap.servers': 'localhost:9092'}
+prod_conf = {'bootstrap.servers': 'kafka:9093'}
 print("aaa")
 producer = Producer(prod_conf)
 def get_random_string(length):
@@ -16,7 +16,7 @@ def get_random_string(length):
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
 # Configurazione del consumer e instanziazione
-cons_conf = {'bootstrap.servers': 'localhost:9092',
+cons_conf = {'bootstrap.servers': 'kafka:9093',
         'group.id': get_random_string(4),
         'auto.offset.reset': 'earliest',
         'enable.auto.commit': False}
@@ -24,7 +24,7 @@ cons_conf = {'bootstrap.servers': 'localhost:9092',
 consumer = Consumer(cons_conf)
 
 db_conf = {
-            'host':'localhost',
+            'host':'db',
             'port':3306,
             'database':'ds_filesystem',
             'user':'root',
@@ -91,7 +91,7 @@ def receipt(err,msg):
 
 
 # Instanziazione dell'oggetto AdminClient per le operazioni di creazione dei topic
-admin = AdminClient({'bootstrap.servers': 'localhost:9092'})
+admin = AdminClient({'bootstrap.servers': 'kafka:9093'})
 
 # Creazione "hardcoded" dei topic "FirstCall" e "FirstCallAck
 hardcoded_topics = [NewTopic("FirstCall", num_partitions=1, replication_factor=1), NewTopic("FirstCallAck", num_partitions=1, replication_factor=1)]
