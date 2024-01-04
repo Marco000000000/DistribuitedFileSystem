@@ -109,7 +109,9 @@ def first_Call():
     m=json.dumps(data)
     p.poll(1)
     p.produce('FirstCall', m.encode('utf-8'),callback=receipt)
+    p.flush()
     print(m)
+    c.subscribe(['FirstCallAck'])
     code=data["Code"]
     while True:
             msg=c.poll(1.0) #timeout
@@ -143,7 +145,6 @@ if __name__== "__main__":
     while "FirstCall" not in c.list_topics().topics or "FirstCallAck" not in c.list_topics().topics:
         print("in attesa del manager")
         time.sleep(0.2)
-    c.subscribe(['FirstCallAck'])
     id,topicNumber=first_Call() #ricezione dati necessari per la ricezione
     print(id,topicNumber)
     while "Upload"+str(topicNumber) not in c.list_topics().topics:
