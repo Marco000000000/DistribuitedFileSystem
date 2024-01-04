@@ -1,6 +1,6 @@
 local mysql = require("resty.mysql")
 
-local mysql_query = "SELECT file_name FROM files WHERE ready=true;"
+local mysql_query = "SELECT distinct file_name FROM files WHERE ready=true;"
 
 -- Create MySQL connection
 local db, err = mysql:new()

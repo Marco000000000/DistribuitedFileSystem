@@ -157,7 +157,7 @@ def upload_file():#gestione di un file in upload
                     produceJson("Delete"+str(topic),data)  
             for topic in topics:
                 print("asds32432432?")
-                cursor.execute("INSERT INTO files (file_name ,partition_id,ready) VALUES (%s, %s,%s)",(fileName[:99],1,False))
+                cursor.execute("INSERT INTO files (file_name ,partition_id,ready) VALUES (%s, %s,%s)",(fileName[:99],topic,False))
                 #problema possibile di request mentre è ancora in corso l'upload
                 db.commit()
             count=0

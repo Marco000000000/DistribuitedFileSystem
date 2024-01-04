@@ -73,7 +73,7 @@ end
 
 
 local chunk_size=131072
-local maxLen=0
+local maxLen=2000000
 local str=""
 ngx.say(toCapture)
 
@@ -84,6 +84,8 @@ for _, res in ipairs(response) do
 end
 -- Interleave bytes every specified interval
 for i = 1, maxLen, chunk_size do
+    ngx.say(i)
+
     for _,str in ipairs(response) do
         if str ~= nil then
             local slice = str:sub(i, i + chunk_size - 1) or ""
