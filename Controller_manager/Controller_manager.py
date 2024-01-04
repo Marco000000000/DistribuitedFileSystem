@@ -163,6 +163,8 @@ if __name__ == "__main__":
             cursor.execute("select id_controller FROM controller where controller_name=%s ;",(data["Host"],))
             id=cursor.fetchone()[0] 
             produceJson("CFirstCallAck",{"id":id, "Host":data["Host"],"topics":topics_temp})
+            if len(topics_temp) != len(topics):
+                oldTopics=[]
             continue
 
         if data["Type"]=="Upload":

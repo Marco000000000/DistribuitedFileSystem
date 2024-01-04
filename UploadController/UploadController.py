@@ -178,6 +178,7 @@ def upload_file():#gestione di un file in upload
                         "last":True,
                         "returnTopic":returnTopic
                         }
+                        print(data)
                         produceJson("Upload"+str(topic),data)  
                         consumeJson(returnTopic,"1")
                         cursor.execute("UPDATE files SET ready = true WHERE file_name= %s",(fileName[:99],))
@@ -189,7 +190,7 @@ def upload_file():#gestione di un file in upload
                     "last":False, # è utile oppure non ha senso?
                     "count":count
                     }
-                    print(data)
+                    print([data["fileName"],data["count"]])
                     count+=1
                     m=json.dumps(data)
                     p.poll(0.001)
@@ -202,7 +203,20 @@ def upload_file():#gestione di un file in upload
 
         else:
             return {"error":"Incorrect extenction"}
-        
+def update(topics,groupId):
+    c=Consumer({'bootstrap.servers':'kafka:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
+    c.subscribe(["UpdateTopics"])
+    while True:
+            msg=c.poll(10.0) #timeout
+            if msg is None:
+                continue
+            elif msg.error():
+                print('Error: {}'.format(msg.error()))
+                continue
+            else:
+                data=json.loads(msg.value().decode('utf-8'))
+                topics=data[topics]
+                c.commit()
 
 if __name__=="__main__":
     topics=first_Call() #ricezione dati necessari per la ricezione
@@ -210,6 +224,7 @@ if __name__=="__main__":
     print(socket.gethostbyname_ex(hostname))
 
     app.run(debug=False,host=socket.gethostbyname_ex(hostname)[2][0],port=80)
+    update(topics,hostname)
 
 
 

@@ -164,7 +164,7 @@ if __name__== "__main__":
             print('Error: {}'.format(msg.error()))
             pass
         else:
-            print(data)
+            print(data["fileName"])
 
             data=json.loads(msg.value().decode('utf-8'))
             if data["fileName"]!="":
@@ -179,11 +179,11 @@ if __name__== "__main__":
             pass
         else:
             data=json.loads(msgUpload.value().decode('utf-8'))
-            print(data)
+            print(data["fileName"])
             if data["fileName"]!="":
                 if not os.path.exists(UPLOAD_FOLDER):
                     os.makedirs(UPLOAD_FOLDER)
-
+                print
                 upload_file(secure_filename(data["fileName"]),data)
                 uploadConsumer.commit()
 

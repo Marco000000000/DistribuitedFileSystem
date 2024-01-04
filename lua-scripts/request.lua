@@ -75,6 +75,7 @@ end
 local chunk_size=131072
 local maxLen=0
 local str=""
+ngx.say(toCapture)
 
 for _, res in ipairs(response) do
     maxLen = math.max(maxLen, #res)
@@ -82,7 +83,6 @@ for _, res in ipairs(response) do
 
 end
 -- Interleave bytes every specified interval
-
 for i = 1, maxLen, chunk_size do
     for _,str in ipairs(response) do
         if str ~= nil then
