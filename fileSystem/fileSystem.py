@@ -20,9 +20,6 @@ def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
-#prima coppia di producer-consumer
-p=Producer({'bootstrap.servers':'kafka:9093'})
-c=Consumer({'bootstrap.servers':'kafka:9093','group.id':get_random_string(20),'auto.offset.reset':'latest','enable.auto.commit': False})
 
 logging.basicConfig(format='%(asctime)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
@@ -56,6 +53,8 @@ def allowed_file(filename):
 
 #Invio di un file spezzato con la granularità predefinita
 def download_file(filename,topicNumber):
+    #prima coppia di producer-consumer
+    p=Producer({'bootstrap.servers':'kafka:9093'})
     topicName="Download"+str(topicNumber)
     if filename is not None and  allowed_file(filename):
         directory = os.path.join( UPLOAD_FOLDER,filename)
@@ -102,6 +101,8 @@ def upload_file(filename,pack):
 
 #Chiamata per la registrazione nei topic kafka
 def first_Call():
+    p=Producer({'bootstrap.servers':'kafka:9093'})
+    c=Consumer({'bootstrap.servers':'kafka:9093','group.id':get_random_string(20),'auto.offset.reset':'latest','enable.auto.commit': False})
     data={"Code":gethostname(),
           "Dim":FILESYSTEM_DIMENSION}
     m=json.dumps(data)
@@ -134,6 +135,7 @@ def delete_file(filename):
         os.remove(filename)
 
 if __name__== "__main__":
+    c=Consumer({'bootstrap.servers':'kafka:9093','group.id':get_random_string(20),'auto.offset.reset':'latest','enable.auto.commit': False})
     while "FirstCall" not in c.list_topics().topics or "FirstCallAck" not in c.list_topics().topics:
         print("in attesa del manager")
         time.sleep(0.2)
