@@ -185,7 +185,6 @@ if __name__== "__main__":
             if data["fileName"]!="":
                 if not os.path.exists(UPLOAD_FOLDER):
                     os.makedirs(UPLOAD_FOLDER)
-                print
                 upload_file(secure_filename(data["fileName"]),data)
                 uploadConsumer.commit()
 
