@@ -103,15 +103,17 @@ print("consumer")
 consumer = Consumer(conf)
 logger.info("prima dell'admin consumer creato")
 print("admin")
-def updateTopics(topics):
+def updateTopics():
     produceJson("UpdateTopics",topics)
     cursor.execute("Select controller_name from controller ;")
     controllers=cursor.fetchall()
     unpacked_list = [item[0] for item in controllers]
     for controller in unpacked_list:
         for i in range(len(topics)):
-            admin.create_topics([NewTopic(controller+str(i), num_partitions=1, replication_factor=1)],validate_only=True)
-
+            try:
+                admin.create_topics([NewTopic(controller+str(i), num_partitions=1, replication_factor=1)],validate_only=False)
+            except:
+                pass
 
 # Instanziazione dell'oggetto AdminClient per le operazioni di creazione dei topic
 admin = AdminClient({'bootstrap.servers': 'kafka:9093'})
@@ -178,7 +180,7 @@ if __name__ == "__main__":
                 if len(topics_temp) != len(topics):
                     updateTopics()
                 continue
-            admin.create_topics([NewTopic(data["Host"], num_partitions=1, replication_factor=1)],validate_only=True)
+            admin.create_topics([NewTopic(data["Host"], num_partitions=1, replication_factor=1)],validate_only=False)
 
             
             cursor.execute("INSERT INTO controller (controller_name, cType) VALUES (%s, %s)", (data["Host"], data["Type"]))
@@ -197,14 +199,17 @@ if __name__ == "__main__":
         elif data["Type"]=="Download":
 
             cursor.execute("SELECT id_controller from controller where controller_name=%s ;",(data["Host"],))
-            id=cursor.fetchone()[0]
+            
             if cursor.rowcount:
+                id=cursor.fetchone()[0]
                 pass
             else:
                 # Recupero topic per download
                 for i in range(len(topics)):
-                    admin.create_topics([NewTopic(data["Host"]+str(i), num_partitions=1, replication_factor=1)],validate_only=True)
-
+                    try:
+                        admin.create_topics([NewTopic(data["Host"]+str(i), num_partitions=1, replication_factor=1)],validate_only=False)
+                    except:
+                        pass
                 cursor.execute("INSERT INTO controller (controller_name, cType) VALUES (%s, %s)", (data["Host"], data["Type"]))
                 cursor.execute("select id_controller from controller where controller_name=%s and cType=%s",(data["Host"], data["Type"]))
                 id=cursor.fetchone()[0]

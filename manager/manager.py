@@ -5,22 +5,26 @@ import sys
 import json
 import logging
 from time import sleep
-
+import string
+import random
 # Configurazione del producer e instanziazione
-prod_conf = {'bootstrap.servers': 'kafka:9093'}
+prod_conf = {'bootstrap.servers': 'localhost:9092'}
 print("aaa")
 producer = Producer(prod_conf)
-
+def get_random_string(length):
+    letters = string.ascii_lowercase
+    result_str = ''.join(random.choice(letters) for i in range(length))
+    return result_str
 # Configurazione del consumer e instanziazione
-cons_conf = {'bootstrap.servers': 'kafka:9093',
-        'group.id': 'manager',
+cons_conf = {'bootstrap.servers': 'localhost:9092',
+        'group.id': get_random_string(4),
         'auto.offset.reset': 'earliest',
         'enable.auto.commit': False}
 
 consumer = Consumer(cons_conf)
 
 db_conf = {
-            'host':'db',
+            'host':'localhost',
             'port':3306,
             'database':'ds_filesystem',
             'user':'root',
@@ -61,6 +65,8 @@ def register_filesystem(consumer, topic):
                 raise KafkaException(msg.error())
         else:
             data = json.loads(msg.value().decode('utf-8'))
+            print(data)
+
             consumer.commit()
             return data
     
@@ -85,7 +91,7 @@ def receipt(err,msg):
 
 
 # Instanziazione dell'oggetto AdminClient per le operazioni di creazione dei topic
-admin = AdminClient({'bootstrap.servers': 'kafka:9093'})
+admin = AdminClient({'bootstrap.servers': 'localhost:9092'})
 
 # Creazione "hardcoded" dei topic "FirstCall" e "FirstCallAck
 hardcoded_topics = [NewTopic("FirstCall", num_partitions=1, replication_factor=1), NewTopic("FirstCallAck", num_partitions=1, replication_factor=1)]
@@ -112,6 +118,7 @@ if __name__ == "__main__":
         cursor.execute("SELECT MAX(topic) FROM partitions")
 
         max_topic = cursor.fetchone()[0]
+        print(max_topic)
         # Richiesta di registrazione da parte del filesystem + inserimento nel database della partizione
         data = register_filesystem(consumer, "FirstCall")
         
@@ -125,11 +132,13 @@ if __name__ == "__main__":
         else:
             cursor.execute("SELECT id, topic from partitions where partition_name = %s;",(data["Code"],))
             dati=cursor.fetchone()
-            print(dati)
+            print("dati",dati)
             if cursor.rowcount>0:
-                producer.poll(1)
+                print("dentro")
                 data["id"]=dati[0]
                 data["Topic"]=dati[1]
+                producer.poll(1)
+
                 producer.produce('FirstCallAck', json.dumps(data).encode('utf-8'), callback=receipt)
                 db.commit()
                 continue
