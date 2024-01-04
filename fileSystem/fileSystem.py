@@ -109,6 +109,7 @@ def first_Call():
     m=json.dumps(data)
     p.poll(1)
     p.produce('FirstCall', m.encode('utf-8'),callback=receipt)
+    p.flush()
     print(m)
     code=data["Code"]
     while True:
