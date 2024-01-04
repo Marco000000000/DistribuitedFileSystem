@@ -149,7 +149,7 @@ def first_Call():#funzione per la ricezione di topic iniziali
 
 def generate_data(topics,filename):
     # Generazione dati per il download
-    index=0
+    
     count=0
     consumer=[]
     i=0
@@ -157,11 +157,14 @@ def generate_data(topics,filename):
         consumer[i]=Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
         consumer[i].subscribe([returnTopic+str(topic)])
         i=i+1
-    temp_vet=[]
     
-    i=0
-    for cons in consumer:
-        while True:
+    temp_vet={}
+    cond=True
+    while cond:
+        i=0
+        for cons in consumer:
+            if(temp_vet.has_key(i)):
+                continue
             msg=cons.poll(1.0)
             if msg is None:
                 continue
@@ -173,13 +176,23 @@ def generate_data(topics,filename):
                 print(data)
                 if data["filename"] != filename:
                     continue
+                if data["count"]!=count:
+                    continue
                 if data["last"] == True:
-                    c.unsubscribe()
-                    c.close()
-                    break  
-                yield base64.b64decode(data["data"])
-                c.commit()
-                    
+                    for temp in temp_vet:
+                        yield temp
+                    cond=False
+                temp_vet[i]=base64.b64decode(data["data"])
+                cons.commit()
+            i=i+1
+        if len(temp_vet)==len(topics):
+            count=count+1
+            for temp in temp_vet:
+                yield temp
+            temp_vet.clear() 
+    for topic in topics:
+        consumer[i].unsubscribe()           
+
 
 
 # Endpoint per il download di un file (filename è il nome del file)
