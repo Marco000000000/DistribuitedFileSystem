@@ -3,7 +3,6 @@ local mysql = require('resty.mysql')
 local original_request_uri_args = ngx.req.get_uri_args()
 local last_part = string.match(ngx.var.uri, "[^/]+$")
 
-
 local mysql_query = "select distinct topic from partitions join files on partition_id=id where file_name=\"" .. last_part .."\";"
 
 -- MySQL connection settings
@@ -65,15 +64,15 @@ for i,raw in ipairs(toCapture) do
     local res, err = ngx.location.capture(toCapture[i])
     if err then
         ngx.status = 500
-        ngx.say("Internal Server Error")
-        return ngx.exit(ngx.status)
+        ngx.say("Internal Server Error: ", err)
+        ngx.exit(ngx.status)
     end
     table.insert(response, res.body)
 end
 
 
 local chunk_size=131072
-local maxLen=2000000
+local maxLen=0
 local str=""
 ngx.say(toCapture)
 
@@ -83,18 +82,15 @@ for _, res in ipairs(response) do
 
 end
 -- Interleave bytes every specified interval
-for i = 1, maxLen, chunk_size do
-    ngx.say(i)
+local slices = {}
 
-    for _,str in ipairs(response) do
-        if str ~= nil then
-            local slice = str:sub(i, i + chunk_size - 1) or ""
-            ngx.say(slice)
-        end
-        
+for i = 1, maxLen, chunk_size do
+    for _, str in ipairs(response) do
+        slice = string.sub(str, i, i + chunk_size - 1)
+        table.insert(slices,string.char(string.byte(slice, #slice)) )
     end
 end
-
+ngx.say(slices)
 ngx.eof()
 
 

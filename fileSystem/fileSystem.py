@@ -63,11 +63,13 @@ def download_file(filename,topicNumber):
             while (byte := f.read(PARTITION_GRANULARITY)):
                 
                 data={
-                
+                "count":index,
+                "filename":filename,
                 "data":str(base64.b64encode(byte),"UTF-8"),
                 "last":False
                 }
                 m=json.dumps(data)
+                index=index+1
                 p.poll(1)
                 p.produce(topicName, m.encode('utf-8'),callback=receipt)
             else:

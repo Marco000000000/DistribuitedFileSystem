@@ -103,6 +103,15 @@ print("consumer")
 consumer = Consumer(conf)
 logger.info("prima dell'admin consumer creato")
 print("admin")
+def updateTopics(topics):
+    produceJson("UpdateTopics",topics)
+    cursor.execute("Select controller_name from controller ;")
+    controllers=cursor.fetchall()
+    unpacked_list = [item[0] for item in controllers]
+    for controller in unpacked_list:
+        for i in range(len(topics)):
+            admin.create_topics([NewTopic(controller+str(i), num_partitions=1, replication_factor=1)],validate_only=True)
+
 
 # Instanziazione dell'oggetto AdminClient per le operazioni di creazione dei topic
 admin = AdminClient({'bootstrap.servers': 'kafka:9093'})
@@ -141,7 +150,7 @@ if __name__ == "__main__":
         topics=cursor.fetchall()
         print("tupletopics",topics)
         if len(topics)!=oldTopics:
-            produceJson("UpdateTopics",topics)
+            updateTopics()
             oldTopics=len(topics)
 
         unpacked_list = [item[0] for item in topics]
@@ -152,24 +161,26 @@ if __name__ == "__main__":
         if data is None:
             continue
         print(data["Host"])
-        cursor.execute("SELECT Distinct topic from controllertopic join controller on (controller.id_controller=controllertopic.id_controller) where controller_name=%s ;",(data["Host"],))
-        topics_temp=cursor.fetchall()
-        print(topics_temp)
-        unpacked_list_temp = [item[0] for item in topics_temp]
-        topics_temp=unpacked_list_temp
-        print(topics_temp)
-
-        if len(topics_temp)>0:
-            cursor.execute("select id_controller FROM controller where controller_name=%s ;",(data["Host"],))
-            id=cursor.fetchone()[0] 
-            produceJson("CFirstCallAck",{"id":id, "Host":data["Host"],"topics":topics_temp})
-            if len(topics_temp) != len(topics):
-                oldTopics=[]
-            continue
-
+        #restituisce i topic dati all'host
+        
         if data["Type"]=="Upload":
+            cursor.execute("SELECT Distinct topic from controllertopic join controller on (controller.id_controller=controllertopic.id_controller) where controller_name=%s ;",(data["Host"],))
+            topics_temp=cursor.fetchall()
+            print(topics_temp)
+            unpacked_list_temp = [item[0] for item in topics_temp]
+            topics_temp=unpacked_list_temp
+            print(topics_temp)
+
+            if len(topics_temp)>0:
+                cursor.execute("select id_controller FROM controller where controller_name=%s ;",(data["Host"],))
+                id=cursor.fetchone()[0] 
+                produceJson("CFirstCallAck",{"id":id, "Host":data["Host"],"topics":topics_temp})
+                if len(topics_temp) != len(topics):
+                    updateTopics()
+                continue
+            admin.create_topics([NewTopic(data["Host"], num_partitions=1, replication_factor=1)],validate_only=True)
+
             
-            admin.create_topics([NewTopic(data["Host"], num_partitions=1, replication_factor=1)])
             cursor.execute("INSERT INTO controller (controller_name, cType) VALUES (%s, %s)", (data["Host"], data["Type"]))
             cursor.execute("select id_controller FROM controller where controller_name=%s and cType=%s",(data["Host"], data["Type"]))
             id=cursor.fetchone()[0]
@@ -184,23 +195,21 @@ if __name__ == "__main__":
             consumer.commit()
             continue
         elif data["Type"]=="Download":
-            # Recupero topic per download
-            cursor.execute("SELECT min(topic) FROM partitions where topic not in (    SELECT topic  FROM controllertopic    GROUP BY topic)  ;")
 
-            min_topic = cursor.fetchone()[0]
-            print(min_topic)
-            if min_topic is None:
-                cursor.execute("SELECT topic FROM (    SELECT topic, COUNT(topic) as mycount    FROM controllertopic    GROUP BY topic) AS subquery_alias WHERE mycount = (SELECT MIN(mycount) FROM (SELECT topic, COUNT(topic) as mycount FROM controllertopic GROUP BY topic) AS min_subquery_alias);")
-                min_topic=cursor.fetchone()[0]
-                print(min_topic)
-            try:
+            cursor.execute("SELECT id_controller from controller where controller_name=%s ;",(data["Host"],))
+            id=cursor.fetchone()[0]
+            if cursor.rowcount:
+                pass
+            else:
+                # Recupero topic per download
+                for i in range(len(topics)):
+                    admin.create_topics([NewTopic(data["Host"]+str(i), num_partitions=1, replication_factor=1)],validate_only=True)
+
                 cursor.execute("INSERT INTO controller (controller_name, cType) VALUES (%s, %s)", (data["Host"], data["Type"]))
                 cursor.execute("select id_controller from controller where controller_name=%s and cType=%s",(data["Host"], data["Type"]))
                 id=cursor.fetchone()[0]
-                cursor.execute("INSERT INTO controllertopic (id_controller, topic) VALUES (%s, %s)", (id, min_topic))
-            except:
-                continue
-            produceJson("CFirstCallAck",{"id":id, "Host":data["Host"],"topics":[min_topic]})
+            
+            produceJson("CFirstCallAck",{"id":id, "Host":data["Host"]})
             db.commit()
             consumer.commit()
 

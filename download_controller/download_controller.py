@@ -20,9 +20,9 @@ from werkzeug.utils import secure_filename
 # Variabili globali
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'rar', 'zip', 'mp3'}
 
-topics = []
 
 
+returnTopic=""
 # Instanzio l'applicazione Flask
 app = Flask(__name__)
 
@@ -145,15 +145,24 @@ def first_Call():#funzione per la ricezione di topic iniziali
     produceJson("CFirstCall",data)
     aList=consumeJsonFirstCall("CFirstCallAck",name)
     #format per Federico ->jsonStr = '{"cose":"a caso","topics":[1, 2,3, 4]}'
-    print(aList)
-    return aList["topics"]
+    return name
 
-def generate_data(topics):
+def generate_data(topics,filename):
     # Generazione dati per il download
-    c = Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
-    c.subscribe(["Download" + str(topics)]) # Topics è solo uno effettivamente (il minimo tra i topics disponibili)
-    while True:
-            msg=c.poll(1.0)
+    index=0
+    count=0
+    consumer=[]
+    i=0
+    for topic in topics:
+        consumer[i]=Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+        consumer[i].subscribe([returnTopic+str(topic)])
+        i=i+1
+    temp_vet=[]
+    
+    i=0
+    for cons in consumer:
+        while True:
+            msg=cons.poll(1.0)
             if msg is None:
                 continue
             elif msg.error():
@@ -162,6 +171,8 @@ def generate_data(topics):
             else:
                 data=json.loads(msg.value().decode('utf-8'))
                 print(data)
+                if data["filename"] != filename:
+                    continue
                 if data["last"] == True:
                     c.unsubscribe()
                     c.close()
@@ -193,17 +204,28 @@ def download_file(filename):
                 return {"error":"File not ready for download!", "HTTP_status_code:": 400}
             data = {
                 "fileName" : secure_filename(filename[:99]),
+                "returnTopic":returnTopic
             }
             print(data)
-            produceJson("Request" + str(topics), data)
-            return Response(generate_data(topics), mimetype='application/octet-stream')
+            cursor.execute("select distinct topic from partitions join files on partition_id=id where file_name=%s",(filename[:99],))
+            topics=cursor.fetchall()
+            unpacked_list = [item[0] for item in topics]
+            for topic in unpacked_list:
+                produceJson("Request" + str(topic), data)
+
+            return Response(generate_data(unpacked_list,data["fileName"]), mimetype='application/octet-stream')
         else:
             return {"error":"File not found!", "HTTP_status_code:": 400}
 
-
+c = Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
 if __name__ == "__main__":
     # Ricezione topics necessari per il download
-    topics = first_Call()[0]
+    returnTopic = first_Call()
+    while returnTopic not in c.list_topics().topics:
+        print("in attesa del manager")
+        sleep(0.2)
+
     hostname = socket.getfqdn()
     print(socket.gethostbyname_ex(hostname))
     app.run(debug=False,host=socket.gethostbyname_ex(hostname)[2][0],port=80)
+    
