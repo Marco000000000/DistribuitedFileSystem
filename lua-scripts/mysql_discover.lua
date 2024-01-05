@@ -32,13 +32,14 @@ if not res then
 end
 
 -- Process the result
-ngx.say("Query result:")
+ngx.say("Query result:\n{")
 for i, row in ipairs(res) do
     for name, value in pairs(row) do
-        ngx.say(name, ": ", value, "\n")
+        ngx.say("\"",name,"\"",":" ,"\"", value, "\"","\n")
     end
     
 end
+ngx.say("}")
 
 -- Close the MySQL connection
 db:close()
