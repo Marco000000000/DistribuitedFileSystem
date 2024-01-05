@@ -37,7 +37,7 @@ logger.setLevel(logging.INFO)
 
 
 db_conf = {
-            'host':'db',
+            'host':'localhost',
             'port':3306,
             'database':'ds_filesystem',
             'user':'root',
@@ -61,12 +61,12 @@ def mysql_custom_connect(conf):
 
 db = mysql_custom_connect(db_conf)
 
-cursor=db.cursor()
+cursor=db.cursor(buffered=True)
 
 # Produzione json su un topic
 def produceJson(topic, dictionaryData):
     print("a")
-    p = Producer({'bootstrap.servers': 'kafka:9093'})
+    p = Producer({'bootstrap.servers': 'localhost:9092'})
     
     m = json.dumps(dictionaryData)
     print(m)
@@ -76,7 +76,7 @@ def produceJson(topic, dictionaryData):
     
 
 def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic e in un gruppo controllando il codice
-    c=Consumer({'bootstrap.servers':'kafka:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
+    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -95,7 +95,7 @@ def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic
             
 # Consuma json da un consumer di un dato gruppo (solo per first_Call())
 def consumeJson(topicName, groupId):
-    c = Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+    c = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -151,10 +151,10 @@ def generate_data(topics,filename):
     # Generazione dati per il download
     
     count=0
-    consumer=[]
+    consumer={}
     i=0
     for topic in topics:
-        consumer[i]=Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+        consumer[i]=Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
         consumer[i].subscribe([returnTopic+str(topic)])
         i=i+1
     
@@ -162,8 +162,10 @@ def generate_data(topics,filename):
     cond=True
     while cond:
         i=0
-        for cons in consumer:
-            if(temp_vet.has_key(i)):
+        for e in consumer:
+            cons=consumer[e]
+            if(i  in temp_vet):
+                i=i+1
                 continue
             msg=cons.poll(1.0)
             if msg is None:
@@ -177,15 +179,19 @@ def generate_data(topics,filename):
                 if data["filename"] != filename:
                     cons.commit()
                     continue
-                if data["count"]!=count:
-                    cons.commit()
-                    continue
                 if data["last"] == True:
-                    for temp in temp_vet:
-                        yield temp
+                    temp_vet[i]=""
                     cond=False
-                temp_vet[i]=base64.b64decode(data["data"])
-                cons.commit()
+                    cons.commit()
+                else:
+                
+                    if data["count"]!=count:
+                        cons.commit()
+                        continue
+                    
+                    temp_vet[i]=base64.b64decode(data["data"])
+                    cons.commit()
+                print(temp_vet)
             i=i+1
         if len(temp_vet)==len(topics):
             count=count+1
@@ -201,7 +207,10 @@ def generate_data(topics,filename):
 @app.route("/download/<path:filename>", methods=['GET'])
 # Gestione di un file in download
 def download_file(filename):
-    print(filename[:99])
+    print(filename)
+    if len(filename) > 99:
+        # Truncate the filename if it's longer than 99 characters
+        filename = filename[:99]
     if not allowed_file(filename):
         return {"error":"File extension not allowed!", "HTTP_status_code:": 400}
     elif filename is None:
@@ -210,29 +219,40 @@ def download_file(filename):
         print("dentro")
         # Controllo se il file è presente nel database
         
-        cursor.execute("SELECT file_name,ready FROM files where file_name= %s",(filename[:99],))
-        
-        if cursor.rowcount:
+        cursor.execute("SELECT file_name,ready FROM files where file_name= %s",(filename,))
+        cond=False
+        try:
+            cond=cursor.fetchone()[1]
+        except:
+            return {"error":"File not found!", "HTTP_status_code:": 400}
+
+        if cond:
             print("dentroif")
             # Se il file è presente nel database, controllo se è pronto per il download
-            if cursor.fetchone()[1] == False:
+            if cond == False:
                 return {"error":"File not ready for download!", "HTTP_status_code:": 400}
             data = {
-                "fileName" : secure_filename(filename[:99]),
+                "fileName" : secure_filename(filename),
                 "returnTopic":returnTopic
             }
             print(data)
-            cursor.execute("select distinct topic from partitions join files on partition_id=id where file_name=%s",(filename[:99],))
+            cursor.execute("select distinct topic from partitions join files on partition_id=id where file_name=%s",(filename,))
             topics=cursor.fetchall()
             unpacked_list = [item[0] for item in topics]
             for topic in unpacked_list:
+                data = {
+                "fileName" : secure_filename(filename),
+                "returnTopic":returnTopic+str(topic)
+                }
+
                 produceJson("Request" + str(topic), data)
 
             return Response(generate_data(unpacked_list,data["fileName"]), mimetype='application/octet-stream')
         else:
-            return {"error":"File not found!", "HTTP_status_code:": 400}
+            return {"error":"File not ready for download!", "HTTP_status_code:": 400}
 
-c = Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+
+c = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
 if __name__ == "__main__":
     # Ricezione topics necessari per il download
     returnTopic = first_Call()
@@ -240,7 +260,8 @@ if __name__ == "__main__":
         print("in attesa del manager")
         sleep(0.2)
 
-    hostname = socket.getfqdn()
+    hostname = socket.gethostname()
+    print(hostname)
     print(socket.gethostbyname_ex(hostname))
-    app.run(debug=False,host=socket.gethostbyname_ex(hostname)[2][0],port=80)
+    app.run(debug=True,port=80)
     

@@ -59,28 +59,38 @@ def download_file(filename,returnTopic):
     if filename is not None and  allowed_file(filename):
         directory = os.path.join( UPLOAD_FOLDER,filename)
         index=0
-        with open(directory, "rb") as f:
-            while (byte := f.read(PARTITION_GRANULARITY)):
-                
-                data={
-                "count":index,
-                "filename":filename,
-                "data":str(base64.b64encode(byte),"UTF-8"),
-                "last":False
-                }
-                m=json.dumps(data)
-                index=index+1
-                p.poll(1)
-                p.produce(topicName, m.encode('utf-8'),callback=receipt)
-            else:
-                data={
-                    "last":True
+        try:
+            with open(directory, "rb") as f:
+                while (byte := f.read(PARTITION_GRANULARITY)):
+                    
+                    data={
+                    "count":index,
+                    "filename":filename,
+                    "data":str(base64.b64encode(byte),"UTF-8"),
+                    "last":False
                     }
+                    m=json.dumps(data)
+                    index=index+1
+                    p.poll(1)
+                    p.produce(topicName, m.encode('utf-8'),callback=receipt)
+                else:
+                    data={
+                        "filename":filename,
+                        "last":True
+                        }
+                    m=json.dumps(data)
+                    p.poll(1)
+                    p.produce(topicName, m.encode('utf-8'),callback=receipt)
+                    p.flush()
+                return
+        except FileNotFoundError as e:
+                data={"filename":filename,
+                        "last":True
+                        }
                 m=json.dumps(data)
                 p.poll(1)
                 p.produce(topicName, m.encode('utf-8'),callback=receipt)
                 p.flush()
-            return
 def produceJson(topicName,dictionaryData):
     p=Producer({'bootstrap.servers':'kafka:9093'})
     m=json.dumps(dictionaryData)

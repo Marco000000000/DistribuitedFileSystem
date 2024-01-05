@@ -139,25 +139,27 @@ def upload_file():#gestione di un file in upload
 
         file = request.files['file']
         fileName=secure_filename(file.filename)
-
+        if len(filename) > 99:
+        # Truncate the filename if it's longer than 99 characters
+            filename = filename[:99]
         if file and allowed_file(fileName):
 
-            cursor.execute("SELECT file_name,ready FROM files where file_name= %s",(fileName[:99],))
+            cursor.execute("SELECT file_name,ready FROM files where file_name= %s",(filename,))
             
             if cursor.rowcount>0:
                 fetch=cursor.fetchone()
                 print(fetch)
                 if(fetch[1]==False):
                     return {"error":"File in updating"}
-                cursor.execute("delete from files where file_name= %s",(fileName[:99],))
+                cursor.execute("delete from files where file_name= %s",(filename,))
                 for topic in topics:
                     data={
-                        "fileName": secure_filename(fileName[:99]),
+                        "fileName": secure_filename(filename),
                     }
                     produceJson("Delete"+str(topic),data)  
             for topic in topics:
                 print("asds32432432?")
-                cursor.execute("INSERT INTO files (file_name ,partition_id,ready) VALUES (%s, %s,%s)",(fileName[:99],topic,False))
+                cursor.execute("INSERT INTO files (file_name ,partition_id,ready) VALUES (%s, %s,%s)",(filename,topic,False))
                 #problema possibile di request mentre è ancora in corso l'upload
                 db.commit()
             count=0
@@ -174,18 +176,18 @@ def upload_file():#gestione di un file in upload
                         returnTopic=socket.gethostname()
                         p.flush()
                         data={
-                        "fileName": secure_filename(fileName[:99]),
+                        "fileName": secure_filename(filename),
                         "last":True,
                         "returnTopic":returnTopic
                         }
                         print(data)
                         produceJson("Upload"+str(topic),data)  
                         consumeJson(returnTopic,"1")
-                        cursor.execute("UPDATE files SET ready = true WHERE file_name= %s",(fileName[:99],))
+                        cursor.execute("UPDATE files SET ready = true WHERE file_name= %s",(filename,))
 
                         break
                     data={
-                    "fileName": secure_filename(fileName[:99]),
+                    "fileName": secure_filename(filename),
                     "data":str(base64.b64encode(chunk),"UTF-8"),
                     "last":False, # è utile oppure non ha senso?
                     "count":count
