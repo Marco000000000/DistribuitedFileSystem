@@ -37,7 +37,7 @@ logger.setLevel(logging.INFO)
 
 
 db_conf = {
-            'host':'localhost',
+            'host':'db',
             'port':3306,
             'database':'ds_filesystem',
             'user':'root',
@@ -66,7 +66,7 @@ cursor=db.cursor(buffered=True)
 # Produzione json su un topic
 def produceJson(topic, dictionaryData):
     print("a")
-    p = Producer({'bootstrap.servers': 'localhost:9092'})
+    p = Producer({'bootstrap.servers': 'kafka:9093'})
     
     m = json.dumps(dictionaryData)
     print(m)
@@ -76,7 +76,7 @@ def produceJson(topic, dictionaryData):
     
 
 def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic e in un gruppo controllando il codice
-    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
+    c=Consumer({'bootstrap.servers':'kafka:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -95,7 +95,7 @@ def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic
             
 # Consuma json da un consumer di un dato gruppo (solo per first_Call())
 def consumeJson(topicName, groupId):
-    c = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+    c = Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -190,8 +190,7 @@ def generate_data(topics,filename,code,consumer):
                 print(len(temp_vet[temp]))
                 yield temp_vet[temp]
             temp_vet.clear() 
-    for topic in topics:
-        consumer[str(topic)].unsubscribe() 
+
 
 
 
@@ -232,28 +231,27 @@ def download_file(filename):
             cursor.execute("select distinct topic from partitions join files on partition_id=id where file_name=%s",(filename,))
             topics=cursor.fetchall()
             unpacked_list = [item[0] for item in topics]
+            for topic in unpacked_list:
+                print(topic,consumers)
+                if str(topic) not in consumers:
+                    consumers[str(topic)]=Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': get_random_string(10), 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+                    consumers[str(topic)].subscribe([returnTopic+str(topic)])#metterli globali ed aggiornarli se ne trovi qualcuno in più nella select a riga 232
+
             code=get_random_string(10)
-            consumer={}
             for topic in unpacked_list:
                 data = {
                 "fileName" : secure_filename(filename),
                 "returnTopic":returnTopic+str(topic),
                 "code":code
                 }
-
-    
-                consumer[str(topic)]=Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': get_random_string(10), 'auto.offset.reset': 'latest', 'enable.auto.commit': False})
-                consumer[str(topic)].subscribe([returnTopic+str(topic)])
-
-                sleep(5)
                 produceJson("Request" + str(topic), data)
 
-            return Response(generate_data(unpacked_list,data["fileName"],code,consumer), mimetype='application/octet-stream')
+            return Response(generate_data(unpacked_list,data["fileName"],code,consumers), mimetype='application/octet-stream')
         else:
             return {"error":"File not ready for download!", "HTTP_status_code:": 400}
 
-
-c = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+consumers={}
+c = Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
 if __name__ == "__main__":
     # Ricezione topics necessari per il download
     returnTopic = first_Call()
@@ -264,5 +262,5 @@ if __name__ == "__main__":
     hostname = socket.gethostname()
     print(hostname)
     print(socket.gethostbyname_ex(hostname))
-    app.run(debug=True,port=80)
+    app.run(debug=True,host=socket.gethostbyname_ex(hostname)[2][0],port=80)
     
