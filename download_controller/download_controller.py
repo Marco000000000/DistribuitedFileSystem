@@ -6,7 +6,7 @@
 # 	- Fornisce api per richiesta file
 #   - Registrazione su NGINX
 import json
-from confluent_kafka import Producer, Consumer
+from confluent_kafka import Producer, Consumer, KafkaError
 import base64
 import socket
 import random
@@ -37,7 +37,7 @@ logger.setLevel(logging.INFO)
 
 
 db_conf = {
-            'host':'localhost',
+            'host':'db',
             'port':3306,
             'database':'ds_filesystem',
             'user':'root',
@@ -66,7 +66,7 @@ cursor=db.cursor(buffered=True)
 # Produzione json su un topic
 def produceJson(topic, dictionaryData):
     print("a")
-    p = Producer({'bootstrap.servers': 'localhost:9092'})
+    p = Producer({'bootstrap.servers': 'kafka:9093'})
     
     m = json.dumps(dictionaryData)
     print(m)
@@ -76,7 +76,7 @@ def produceJson(topic, dictionaryData):
     
 
 def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic e in un gruppo controllando il codice
-    c=Consumer({'bootstrap.servers':'localhost:9092','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
+    c=Consumer({'bootstrap.servers':'kafka:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -95,7 +95,7 @@ def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic
             
 # Consuma json da un consumer di un dato gruppo (solo per first_Call())
 def consumeJson(topicName, groupId):
-    c = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+    c = Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -242,10 +242,21 @@ def download_file(filename):
                 }
 
     
-                consumer[str(topic)]=Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': get_random_string(10), 'auto.offset.reset': 'latest', 'enable.auto.commit': False})
+                consumer[str(topic)]=Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': get_random_string(10), 'auto.offset.reset': 'latest', 'enable.auto.commit': False})
                 consumer[str(topic)].subscribe([returnTopic+str(topic)])
-
-                sleep(5)
+                
+                status_msg = consumer[str(topic)].consume()
+                if status_msg is None:
+                    continue
+                if status_msg.error():
+                    if status_msg.error().code() == KafkaError._PARTITION_EOF:
+                        print('End of partition event received')
+                    else:
+                        print('Error while consuming message: {}'.format(status_msg.error()))
+                else:
+                    print('Received message: {}'.format(status_msg.value().decode('utf-8')))
+                    
+                
                 produceJson("Request" + str(topic), data)
 
             return Response(generate_data(unpacked_list,data["fileName"],code,consumer), mimetype='application/octet-stream')
@@ -253,7 +264,7 @@ def download_file(filename):
             return {"error":"File not ready for download!", "HTTP_status_code:": 400}
 
 
-c = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+c = Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
 if __name__ == "__main__":
     # Ricezione topics necessari per il download
     returnTopic = first_Call()
