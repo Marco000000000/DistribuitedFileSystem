@@ -147,16 +147,11 @@ def first_Call():#funzione per la ricezione di topic iniziali
     #format per Federico ->jsonStr = '{"cose":"a caso","topics":[1, 2,3, 4]}'
     return name
 
-def generate_data(topics,filename):
+def generate_data(topics,filename,code,consumer):
     # Generazione dati per il download
     
     count=0
-    consumer={}
-    i=0
-    for topic in topics:
-        consumer[i]=Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
-        consumer[i].subscribe([returnTopic+str(topic)])
-        i=i+1
+    
     
     temp_vet={}
     cond=True
@@ -164,10 +159,12 @@ def generate_data(topics,filename):
         i=0
         for e in consumer:
             cons=consumer[e]
+            print(temp_vet.keys())
+
             if(i  in temp_vet):
                 i=i+1
                 continue
-            msg=cons.poll(1.0)
+            msg=cons.poll(0.001)
             if msg is None:
                 continue
             elif msg.error():
@@ -175,31 +172,26 @@ def generate_data(topics,filename):
                 continue
             else:
                 data=json.loads(msg.value().decode('utf-8'))
-                print(data)
-                if data["filename"] != filename:
+                if data["filename"] != filename or data["code"] != code:
                     cons.commit()
                     continue
                 if data["last"] == True:
                     temp_vet[i]=""
                     cond=False
                     cons.commit()
-                else:
-                
-                    if data["count"]!=count:
-                        cons.commit()
-                        continue
-                    
+                else:                    
                     temp_vet[i]=base64.b64decode(data["data"])
                     cons.commit()
-                print(temp_vet)
+                print(temp_vet.keys())
             i=i+1
         if len(temp_vet)==len(topics):
             count=count+1
             for temp in temp_vet:
-                yield temp
+                print(len(temp_vet[temp]))
+                yield temp_vet[temp]
             temp_vet.clear() 
     for topic in topics:
-        consumer[i].unsubscribe()           
+        consumer[str(topic)].unsubscribe() 
 
 
 
@@ -218,7 +210,8 @@ def download_file(filename):
     else:
         print("dentro")
         # Controllo se il file è presente nel database
-        
+        print(filename)
+        db.commit()
         cursor.execute("SELECT file_name,ready FROM files where file_name= %s",(filename,))
         cond=False
         try:
@@ -239,15 +232,23 @@ def download_file(filename):
             cursor.execute("select distinct topic from partitions join files on partition_id=id where file_name=%s",(filename,))
             topics=cursor.fetchall()
             unpacked_list = [item[0] for item in topics]
+            code=get_random_string(10)
+            consumer={}
             for topic in unpacked_list:
                 data = {
                 "fileName" : secure_filename(filename),
-                "returnTopic":returnTopic+str(topic)
+                "returnTopic":returnTopic+str(topic),
+                "code":code
                 }
 
+    
+                consumer[str(topic)]=Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': get_random_string(10), 'auto.offset.reset': 'latest', 'enable.auto.commit': False})
+                consumer[str(topic)].subscribe([returnTopic+str(topic)])
+
+                sleep(5)
                 produceJson("Request" + str(topic), data)
 
-            return Response(generate_data(unpacked_list,data["fileName"]), mimetype='application/octet-stream')
+            return Response(generate_data(unpacked_list,data["fileName"],code,consumer), mimetype='application/octet-stream')
         else:
             return {"error":"File not ready for download!", "HTTP_status_code:": 400}
 

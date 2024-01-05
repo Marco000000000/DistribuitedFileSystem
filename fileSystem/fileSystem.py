@@ -52,7 +52,7 @@ def allowed_file(filename):
 
 
 #Invio di un file spezzato con la granularità predefinita
-def download_file(filename,returnTopic):
+def download_file(filename,returnTopic,code):
     #prima coppia di producer-consumer
     p=Producer({'bootstrap.servers':'kafka:9093'})
     topicName=returnTopic
@@ -64,17 +64,21 @@ def download_file(filename,returnTopic):
                 while (byte := f.read(PARTITION_GRANULARITY)):
                     
                     data={
+                    
+                    "code":code,
+                    "data":str(base64.b64encode(byte),"UTF-8"),
+                    "last":False,
                     "count":index,
                     "filename":filename,
-                    "data":str(base64.b64encode(byte),"UTF-8"),
-                    "last":False
                     }
                     m=json.dumps(data)
                     index=index+1
-                    p.poll(1)
+                    p.poll(0.001)
                     p.produce(topicName, m.encode('utf-8'),callback=receipt)
+                    p.flush()
                 else:
                     data={
+                        "code":code,
                         "filename":filename,
                         "last":True
                         }
@@ -85,6 +89,8 @@ def download_file(filename,returnTopic):
                 return
         except FileNotFoundError as e:
                 data={"filename":filename,
+                        "code":code,
+
                         "last":True
                         }
                 m=json.dumps(data)
@@ -182,7 +188,7 @@ if __name__== "__main__":
 
             data=json.loads(msg.value().decode('utf-8'))
             if data["fileName"]!="":
-                download_file(secure_filename(data["fileName"]),data["returnTopic"])
+                download_file(secure_filename(data["fileName"]),data["returnTopic"],data["code"])
                 requestConsumer.commit()
 
 

@@ -139,9 +139,11 @@ def upload_file():#gestione di un file in upload
 
         file = request.files['file']
         fileName=secure_filename(file.filename)
-        if len(filename) > 99:
+        if len(fileName) > 99:
         # Truncate the filename if it's longer than 99 characters
-            filename = filename[:99]
+            filename = fileName[:99]
+        else:
+            filename=fileName
         if file and allowed_file(fileName):
 
             cursor.execute("SELECT file_name,ready FROM files where file_name= %s",(filename,))
