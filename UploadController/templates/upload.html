@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload with Progress Bar</title>
+    <style>
+        #progress-container {
+            display: none;
+            margin-top: 20px;
+        }
+        #progress-bar {
+            width: 0;
+            height: 20px;
+            background-color: #4caf50;
+        }
+    </style>
+</head>
+<body>
+    <h1>File Upload</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="file" id="file-input" required>
+        <button type="button" onclick="uploadFile()">Upload</button>
+    </form>
+
+    <div id="progress-container">
+        <div id="progress-bar"></div>
+    </div>
+
+    <script>
+        function uploadFile() {
+            var formData = new FormData(document.getElementById('upload-form'));
+            var xhr = new XMLHttpRequest();
+
+            // Track upload progress
+            xhr.upload.addEventListener("progress", function (event) {
+                if (event.lengthComputable) {
+                    var percentComplete = (event.loaded / event.total) * 100;
+                    document.getElementById('progress-bar').style.width = percentComplete + "%";
+                }
+            });
+
+            // Triggered when the upload is complete
+            xhr.onload = function () {
+                if (xhr.status == 200) {
+                    // Upload successful
+                    alert('File uploaded successfully!');
+                } else {
+                    // Upload failed
+                    alert('Error uploading file. Please try again.');
+                }
+
+                // Reset the progress bar
+                document.getElementById('progress-bar').style.width = "0%";
+                document.getElementById('progress-container').style.display = 'none';
+            };
+
+            // Open the connection and send the FormData
+            xhr.open("POST","/upload", true);
+            xhr.send(formData);
+
+            // Display the progress bar
+            document.getElementById('progress-container').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
