@@ -14,3 +14,10 @@ services:
     container_name: webapp
     ports:
       - "80:80"
+  
+  sender:
+    image: python:latest
+    container_name: sender
+    volumes:
+      - ./sender.py:/sender.py
+    command: ["python", "/sender.py"]
