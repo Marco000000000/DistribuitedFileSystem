@@ -34,48 +34,7 @@ spec:
       targetPort: 80
   type: NodePort
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: mysql-deployment
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: mysql
-  template:
-    metadata:
-      labels:
-        app: mysql
-    spec:
-      containers:
-      - name: mysql
-        image: distribuitedfilesystem-db:latest
-        command: ["--default-authentication-plugin=mysql_native_password"]
-        ports:
-        - containerPort: 3306
-#      volumes:
-#      - name: mysql-data
-#        hostPath:
-#          path: /path/to/mysql-data
-#      - name: mysql-logs
-#        hostPath:
-#          path: /path/to/mysql-logs
-#      networks:
-#      - vpcbr
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: db
-spec:
-  selector:
-    app: mysql
-  ports:
-    - protocol: TCP
-      port: 3306
-      targetPort: 3306
-  type: ClusterIP
+
 
 ---
 apiVersion: apps/v1
