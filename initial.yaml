@@ -16,10 +16,9 @@ spec:
       - name: nginx
         image: distribuitedfilesystem-nginx:latest
         ports:
-        - protocol: TCP
-          port: 8080
-          targetPort: 80
+        - containerPort: 80
       type: NodePort  # Use NodePort to expose externally
+
 #      networks:
 #      - vpcbr
 ---
