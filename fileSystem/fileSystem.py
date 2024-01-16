@@ -171,7 +171,7 @@ if __name__== "__main__":
 
     uploadConsumer.subscribe(["Upload"+str(topicNumber)])
     requestConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
-    requestConsumer.subscribe(["Request"+str(topicNumber)])
+    requestConsumer.subscribe(["Request"+str(topicNumber)])#forse il commit deve essere fatto dopo ma attenzione ai messaggi ripetuti
     deleteConsumer=Consumer({'bootstrap.servers':'kafka:9093','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
     deleteConsumer.subscribe(["Delete"+str(topicNumber)])
     print("ho fatto l'inizio")

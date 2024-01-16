@@ -1,0 +1,359 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: your-registry/your-nginx-image:your-tag
+        ports:
+        - containerPort: 80
+      networks:
+      - vpcbr
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: your-registry/your-mysql-image:your-tag
+        command: ["--default-authentication-plugin=mysql_native_password"]
+        ports:
+        - containerPort: 3306
+      volumes:
+      - name: mysql-data
+        hostPath:
+          path: /path/to/mysql-data
+      - name: mysql-logs
+        hostPath:
+          path: /path/to/mysql-logs
+      networks:
+      - vpcbr
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+spec:
+  selector:
+    app: mysql
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      containers:
+      - name: zookeeper
+        image: wurstmeister/zookeeper:3.4.6
+        ports:
+        - containerPort: 2181
+      networks:
+      - vpcbr
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-service
+spec:
+  selector:
+    app: zookeeper
+  ports:
+    - protocol: TCP
+      port: 2181
+      targetPort: 2181
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+      - name: kafka
+        image: wurstmeister/kafka:2.11-2.0.1
+        ports:
+        - containerPort: 9092
+        - containerPort: 9093
+        env:
+        - name: KAFKA_ADVERTISED_LISTENERS
+          value: "INSIDE://kafka:9093,OUTSIDE://localhost:9092"
+        - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+          value: "INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT"
+        - name: KAFKA_LISTENERS
+          value: "INSIDE://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092"
+        - name: KAFKA_INTER_BROKER_LISTENER_NAME
+          value: "INSIDE"
+        - name: KAFKA_ZOOKEEPER_CONNECT
+          value: "zookeeper:2181"
+        - name: KAFKA_CREATE_TOPICS
+          value: "CFirstCall:1:1,CFirstCallAck:1:1"
+      volumes:
+      - name: docker-socket
+        hostPath:
+          path: /var/run/docker.sock
+      networks:
+      - vpcbr
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+spec:
+  selector:
+    app: kafka
+  ports:
+    - protocol: TCP
+      port: 9092
+      targetPort: 9092
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filesystem-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: filesystem
+  template:
+    metadata:
+      labels:
+        app: filesystem
+    spec:
+      containers:
+      - name: filesystem
+        image: your-registry/your-filesystem-image:your-tag
+        volumes:
+        - name: filesystem
+          hostPath:
+            path: /path/to/filesystem
+      networks:
+      - vpcbr
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: filesystem-service
+spec:
+  selector:
+    app: filesystem
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: manager-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: manager
+  template:
+    metadata:
+      labels:
+        app: manager
+    spec:
+      containers:
+      - name: manager
+        image: your-registry/your-manager-image:your-tag
+        volumes:
+        - name: manager
+          hostPath:
+            path: /path/to/manager
+      networks:
+      - vpcbr
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: manager-service
+spec:
+  selector:
+    app: manager
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller-manager-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: controller_manager
+  template:
+    metadata:
+      labels:
+        app: controller_manager
+    spec:
+      containers:
+      - name: controller_manager
+        image: your-registry/your-controller-manager-image:your-tag
+        volumes:
+        - name: controller_manager
+          hostPath:
+            path: /path/to/controller_manager
+      networks:
+      - vpcbr
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: controller-manager-service
+spec:
+  selector:
+    app: controller_manager
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: download-controller1-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: download_controller
+  template:
+    metadata:
+      labels:
+        app: download_controller
+    spec:
+      containers:
+      - name: download_controller1
+        image: your-registry/your-download-controller1-image:your-tag
+        volumes:
+        - name: download_controller1
+          hostPath:
+            path: /path/to/download_controller1
+      networks:
+      - vpcbr
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: download-controller2-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: download_controller
+  template:
+    metadata:
+      labels:
+        app: download_controller
+    spec:
+      containers:
+      - name: download_controller2
+        image: your-registry/your-download-controller2-image:your-tag
+        volumes:
+        - name: download_controller2
+          hostPath:
+            path: /path/to/download_controller2
+      networks:
+      - vpcbr
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: download-controller-service
+spec:
+  selector:
+    app: download_controller  # Common label selector for both download_controller1 and download_controller2
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uploadcontroller-service
+spec:
+  selector:
+    app: uploadcontroller
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
