@@ -4,7 +4,7 @@
 # Dividere file
 # Produrre nei vari topic kafka
 #multithreading
-from flask import Flask, request
+from flask import Flask, request, render_template
 from werkzeug.utils import secure_filename
 import json
 import socket
@@ -133,10 +133,12 @@ def first_Call():#funzione per la ricezione di topic iniziali
     return aList["topics"]
 
 
-@app.route('/upload', methods=['POST'])
+@app.route('/upload', methods=['GET', 'POST'])
 def upload_file():#gestione di un file in upload 
 
-
+    if request.method == 'GET':
+        return render_template('upload.html')
+    else:
         file = request.files['file']
         fileName=secure_filename(file.filename)
         if len(fileName) > 99:
