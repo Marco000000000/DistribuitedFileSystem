@@ -17,7 +17,6 @@ spec:
         image: distribuitedfilesystem-nginx:latest
         ports:
         - containerPort: 80
-      type: NodePort  # Use NodePort to expose externally
 
 #      networks:
 #      - vpcbr
@@ -31,9 +30,9 @@ spec:
     app: nginx
   ports:
     - protocol: TCP
-      port: 80
+      port: 8080
       targetPort: 80
-  type: ClusterIP
+  type: NodePort
 ---
 apiVersion: apps/v1
 kind: Deployment
