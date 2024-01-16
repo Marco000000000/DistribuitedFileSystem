@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nuovacartella-nginx:latest
+        image: distribuitedfilesystem-nginx:latest
         ports:
         - containerPort: 80
 #      networks:
@@ -49,7 +49,7 @@ spec:
     spec:
       containers:
       - name: mysql
-        image: nuovacartella-db:latest
+        image: distribuitedfilesystem-db:latest
         command: ["--default-authentication-plugin=mysql_native_password"]
         ports:
         - containerPort: 3306
@@ -183,7 +183,7 @@ spec:
     spec:
       containers:
       - name: filesystem
-        image: nuovacartella-filesystem1:latest
+        image: distribuitedfilesystem-filesystem1:latest
 #        volumes:
 #        - name: filesystem
 #          hostPath:
@@ -221,7 +221,7 @@ spec:
     spec:
       containers:
       - name: manager
-        image: nuovacartella-manager:latest
+        image: distribuitedfilesystem-manager:latest
 #        volumes:
 #        - name: manager
 #          hostPath:
@@ -260,7 +260,7 @@ spec:
     spec:
       containers:
       - name: controllermanager
-        image: nuovacartella-controller_manager:latest
+        image: distribuitedfilesystem-controller_manager:latest
 #        volumes:
 #        - name: controller_manager
 #          hostPath:
@@ -297,7 +297,7 @@ spec:
     spec:
       containers:
       - name: downloadcontroller1
-        image: nuovacartella-download_controller1:latest
+        image: distribuitedfilesystem-download_controller1:latest
 #        volumes:
 #        - name: download_controller1
 #          hostPath:
@@ -322,7 +322,7 @@ spec:
     spec:
       containers:
       - name: downloadcontroller2
-        image: nuovacartella-download_controller1:latest
+        image: distribuitedfilesystem-download_controller1:latest
 #        volumes:
 #        - name: download_controller2
 #          hostPath:
@@ -360,7 +360,7 @@ spec:
     spec:
       containers:
       - name: uploadcontroller
-        image: nuovacartella-uploadcontroller:latest
+        image: distribuitedfilesystem-uploadcontroller:latest
 #        volumes:
 #        - name: uploadcontroller
 #          hostPath:
