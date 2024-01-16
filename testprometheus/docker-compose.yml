@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  webapp:
+    image: nginx
+    container_name: webapp
+    ports:
+      - "80:80"
