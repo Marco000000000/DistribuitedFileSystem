@@ -16,8 +16,19 @@ services:
       - "80:80"
   
   sender:
-    image: python:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.sender
     container_name: sender
-    volumes:
-      - ./sender.py:/sender.py
-    command: ["python", "/sender.py"]
+    ports:
+      - "5000:5000"
+    environment:
+      - SENDER=sender.py
+    
+  prometheus-scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile.scraper
+    container_name: prometheus-scraper
+    depends_on:
+      - prometheus

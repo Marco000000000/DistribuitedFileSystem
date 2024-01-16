@@ -2,9 +2,9 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'prometheus'
+  - job_name: 'sender'
     static_configs:
-      - targets: ['localhost:9091']
+      - targets: ['sender:5000']
 
   - job_name: 'webapp'
     static_configs:
