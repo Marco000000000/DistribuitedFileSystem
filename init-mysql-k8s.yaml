@@ -15,28 +15,24 @@ spec:
       containers:
       - name: mysql
         image: distribuitedfilesystem-db:latest
-        command: ["--default-authentication-plugin=mysql_native_password"]
+        imagePullPolicy: Never
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: giovanni
+        - name: MYSQL_DATABASE
+          value: ds_filesystem
+        - name: MYSQL_USER
+          value: user
+        - name: MYSQL_PASSWORD
+          value: user
         ports:
         - containerPort: 3306
-#      volumes:
-#      - name: mysql-data
-#        hostPath:
-#          path: /path/to/mysql-data
-#      - name: mysql-logs
-#        hostPath:
-#          path: /path/to/mysql-logs
-#      networks:
-#      - vpcbr
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: db
-spec:
-  selector:
-    app: mysql
-  ports:
-    - protocol: TCP
-      port: 3306
-      targetPort: 3306
-  type: ClusterIP
+        volumeMounts:
+        - name: initdb-script
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: initdb-script
+        configMap:
+          name: mysql-init-script
+
+# kubectl create configmap mysql-init-script --from-file=initdb.sql
