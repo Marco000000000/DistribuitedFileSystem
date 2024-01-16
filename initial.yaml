@@ -17,8 +17,8 @@ spec:
         image: your-registry/your-nginx-image:your-tag
         ports:
         - containerPort: 80
-      networks:
-      - vpcbr
+#      networks:
+#      - vpcbr
 ---
 apiVersion: v1
 kind: Service
@@ -49,19 +49,19 @@ spec:
     spec:
       containers:
       - name: mysql
-        image: your-registry/your-mysql-image:your-tag
+        image: nuovacartella-db:latest
         command: ["--default-authentication-plugin=mysql_native_password"]
         ports:
         - containerPort: 3306
-      volumes:
-      - name: mysql-data
-        hostPath:
-          path: /path/to/mysql-data
-      - name: mysql-logs
-        hostPath:
-          path: /path/to/mysql-logs
-      networks:
-      - vpcbr
+#      volumes:
+#      - name: mysql-data
+#        hostPath:
+#          path: /path/to/mysql-data
+#      - name: mysql-logs
+#        hostPath:
+#          path: /path/to/mysql-logs
+#      networks:
+#      - vpcbr
 ---
 apiVersion: v1
 kind: Service
@@ -96,8 +96,8 @@ spec:
         image: wurstmeister/zookeeper:3.4.6
         ports:
         - containerPort: 2181
-      networks:
-      - vpcbr
+#      networks:
+#      - vpcbr
 ---
 apiVersion: v1
 kind: Service
@@ -146,12 +146,12 @@ spec:
           value: "zookeeper:2181"
         - name: KAFKA_CREATE_TOPICS
           value: "CFirstCall:1:1,CFirstCallAck:1:1"
-      volumes:
-      - name: docker-socket
-        hostPath:
-          path: /var/run/docker.sock
-      networks:
-      - vpcbr
+#      volumes:
+#      - name: docker-socket
+#        hostPath:
+#          path: /var/run/docker.sock
+#      networks:
+#      - vpcbr
 ---
 apiVersion: v1
 kind: Service
@@ -183,13 +183,13 @@ spec:
     spec:
       containers:
       - name: filesystem
-        image: your-registry/your-filesystem-image:your-tag
-        volumes:
-        - name: filesystem
-          hostPath:
-            path: /path/to/filesystem
-      networks:
-      - vpcbr
+        image: nuovacartella-filesystem1:latest
+#        volumes:
+#        - name: filesystem
+#          hostPath:
+#            path: /path/to/filesystem
+#      networks:
+#      - vpcbr
 ---
 apiVersion: v1
 kind: Service
@@ -221,13 +221,13 @@ spec:
     spec:
       containers:
       - name: manager
-        image: your-registry/your-manager-image:your-tag
-        volumes:
-        - name: manager
-          hostPath:
-            path: /path/to/manager
-      networks:
-      - vpcbr
+        image: nuovacartella-manager:latest
+#        volumes:
+#        - name: manager
+#          hostPath:
+#            path: /path/to/manager
+#      networks:
+#      - vpcbr
 
 ---
 apiVersion: v1
@@ -252,21 +252,21 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: controller_manager
+      app: controllermanager
   template:
     metadata:
       labels:
-        app: controller_manager
+        app: controllermanager
     spec:
       containers:
-      - name: controller_manager
-        image: your-registry/your-controller-manager-image:your-tag
-        volumes:
-        - name: controller_manager
-          hostPath:
-            path: /path/to/controller_manager
-      networks:
-      - vpcbr
+      - name: controllermanager
+        image: nuovacartella-controller_manager:latest
+#        volumes:
+#        - name: controller_manager
+#          hostPath:
+#            path: /path/to/controller_manager
+#      networks:
+#      - vpcbr
 ---
 apiVersion: v1
 kind: Service
@@ -274,7 +274,7 @@ metadata:
   name: controller-manager-service
 spec:
   selector:
-    app: controller_manager
+    app: controllermanager
   ports:
     - protocol: TCP
       port: 80
@@ -289,21 +289,21 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: download_controller
+      app: downloadcontroller
   template:
     metadata:
       labels:
-        app: download_controller
+        app: downloadcontroller
     spec:
       containers:
-      - name: download_controller1
-        image: your-registry/your-download-controller1-image:your-tag
-        volumes:
-        - name: download_controller1
-          hostPath:
-            path: /path/to/download_controller1
-      networks:
-      - vpcbr
+      - name: downloadcontroller1
+        image: nuovacartella-download_controller1:latest
+#        volumes:
+#        - name: download_controller1
+#          hostPath:
+#            path: /path/to/download_controller1
+#      networks:
+#      - vpcbr
 
 ---
 apiVersion: apps/v1
@@ -314,21 +314,21 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: download_controller
+      app: downloadcontroller
   template:
     metadata:
       labels:
-        app: download_controller
+        app: downloadcontroller
     spec:
       containers:
-      - name: download_controller2
-        image: your-registry/your-download-controller2-image:your-tag
-        volumes:
-        - name: download_controller2
-          hostPath:
-            path: /path/to/download_controller2
-      networks:
-      - vpcbr
+      - name: downloadcontroller2
+        image: nuovacartella-download_controller1:latest
+#        volumes:
+#        - name: download_controller2
+#          hostPath:
+#            path: /path/to/download_controller2
+#      networks:
+#      - vpcbr
 
 ---
 apiVersion: v1
@@ -337,12 +337,36 @@ metadata:
   name: download-controller-service
 spec:
   selector:
-    app: download_controller  # Common label selector for both download_controller1 and download_controller2
+    app: downloadcontroller  # Common label selector for both download_controller1 and download_controller2
   ports:
     - protocol: TCP
       port: 80
       targetPort: 80
   type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uploadcontroller-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: uploadcontroller
+  template:
+    metadata:
+      labels:
+        app: uploadcontroller
+    spec:
+      containers:
+      - name: uploadcontroller
+        image: nuovacartella-uploadcontroller:latest
+#        volumes:
+#        - name: uploadcontroller
+#          hostPath:
+#            path: /path/to/uploadcontroller
+#      networks:
+#      - vpcbr
 
 ---
 apiVersion: v1
