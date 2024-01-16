@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controllermanager-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: controllermanager
+  template:
+    metadata:
+      labels:
+        app: controllermanager
+    spec:
+      containers:
+      - name: controllermanager-container
+        image: python:3.12
+        workingDir: /app
+        command: ["python", "Controller_manager.py"]
+        ports:
+        - containerPort: 80  # Adjust the port if needed
+        volumeMounts:
+        - name: controllermanager-files
+          mountPath: /app
+      volumes:
+      - name: controllermanager-files
+        configMap:
+          name: controllermanager-configmap
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: controllermanager-configmap
+data:
+  controllermanager.py: |
+    {{ .Files.Get "Controller_manager.py" | indent 4 }}
+  requirements.txt: |
+    {{ .Files.Get "requirements.txt" | indent 4 }}
+  templates: | 
+    {{ .Files.Get "templates" | indent 4 }}
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: controllermanager-service
+spec:
+  selector:
+    app: controllermanager
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80  # Should match the container port in Deployment
+  type: ClusterIP
