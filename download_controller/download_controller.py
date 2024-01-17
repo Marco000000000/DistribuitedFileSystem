@@ -66,8 +66,8 @@ cursor=db.cursor(buffered=True)
 # Produzione json su un topic
 def produceJson(topic, dictionaryData):
     print("a")
-    p = Producer({'bootstrap.servers': 'kafka:9093'})
-    p = Producer({'bootstrap.servers': 'kafka:9093'})
+    p = Producer({'bootstrap.servers': 'kafka-service:9093'})
+    p = Producer({'bootstrap.servers': 'kafka-service:9093'})
     
     m = json.dumps(dictionaryData)
     print(m)
@@ -77,8 +77,8 @@ def produceJson(topic, dictionaryData):
     
 
 def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic e in un gruppo controllando il codice
-    c=Consumer({'bootstrap.servers':'kafka:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
-    c=Consumer({'bootstrap.servers':'kafka:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
+    c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
+    c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -97,8 +97,8 @@ def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic
             
 # Consuma json da un consumer di un dato gruppo (solo per first_Call())
 def consumeJson(topicName, groupId):
-    c = Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
-    c = Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+    c = Consumer({'bootstrap.servers': 'kafka-service:9093', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+    c = Consumer({'bootstrap.servers': 'kafka-service:9093', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
     c.subscribe([topicName])
     while True:
             msg=c.poll(1.0) #timeout
@@ -237,7 +237,7 @@ def download_file(filename):
             for topic in unpacked_list:
                 print(topic,consumers)
                 if str(topic) not in consumers:
-                    consumers[str(topic)]=Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': get_random_string(10), 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+                    consumers[str(topic)]=Consumer({'bootstrap.servers': 'kafka-service:9093', 'group.id': get_random_string(10), 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
                     consumers[str(topic)].subscribe([returnTopic+str(topic)])#metterli globali ed aggiornarli se ne trovi qualcuno in più nella select a riga 232
 
             code=get_random_string(10)
@@ -254,7 +254,7 @@ def download_file(filename):
             return {"error":"File not ready for download!", "HTTP_status_code:": 400}
 
 consumers={}
-c = Consumer({'bootstrap.servers': 'kafka:9093', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
+c = Consumer({'bootstrap.servers': 'kafka-service:9093', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
 if __name__ == "__main__":
     # Ricezione topics necessari per il download
     returnTopic = first_Call()
