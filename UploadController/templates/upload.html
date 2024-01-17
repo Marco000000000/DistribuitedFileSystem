@@ -57,6 +57,8 @@
 
             // Open the connection and send the FormData
             xhr.open("POST","/upload", true);
+            xhr.timeout = 60000000; // Set your desired timeout value in milliseconds (e.g., 5000 milliseconds = 5 seconds)
+
             xhr.send(formData);
 
             // Display the progress bar

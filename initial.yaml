@@ -40,9 +40,10 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: nginx-ingress
+  namespace: default  # Adjust the namespace as needed
 spec:
   rules:
-  - host: localhost
+  - host: 0.0.0.0.nip.io
     http:
       paths:
       - path: /
@@ -232,7 +233,7 @@ kind: Deployment
 metadata:
   name: filesystem-deployment
 spec:
-  replicas: 2
+  replicas: 5
   selector:
     matchLabels:
       app: filesystem
