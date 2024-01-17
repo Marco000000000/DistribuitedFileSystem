@@ -57,66 +57,6 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mysql-deployment
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: mysql
-  template:
-    metadata:
-      labels:
-        app: mysql
-    spec:
-      containers:
-      - name: mysql
-        image: distribuitedfilesystem-db:latest
-        imagePullPolicy: Never
-        env:
-        - name: MYSQL_ROOT_PASSWORD
-          value: giovanni
-        - name: MYSQL_DATABASE
-          value: ds_filesystem
-        - name: MYSQL_USER
-          value: user
-        - name: MYSQL_PASSWORD
-          value: user
-        ports:
-        - containerPort: 3306
-  #       volumeMounts:
-  #       - name: mysql-persistent-storage
-  #         mountPath: /var/lib/mysql
-  # volumes:
-  # - name: mysql-persistent-storage
-  #   persistentVolumeClaim:
-  #     claimName: mysql-pv-claim
-#      volumes:
-#     r - name: mysql-data
-#        hostPath:
-#          path: /path/to/mysql-data
-#      - name: mysql-logs
-#        hostPath:
-#          path: /path/to/mysql-logs
-#      networks:
-#      - vpcb
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: db
-spec:
-  selector:
-    app: mysql
-  ports:
-    - protocol: TCP
-      port: 3306
-      targetPort: 3306
-  type: ClusterIP
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
   name: zookeeper-deployment
 spec:
   replicas: 1

@@ -211,7 +211,7 @@ if __name__ == "__main__":
                     data["Host"]+str(i)
                     try:
                         print(data["Host"]+str(i))
-                        admin.create_topics([NewTopic(data["Host"]+str(i), num_partitions=1, replication_factor=1)],validate_only=False)
+                        admin.create_topics([NewTopic(data["Host"]+str(i), num_partitions=1, replication_factor=3)],validate_only=False)
                     except:
                         pass
                 cursor.execute("INSERT INTO controller (controller_name, cType) VALUES (%s, %s)", (data["Host"], data["Type"]))

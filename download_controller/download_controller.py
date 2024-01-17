@@ -162,7 +162,7 @@ def generate_data(topics,filename,code,consumer):
         i=0
         for e in consumer:
             cons=consumer[e]
-            print(temp_vet.keys())
+            #print(temp_vet.keys())
 
             if(i  in temp_vet):
                 i=i+1
