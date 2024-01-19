@@ -16,7 +16,7 @@ import logging
 from flask import Flask, Response
 import mysql.connector
 from werkzeug.utils import secure_filename
-from prometheus_client import Summary, Histogram
+from prometheus_client import Summary, Histogram, CONTENT_TYPE_LATEST, generate_latest
 from time import time
 
 # Variabili globali
@@ -289,6 +289,10 @@ def download_file(filename):
             return Response(generate_data(unpacked_list,data["fileName"],code,consumers, start_time), mimetype='application/octet-stream')
         else:
             return {"error":"File not ready for download!", "HTTP_status_code:": 400}
+
+@app.route('/metrics')
+def metrics():
+    return Response(generate_latest(), content_type=CONTENT_TYPE_LATEST)
 
 consumers={}
 c = Consumer({'bootstrap.servers': 'kafka-service:9093', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
