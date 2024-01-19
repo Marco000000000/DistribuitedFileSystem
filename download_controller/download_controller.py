@@ -201,7 +201,20 @@ def generate_data(topics,filename,code,consumer):
 
 
 
+@app.route("/discover", methods=['GET'])
+def discover():
+    mysql_query = "SELECT distinct file_name FROM files WHERE ready=true;"
+    cursor.execute(mysql_query)
+    files=cursor.fetchall()
+    if cursor.rowcount>0:
+        unpacked_list = [item[0] for item in files]
+        files={}
+        for i in len(unpacked_list):
+            files[i]=unpacked_list[i]
+        return json.dump(files)
+    return {"error":"No ready files"}
 
+    
 # Endpoint per il download di un file (filename è il nome del file)
 @app.route("/download/<path:filename>", methods=['GET'])
 # Gestione di un file in download

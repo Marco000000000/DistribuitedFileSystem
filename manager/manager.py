@@ -22,7 +22,7 @@ cons_conf = {'bootstrap.servers': 'kafka-service:9093',
         'enable.auto.commit': False}
 
 consumer = Consumer(cons_conf)
-
+limitTopic=3
 db_conf = {
             'host':'db',
             'port':3306,
@@ -116,8 +116,9 @@ if __name__ == "__main__":
     while True:
         # Recupero del numero di partizioni
         cursor.execute("SELECT MAX(topic) FROM partitions")
-
         max_topic = cursor.fetchone()[0]
+
+        
         print(max_topic)
         # Richiesta di registrazione da parte del filesystem + inserimento nel database della partizione
         data = register_filesystem(consumer, "FirstCall")
@@ -143,7 +144,12 @@ if __name__ == "__main__":
                 db.commit()
                 continue
             # Se ci sono partizioni assegna il valore massimo + 1
-            data["Topic"] = max_topic + 1
+            if max_topic<limitTopic:
+                data["Topic"] = max_topic + 1
+            else:
+                cursor.execute("SELECT MIN(mycount) FROM (SELECT topic,COUNT(topic) as mycount FROM partitions GROUP BY topic);")
+                max_topic=cursor.fetchone()[0]
+
         new_topics = [NewTopic("Upload"+str(data["Topic"]), num_partitions=1, replication_factor=1), NewTopic("Request"+str(data["Topic"]), num_partitions=1, replication_factor=1),NewTopic("Delete"+str(data["Topic"]), num_partitions=1, replication_factor=1)]
         admin.create_topics(new_topics)
         cursor.execute("INSERT INTO partitions (partition_name, used_space, topic) VALUES (%s, %s, %s)", (data["Code"], data["Dim"], data["Topic"]))
