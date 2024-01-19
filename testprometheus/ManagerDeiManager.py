@@ -3,66 +3,50 @@
 from kubernetes import client, config
 import requests
 def createUploadManager():
+    deploymentName="uploadcontroller-deployment"
+    namespace="dafault"
+    update_replicas(deploymentName,-1,namespace)
     return
-def create_pod_and_service():
-    config.load_incluster_config()
 
-    v1 = client.CoreV1Api()
-    v1_services = client.CoreV1Api()
-    v1_config_maps = client.CoreV1Api()
+def createDownloadManager():
+    deploymentName="download-controller-deployment"
+    namespace="dafault"
+    update_replicas(deploymentName,-1,namespace)
+    return
 
-    # Create Pod
-    pod_manifest = {
-        "apiVersion": "v1",
-        "kind": "Pod",
-        "metadata": {"name": "my-pod"},
-        "spec": {
-            "containers": [
-                {
-                    "name": "nginx-container",
-                    "image": "nginx",
-                    "volumeMounts": [
-                        {
-                            "name": "nginx-config",
-                            "mountPath": "/etc/nginx/conf.d",
-                        }
-                    ]
-                }
-            ],
-            "volumes": [
-                {
-                    "name": "nginx-config",
-                    "configMap": {
-                        "name": "nginx-config-map",
-                    }
-                }
-            ]
-        },
-    }
-    v1.create_namespaced_pod(body=pod_manifest, namespace="default")
 
-    # Create Service
-    service_manifest = {
-        "apiVersion": "v1",
-        "kind": "Service",
-        "metadata": {"name": "my-service"},
-        "spec": {
-            "selector": {"app": "my-pod"},
-            "ports": [{"protocol": "TCP", "port": 80, "targetPort": 80}]
-        },
-    }
-    v1_services.create_namespaced_service(body=service_manifest, namespace="default")
+def createFileSystem():
+    deploymentName="filesystem-deployment"
+    namespace="dafault"
+    update_replicas(deploymentName,-1,namespace)
+    return
 
-    # Update Nginx ConfigMap
-    config_map_nginx = {
-        "apiVersion": "v1",
-        "kind": "ConfigMap",
-        "metadata": {"name": "nginx-config-map"},
-        "data": {
-            "nginx.conf": "your-updated-nginx-config",
-        }
-    }
-    v1_config_maps.replace_namespaced_config_map(name="nginx-config-map", namespace="default", body=config_map_nginx)
+
+
+def update_replicas(deployment_name, new_replica_count, namespace):
+    config.load_incluster_config()  # Load in-cluster config
+
+    api_instance = client.AppsV1Api()
+
+    # Get the deployment
+    deployment = api_instance.read_namespaced_deployment(
+        name=deployment_name,
+        namespace=namespace
+    )
+
+    # Update the replicas field
+    if new_replica_count==-1:
+        deployment.spec.replicas=deployment.spec.replicas+1
+    else:
+        deployment.spec.replicas = new_replica_count
+
+    # Apply the changes
+    api_instance.replace_namespaced_deployment(
+        name=deployment_name,
+        namespace=namespace,
+        body=deployment
+    )
+    print(f"Replicas for '{deployment_name}' set to {new_replica_count}.")
 
 def update_prometheus_config():
     config.load_incluster_config()
@@ -95,5 +79,4 @@ def update_prometheus_config():
         print(f"Error reloading Prometheus configuration: {str(e)}")
 
 if __name__ == "__main__":
-    create_pod_and_service()
     update_prometheus_config()

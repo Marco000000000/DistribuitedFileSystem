@@ -155,12 +155,12 @@ def upload_file():#gestione di un file in upload
                 print(fetch)
                 if(fetch[1]==False):
                     return {"error":"File in updating"}
-                cursor.execute("delete from files where file_name= %s",(filename,))
-                for topic in topics:
-                    data={
-                        "fileName": secure_filename(filename),
-                    }
-                    produceJson("Delete"+str(topic),data)  
+            cursor.execute("delete from files where file_name= %s",(filename,))
+            for topic in topics:
+                data={
+                    "fileName": secure_filename(filename),
+                }
+                produceJson("Delete"+str(topic),data)  
             for topic in topics:
                 print("asds32432432?")
                 cursor.execute("INSERT INTO files (file_name ,partition_id,ready) VALUES (%s, %s,%s)",(filename,topic,False))
