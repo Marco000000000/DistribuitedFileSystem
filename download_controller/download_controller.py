@@ -158,6 +158,7 @@ def generate_data(topics,filename,code,consumer):
     
     temp_vet={}
     cond=True
+    last=False
     while cond:
         i=0
         for e in consumer:
@@ -180,15 +181,19 @@ def generate_data(topics,filename,code,consumer):
                     continue
                 if data["last"] == True:
                     temp_vet[i]=""
-                    cond=False
+                    last=True
                     cons.commit()
                 else:                    
                     temp_vet[i]=base64.b64decode(data["data"])
                     cons.commit()
                 print(temp_vet.keys())
             i=i+1
+        yield ""
+
         if len(temp_vet)==len(topics):
             count=count+1
+            if last:
+                cond=False
             for temp in temp_vet:
                 print(len(temp_vet[temp]))
                 yield temp_vet[temp]
