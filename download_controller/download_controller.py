@@ -67,11 +67,10 @@ cursor=db.cursor(buffered=True)
 def produceJson(topic, dictionaryData):
     print("a")
     p = Producer({'bootstrap.servers': 'kafka-service:9093'})
-    p = Producer({'bootstrap.servers': 'kafka-service:9093'})
     
     m = json.dumps(dictionaryData)
     print(m)
-    p.poll(1)
+    p.poll(0.01)
     p.produce(topic, m.encode('utf-8'), callback=receipt)
     p.flush() # Serve per attendere la ricezione di tutti i messaggi
     
@@ -276,9 +275,12 @@ c = Consumer({'bootstrap.servers': 'kafka-service:9093', 'group.id': 'download',
 if __name__ == "__main__":
     # Ricezione topics necessari per il download
     returnTopic = first_Call()
-    while returnTopic+"1" not in c.list_topics().topics:
+    topics=c.list_topics()
+    while returnTopic+"1" not in topics.topics:
         print("in attesa del manager")
-        sleep(0.2)
+        topics=c.list_topics()
+        sleep(1)
+        print(topics)
 
     hostname = socket.gethostname()
     print(hostname)

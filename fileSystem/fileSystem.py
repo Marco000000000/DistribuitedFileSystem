@@ -104,6 +104,12 @@ def produceJson(topicName,dictionaryData):
     p.produce(topicName, m.encode('utf-8'),callback=receipt)
     p.flush()
 
+def update_file(filename,pack):
+    directory = os.path.join( UPLOAD_FOLDER,filename)
+    file = base64.b64decode(pack["data"])
+
+    with open(directory, "ab+") as f:
+        f.write(file)
 #upload di un singolo pacchetto di dati 
 def upload_file(filename,pack):
     directory = os.path.join( UPLOAD_FOLDER,filename)
@@ -150,23 +156,66 @@ def first_Call():
     c.unsubscribe()
     
     return data["id"],data["Topic"]
+
+
+def updateLocalFiles(id,topicNumber):
+    p=Producer({'bootstrap.servers':'kafka-service:9093'})
+    data={"id":id,
+          "topic":topicNumber}
+    m=json.dumps(data)
+    p.poll(1)
+    p.produce('UpdateRequest', m.encode('utf-8'),callback=receipt)
+    p.flush()
+    while True:
+        msgUpdate=updateConsumer.poll(0.001)
+
+        if msgUpdate is None:
+                    pass
+        elif msgUpdate.error():
+            print('Error: {}'.format(msg.error()))
+            pass
+        else:
+            data=json.loads(msgUpdate.value().decode('utf-8'))
+            if data["id"]!=id:
+                continue
+            print(data["fileName"])
+            if data["last"]==True:
+                updateConsumer.commit()
+
+                break
+            if data["fileName"]!="":
+                if not os.path.exists(UPLOAD_FOLDER):
+                    os.makedirs(UPLOAD_FOLDER)
+                update_file(secure_filename(data["fileName"]),data)
+                updateConsumer.commit()
+            
+             
+    
+    updateConsumer.unsubscribe()
 #eliminazione file 
 def delete_file(filename):
     if os.path.exists(os.path.join( UPLOAD_FOLDER,filename)):
         os.remove(os.path.join( UPLOAD_FOLDER,filename))
 
 c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':get_random_string(20),'auto.offset.reset':'latest','enable.auto.commit': False})
-
+updateConsumer=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':"1",'auto.offset.reset':'latest','enable.auto.commit': False})
+updateConsumer.subscribe(["UpdateDownload"])
 if __name__== "__main__":
+
     while "FirstCall" not in c.list_topics().topics or "FirstCallAck" not in c.list_topics().topics:
         print("in attesa del manager")
         time.sleep(0.2)
     id,topicNumber=first_Call() #ricezione dati necessari per la ricezione
     print(id,topicNumber)
+    
+    updateLocalFiles(id,topicNumber)
+    
+    
+    
     while "Upload"+str(topicNumber) not in c.list_topics().topics:
         print("in attesa del manager")
         time.sleep(0.2)
-        
+
     uploadConsumer=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':str(id),'auto.offset.reset':'earliest','enable.auto.commit': False})
 
     uploadConsumer.subscribe(["Upload"+str(topicNumber)])
@@ -175,6 +224,8 @@ if __name__== "__main__":
     deleteConsumer=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
     deleteConsumer.subscribe(["Delete"+str(topicNumber)])
     print("ho fatto l'inizio")
+
+
     while True:
         msg=requestConsumer.poll(0.001)
         msgUpload=uploadConsumer.poll(0.001)
