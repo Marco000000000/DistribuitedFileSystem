@@ -16,11 +16,23 @@ import logging
 from flask import Flask, Response
 import mysql.connector
 from werkzeug.utils import secure_filename
+from prometheus_client import Summary, Histogram
+from time import time
 
 # Variabili globali
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'rar', 'zip', 'mp3'}
 
+# Variabili per prometheus
+download_file_latency_histogram = Histogram(
+    'download_file_latency_seconds',
+    'Latency of the download_file function in seconds',
+    buckets=[0.1, 0.5, 1, 5, 10, 30, 60, 120, 300, 600, 1800, 3600]
+)
 
+download_file_latency_summary = Summary(
+    'download_file_latency_summary_seconds',
+    'Latency of the download_file function in seconds'
+)
 
 returnTopic=""
 # Instanzio l'applicazione Flask
@@ -150,7 +162,7 @@ def first_Call():#funzione per la ricezione di topic iniziali
     #format per Federico ->jsonStr = '{"cose":"a caso","topics":[1, 2,3, 4]}'
     return name
 
-def generate_data(topics,filename,code,consumer):
+def generate_data(topics,filename,code,consumer, prometheus_start_time):
     # Generazione dati per il download
     
     count=0
@@ -159,6 +171,7 @@ def generate_data(topics,filename,code,consumer):
     temp_vet={}
     cond=True
     last=False
+    yield_run = False
     while cond:
         i=0
         for e in consumer:
@@ -197,6 +210,11 @@ def generate_data(topics,filename,code,consumer):
             for temp in temp_vet:
                 print(len(temp_vet[temp]))
                 yield temp_vet[temp]
+                if not yield_run:
+                    yield_run = True
+                    end_time = time()
+                    download_file_latency_histogram.observe(end_time - prometheus_start_time)
+                    download_file_latency_summary.observe(end_time - prometheus_start_time)
             temp_vet.clear() 
 
 
@@ -206,6 +224,8 @@ def generate_data(topics,filename,code,consumer):
 @app.route("/download/<path:filename>", methods=['GET'])
 # Gestione di un file in download
 def download_file(filename):
+    # Avvio timer per prometheus
+    start_time = time()
     print(filename)
     if len(filename) > 99:
         # Truncate the filename if it's longer than 99 characters
@@ -254,7 +274,7 @@ def download_file(filename):
                 }
                 produceJson("Request" + str(topic), data)
 
-            return Response(generate_data(unpacked_list,data["fileName"],code,consumers), mimetype='application/octet-stream')
+            return Response(generate_data(unpacked_list,data["fileName"],code,consumers, start_time), mimetype='application/octet-stream')
         else:
             return {"error":"File not ready for download!", "HTTP_status_code:": 400}
 
