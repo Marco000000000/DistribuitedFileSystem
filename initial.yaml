@@ -234,7 +234,7 @@ kind: Deployment
 metadata:
   name: filesystem-deployment
 spec:
-  replicas: 5
+  replicas: 2
   selector:
     matchLabels:
       app: filesystem
@@ -416,12 +416,6 @@ spec:
         image: distribuitedfilesystem-uploadcontroller:latest
         imagePullPolicy: Never
 
-#        volumes:
-#        - name: uploadcontroller
-#          hostPath:
-#            path: /path/to/uploadcontroller
-#      networks:
-#      - vpcbr
 
 ---
 apiVersion: v1
@@ -431,6 +425,40 @@ metadata:
 spec:
   selector:
     app: uploadcontroller
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: updatecontroller-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: updatecontroller
+  template:
+    metadata:
+      labels:
+        app: updatecontroller
+    spec:
+      containers:
+      - name: updatecontroller
+        image: distribuitedfilesystem-uploadcontroller:latest
+        imagePullPolicy: Never
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: updatecontroller-service
+spec:
+  selector:
+    app: updatecontroller
   ports:
     - protocol: TCP
       port: 80
