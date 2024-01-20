@@ -85,22 +85,6 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.12
-  filesystem2:
-    build:
-      context: ./filesystem
-      dockerfile: Dockerfile.scripts
-    
-    depends_on:
-      - zookeeper
-      - kafka
-      - manager
-    volumes: 
-      - ./filesystem:/app/filesystem
-    hostname: filesystem2
-    container_name: filesystem2
-    networks:
-      vpcbr:
-        ipv4_address: 10.5.0.14
 
   
   manager:
@@ -154,24 +138,6 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.8
-
-  download_controller2:
-    build:
-      context: ./download_controller
-      dockerfile: Dockerfile.scripts
-
-    depends_on:
-      - zookeeper
-      - kafka
-      - db
-      - controller_manager
-    volumes: 
-      - ./download_controller:/app/download_controller
-    hostname: cDownload2
-    container_name: download_controller2
-    networks:
-      vpcbr:
-        ipv4_address: 10.5.0.9
 
   uploadcontroller:
     build:
