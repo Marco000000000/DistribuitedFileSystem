@@ -66,6 +66,9 @@ def UpdateFileOnTopic(id,topic):
     
     for i in json_data:
         code=get_random_string(10)
+        control=json_data[i].split(".")
+        if len(control)!=2:
+       		continue
         data = {
         "fileName" : json_data[i],
         "returnTopic":"UpdateIntermediate",

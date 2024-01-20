@@ -172,7 +172,7 @@ def updateLocalFiles(id,topicNumber):
         if msgUpdate is None:
                     pass
         elif msgUpdate.error():
-            print('Error: {}'.format(msg.error()))
+            print('Error: {}'.format(msgUpdate.error()))
             pass
         else:
             data=json.loads(msgUpdate.value().decode('utf-8'))

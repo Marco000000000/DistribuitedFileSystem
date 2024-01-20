@@ -234,7 +234,7 @@ kind: Deployment
 metadata:
   name: filesystem-deployment
 spec:
-  replicas: 5
+  replicas: 2
   selector:
     matchLabels:
       app: filesystem
@@ -416,12 +416,6 @@ spec:
         image: distribuitedfilesystem-uploadcontroller:latest
         imagePullPolicy: Never
 
-#        volumes:
-#        - name: uploadcontroller
-#          hostPath:
-#            path: /path/to/uploadcontroller
-#      networks:
-#      - vpcbr
 
 ---
 apiVersion: v1
@@ -437,129 +431,37 @@ spec:
       targetPort: 80
   type: ClusterIP
 ---
-
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: prometheus
-  namespace: monitoring
-
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: prometheus
-rules:
-- apiGroups: [""]
-  resources:
-  - nodes
-  - nodes/proxy
-  - services
-  - endpoints
-  - pods
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["extensions"]
-  resources:
-  - ingresses
-  verbs: ["get", "list", "watch"]
-- apiGroups: [""]
-  resources:
-  - configmaps
-  verbs: ["get"]
-- nonResourceURLs: ["/metrics"]
-  verbs: ["get"]
-
----
-
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: monitoring
-
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: prometheus
-subjects:
-- kind: ServiceAccount
-  name: prometheus
-  namespace: monitoring
-roleRef:
-  kind: ClusterRole
-  name: prometheus
-  apiGroup: rbac.authorization.k8s.io
-
----
-
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: prometheus-server-config
-  namespace: monitoring
-data:
-  prometheus.yml: |-
-    global:
-      scrape_interval: 15s
-    scrape_configs:
-      - job_name: 'download-controller-service'
-        static_configs:
-        - targets: ['download-controller-service:80']
-      
----
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: prometheus
-  namespace: monitoring
+  name: updatecontroller-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: prometheus
+      app: updatecontroller
   template:
     metadata:
       labels:
-        app: prometheus
+        app: updatecontroller
     spec:
-      serviceAccountName: prometheus
       containers:
-        - name: prometheus
-          image: prom/prometheus:v2.30.0
-          args:
-            - "--config.file=/etc/prometheus/prometheus.yml"
-            - "--storage.tsdb.path=/data"
-            - "--web.console.libraries=/etc/prometheus/console_libraries"
-            - "--web.console.templates=/etc/prometheus/consoles"
-          ports:
-            - containerPort: 9090
-          volumeMounts:
-            - name: config-volume
-              mountPath: /etc/prometheus
-            - name: prometheus-storage
-              mountPath: /data
-      volumes:
-        - name: config-volume
-          configMap:
-            name: prometheus-server-config
-        - name: prometheus-storage
-          emptyDir: {}
+      - name: updatecontroller
+        image: distribuitedfilesystem-updatecontroller:latest
+        imagePullPolicy: Never
+
 
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
-  name: prometheus
-  namespace: monitoring
+  name: updatecontroller-service
 spec:
   selector:
-    app: prometheus
+    app: updatecontroller
   ports:
-    - name: web
-      port: 9090
-      targetPort: 9090
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
 
