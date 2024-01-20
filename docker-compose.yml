@@ -71,7 +71,7 @@ services:
 
   filesystem1:
     build:
-      context: ./filesystem
+      context: ./fileSystem
       dockerfile: Dockerfile.scripts
     
     depends_on:
@@ -106,7 +106,7 @@ services:
 
   controller_manager:
     build:
-      context: ./controller_manager
+      context: ./Controller_manager
       dockerfile: Dockerfile.scripts
     
     depends_on:
@@ -141,7 +141,7 @@ services:
 
   uploadcontroller:
     build:
-      context: ./uploadcontroller
+      context: ./UploadController
       dockerfile: Dockerfile.scripts
 
     depends_on:
@@ -156,6 +156,24 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.10
+        
+  updatecontroller:
+    build:
+      context: ./UpdateController
+      dockerfile: Dockerfile.scripts
+
+    depends_on:
+      - zookeeper
+      - kafka
+      - db
+      - download_controller1
+    volumes: 
+      - ./updatecontroller:/app/updatecontroller
+    hostname: cUpdate
+    container_name: updatecontroller
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.25
 
 
 networks:

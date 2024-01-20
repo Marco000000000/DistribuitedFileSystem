@@ -9,6 +9,5 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application files for each Python application
-COPY UploadController.py .
-COPY templates /app/templates
-CMD ["python", "UpdatedController.py"]
+COPY UpdateController.py .
+CMD ["python", "UpdateController.py"]
