@@ -447,7 +447,7 @@ spec:
     spec:
       containers:
       - name: updatecontroller
-        image: distribuitedfilesystem-uploadcontroller:latest
+        image: distribuitedfilesystem-updatecontroller:latest
         imagePullPolicy: Never
 
 
