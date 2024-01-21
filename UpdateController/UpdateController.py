@@ -68,12 +68,12 @@ def UpdateFileOnTopic(id,topic):
         code=get_random_string(10)
         control=json_data[i].split(".")
         if len(control)!=2:
-       		continue
-        data = {
-        "fileName" : json_data[i],
-        "returnTopic":"UpdateIntermediate",
-        "code":code
-        }
+            continue
+        data={
+            "fileName":json_data[i],
+            "returnTopic":"UpdateIntermediate",
+            "code":code
+            }     
         produceJson(topic,data)
         count=0
         while True:
