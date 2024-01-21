@@ -7,7 +7,6 @@ services:
       dockerfile: Dockerfile.nginx
     depends_on:
       - download_controller1
-      - download_controller2
       - uploadcontroller
     container_name: nginx
     ports:
@@ -85,6 +84,7 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.12
+<<<<<<< HEAD
   filesystem2:
     build:
       context: ./fileSystem
@@ -101,6 +101,8 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.14
+=======
+>>>>>>> dc0a8f338a618eca141f673639da09fd02a00edc
 
   
   manager:
@@ -154,24 +156,6 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.8
-
-  download_controller2:
-    build:
-      context: ./download_controller
-      dockerfile: Dockerfile.scripts
-
-    depends_on:
-      - zookeeper
-      - kafka
-      - db
-      - controller_manager
-    volumes: 
-      - ./download_controller:/app/download_controller
-    hostname: cDownload2
-    container_name: download_controller2
-    networks:
-      vpcbr:
-        ipv4_address: 10.5.0.9
 
   uploadcontroller:
     build:
