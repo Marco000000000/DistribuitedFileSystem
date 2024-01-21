@@ -57,7 +57,7 @@ spec:
 
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: mysql-deployment
 spec:
@@ -447,7 +447,7 @@ spec:
     spec:
       containers:
       - name: updatecontroller
-        image: distribuitedfilesystem-updatecontroller:latest
+        image: distribuitedfilesystem-uploadcontroller:latest
         imagePullPolicy: Never
 
 
@@ -464,4 +464,3 @@ spec:
       port: 80
       targetPort: 80
   type: ClusterIP
-
