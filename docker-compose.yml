@@ -175,6 +175,17 @@ services:
       vpcbr:
         ipv4_address: 10.5.0.25
 
+  qosmanager:
+    build:
+      context: ./QoSManager
+      dockerfile: Dockerfile.scripts
+    volumes: 
+      - ./qosmanager:/app/qosmanager
+    hostname: QoSManager
+    container_name: QoSManager
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.26
 
 networks:
   vpcbr:

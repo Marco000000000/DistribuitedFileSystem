@@ -22,8 +22,6 @@ def createFileSystem():
     update_replicas(deploymentName,-1,namespace)
     return
 
-
-
 def update_replicas(deployment_name, new_replica_count, namespace):
     config.load_incluster_config()  # Load in-cluster config
 
@@ -47,8 +45,7 @@ def update_replicas(deployment_name, new_replica_count, namespace):
         namespace=namespace,
         body=deployment
     )
-    print(f"Replicas for '{deployment_name}' set to {new_replica_count}.")
-
+    print(f"Replicas for '{deployment_name}' set to {new_replica_count}.") 
 def update_prometheus_config():
     config.load_incluster_config()
 
@@ -80,7 +77,7 @@ def update_prometheus_config():
         print(f"Error reloading Prometheus configuration: {str(e)}")
 
 if __name__ == "__main__":
-    time.sleep(300)
+    time.sleep(10)
     createUploadManager()
     createDownloadManager()
     createFileSystem()
