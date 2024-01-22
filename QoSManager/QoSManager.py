@@ -28,10 +28,14 @@ def createFileSystem():
     return
 def create_deployment(namespace, deployment_name, image, replicas):
     # Load the Kubernetes configuration
-    config.load_kube_config()
+    config.load_incluster_config()  # Load in-cluster config
+    configuration = client.Configuration()
+    #configuration.assert_hostname = False
+    configuration.verify_ssl = False
+    configuration.api_key["authorization"] = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IndYRXlyeGFIV2xBZk14RG5BV2xFdjRBNkpxWUs4RmQ0Y09qTEtXZFdsdTgifQ.eyJhdWQiOlsiaHR0cHM6Ly9rdWJlcm5ldGVzLmRlZmF1bHQuc3ZjLmNsdXN0ZXIubG9jYWwiXSwiZXhwIjoxNzA1OTQ5NTQxLCJpYXQiOjE3MDU5NDU5NDEsImlzcyI6Imh0dHBzOi8va3ViZXJuZXRlcy5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsIiwia3ViZXJuZXRlcy5pbyI6eyJuYW1lc3BhY2UiOiJkZWZhdWx0Iiwic2VydmljZWFjY291bnQiOnsibmFtZSI6InNjYWxlciIsInVpZCI6IjAxMDFkOTM0LTkyOWItNDFlOS04YWY5LTNiYzdiZDRiMzBmMyJ9fSwibmJmIjoxNzA1OTQ1OTQxLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6ZGVmYXVsdDpzY2FsZXIifQ.EhSTXz-j-DlaXUDY32qBaHku2sYecskoZj43IW2e95311e5lW4vjX6yBMsCMhT1P23P9noKCC9sChbqrW_2tRHAiwpHb0x6XMTGtZCkc_ZDIQMJ_Ielx6QzNrVSOcfuU1oMBlg1MrXLgaCLHl2hu9Nb6S40y0ZnK7JtbFykalLIK1pD1HnGn0IdSMWQdL2rWyX1uDiD0K238MtY7F4_L4LYNS0W3E_TepQgh7jPy1Ez8IhxqQn8B5gP2r-RzLbRLCPbg7c0HxMVTZgrSXbudDJzZpYDHpnI3Nx4C78GdH9UCnGC2j5ZgkZbec7htlz8DnSuTON4ItedYywZnBsCJzg"
 
-    # Create a Kubernetes API client
-    apps_api = client.AppsV1Api()
+    # Create an instance of the AppsV1Api using the custom Configuration
+    apps_api = client.AppsV1Api(client.ApiClient(configuration))
 
     # Define the deployment spec
     deployment = client.V1Deployment(

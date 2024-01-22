@@ -465,8 +465,14 @@ spec:
       - name: qosmanager
         image: distribuitedfilesystem-qosmanager:latest
         imagePullPolicy: Never
-
-
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: scaler
+  namespace: default
+secrets:
+- name: key
 ---
 apiVersion: v1
 kind: Service
@@ -486,17 +492,17 @@ kind: Role
 metadata:
   name: deployment-manager
 rules:
-- apiGroups: ["apps/v1"]
-  resources: ["deployments"]
-  verbs: ["get", "list", "watch", "create","update", "patch"]
+- apiGroups: ["apps"]
+  resources: ["*"]
+  verbs: ["*"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: deployment-manager-binding
 subjects:
-- kind: ServiceAccount
-  name: a  # Replace with your actual service account
+- kind: User
+  name: myuser  # Replace with your actual service account
 roleRef:
   kind: Role
   name: deployment-manager
