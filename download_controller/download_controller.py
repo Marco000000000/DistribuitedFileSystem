@@ -301,12 +301,7 @@ c = Consumer({'bootstrap.servers': 'kafka-service:9093', 'group.id': 'download',
 if __name__ == "__main__":
     # Ricezione topics necessari per il download
     returnTopic = first_Call()
-    topics=c.list_topics()
-    while returnTopic+"1" not in topics.topics:
-        print("in attesa del manager")
-        topics=c.list_topics()
-        sleep(1)
-        print(topics)
+    sleep(5)
 
     hostname = socket.gethostname()
     print(hostname)
