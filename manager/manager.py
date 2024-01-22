@@ -147,7 +147,7 @@ if __name__ == "__main__":
             if max_topic<limitTopic:
                 data["Topic"] = max_topic + 1
             else:
-                cursor.execute("SELECT MIN(mycount) FROM (SELECT topic,COUNT(topic) as mycount FROM partitions GROUP BY topic);")
+                cursor.execute("SELECT MIN(mycount) FROM (SELECT topic,COUNT(topic) as mycount FROM partitions GROUP BY topic) as b;")
                 max_topic=cursor.fetchone()[0]
         print("maxTopic",max_topic)
 
