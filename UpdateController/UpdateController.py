@@ -108,7 +108,7 @@ def UpdateFileOnTopic(id,topic):
             "last":True, 
             "id":id
             } 
-    produceJson(topic,data)
+    produceJson("UpdateDownload",data)
 
 
 

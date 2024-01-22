@@ -36,28 +36,10 @@ spec:
       targetPort: 80
       nodePort: 30000
   type: NodePort
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: nginx-ingress
-  namespace: default  # Adjust the namespace as needed
-spec:
-  rules:
-  - host: 0.0.0.0.nip.io
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: nginx-service
-            port:
-              number: 8080  # Use the NodePort allocated to your Nginx service
 
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: mysql-deployment
 spec:
@@ -153,7 +135,7 @@ spec:
 
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: kafka-deployment
 spec:

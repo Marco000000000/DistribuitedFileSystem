@@ -138,7 +138,7 @@ if __name__ == "__main__":
                 print("dentro")
                 data["id"]=dati[0]
                 data["Topic"]=dati[1]
-                producer.poll(1)
+                producer.poll(0.01)
 
                 producer.produce('FirstCallAck', json.dumps(data).encode('utf-8'), callback=receipt)
                 db.commit()
@@ -149,6 +149,7 @@ if __name__ == "__main__":
             else:
                 cursor.execute("SELECT MIN(mycount) FROM (SELECT topic,COUNT(topic) as mycount FROM partitions GROUP BY topic);")
                 max_topic=cursor.fetchone()[0]
+        print("maxTopic",max_topic)
 
         new_topics = [NewTopic("Upload"+str(data["Topic"]), num_partitions=1, replication_factor=1), NewTopic("Request"+str(data["Topic"]), num_partitions=1, replication_factor=1),NewTopic("Delete"+str(data["Topic"]), num_partitions=1, replication_factor=1)]
         admin.create_topics(new_topics)
@@ -164,7 +165,7 @@ if __name__ == "__main__":
 
         data["id"] = max_id
         
-        producer.poll(1)
+        producer.poll(0.01)
         producer.produce('FirstCallAck', json.dumps(data).encode('utf-8'), callback=receipt)
 
  

@@ -178,7 +178,7 @@ def updateLocalFiles(id,topicNumber):
             data=json.loads(msgUpdate.value().decode('utf-8'))
             if data["id"]!=id:
                 continue
-            print(data["fileName"])
+            print(data)
             if data["last"]==True:
                 updateConsumer.commit()
 
@@ -198,7 +198,7 @@ def delete_file(filename):
         os.remove(os.path.join( UPLOAD_FOLDER,filename))
 
 c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':get_random_string(20),'auto.offset.reset':'latest','enable.auto.commit': False})
-updateConsumer=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':"1",'auto.offset.reset':'latest','enable.auto.commit': False})
+updateConsumer=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':"1",'auto.offset.reset':'earliest','enable.auto.commit': False})
 updateConsumer.subscribe(["UpdateDownload"])
 if __name__== "__main__":
 

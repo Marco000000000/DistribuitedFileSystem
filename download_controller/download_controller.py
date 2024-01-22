@@ -220,15 +220,17 @@ def generate_data(topics,filename,code,consumer, prometheus_start_time):
 
 @app.route("/discover", methods=['GET'])
 def discover():
+    db.commit()
     mysql_query = "SELECT distinct file_name FROM files WHERE ready=true;"
     cursor.execute(mysql_query)
     files=cursor.fetchall()
+    print(files)
     if cursor.rowcount>0:
         unpacked_list = [item[0] for item in files]
         files={}
-        for i in len(unpacked_list):
+        for i in range(len(unpacked_list)):
             files[i]=unpacked_list[i]
-        return json.dump(files)
+        return json.dumps(files)
     return {"error":"No ready files"}
 
     
