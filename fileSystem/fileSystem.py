@@ -179,7 +179,7 @@ def updateLocalFiles(id,topicNumber):
             if data["id"]!=id:
                 continue
             print(data)
-            logger.info("ricevuto:"+data)
+            logger.info(data)
 
             if data["last"]==True:
                 updateConsumer.commit()
