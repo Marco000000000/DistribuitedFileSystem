@@ -2,6 +2,9 @@ from kubernetes import client, config
 import random
 import string
 import time
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
@@ -60,6 +63,7 @@ def createFileSystem():
  # Create the initial deployment
     create_deployment(api_instance, name, image, 1)
     print("creato un "+name)
+    logger.info("creato un "+name)
 
 def createDownloadManager():
     # Load in-cluster Kubernetes configuration
@@ -72,6 +76,7 @@ def createDownloadManager():
     # Create the initial deployment
     create_deployment(api_instance, name, image, 1)
     print("creato un "+name)
+    logger.info("creato un "+name)
 
 def createUploadManager():
     # Load in-cluster Kubernetes configuration
@@ -84,6 +89,7 @@ def createUploadManager():
   # Create the initial deployment
     create_deployment(api_instance, name, image, 1)
     print("creato un "+name)
+    logger.info("creato un "+name)
 
 if __name__ == "__main__":
     time.sleep(100)

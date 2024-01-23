@@ -20,7 +20,6 @@ import logging
 app=Flask(__name__)
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'rar', 'zip', 'mp3'}
 PARTITION_GRANULARITY=os.getenv("PARTITION_GRANULARITY", default = 131072)
-print("aaa")
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 topics=[]
@@ -40,6 +39,8 @@ def mysql_custom_connect(conf):
 
             if db.is_connected():
                 print("Connected to MySQL database")
+                logger.info("Connected to MySQL database")
+
                 return db
         except mysql.connector.Error as err:
             print("Something went wrong: {}".format(err))
@@ -76,6 +77,7 @@ def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic
                     continue
                 while groupId not in c.list_topics().topics:
                     print("in attesa del manager")
+                    logger.info("in attesa del manager")
                     sleep(0.2)
                 c.commit()
                 c.unsubscribe()
@@ -153,6 +155,7 @@ def upload_file():#gestione di un file in upload
             if cursor.rowcount>0:
                 fetch=cursor.fetchone()
                 print(fetch)
+                logger.info(fetch)
                 if(fetch[1]==False):
                     return {"error":"File in updating"}
             cursor.execute("delete from files where file_name= %s",(filename,))
@@ -162,7 +165,6 @@ def upload_file():#gestione di un file in upload
                 }
                 produceJson("Delete"+str(topic),data)  
             for topic in topics:
-                print("asds32432432?")
                 cursor.execute("INSERT INTO files (file_name ,partition_id,ready) VALUES (%s, %s,%s)",(filename,topic,False))
                 #problema possibile di request mentre è ancora in corso l'upload
                 db.commit()
@@ -174,6 +176,7 @@ def upload_file():#gestione di un file in upload
 
                 for topic in topics:
                     print(topic)
+
                     chunk=file.stream.read(PARTITION_GRANULARITY)
                     if len(chunk)== 0:
                         fileNotFinished=False
@@ -185,6 +188,7 @@ def upload_file():#gestione di un file in upload
                         "returnTopic":returnTopic
                         }
                         print(data)
+                        logger.info(data)
                         produceJson("Upload"+str(topic),data)  
                         consumeJson(returnTopic,"1")
                         cursor.execute("UPDATE files SET ready = true WHERE file_name= %s",(filename,))

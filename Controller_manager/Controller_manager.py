@@ -24,6 +24,7 @@ def mysql_custom_connect(conf):
 
                 if db.is_connected():
                     print("Connected to MySQL database")
+                    logger.info("Connected to MySQL database")
                     return db
             except mysql.connector.Error as err:
                 print("Something went wrong: {}".format(err))
@@ -99,10 +100,8 @@ logging.basicConfig(format='%(asctime)s %(message)s',
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-print("consumer")
 consumer = Consumer(conf)
 logger.info("prima dell'admin consumer creato")
-print("admin")
 def updateTopics():
     produceJson("UpdateTopics",topics)
     cursor.execute("Select controller_name from controller ;")
@@ -111,6 +110,7 @@ def updateTopics():
     for controller in unpacked_list:
         for i in (topics):
             print(controller+str(i))
+            logger.info(controller+str(i))
             try:
                 admin.create_topics([NewTopic(controller+str(i), num_partitions=1, replication_factor=1)],validate_only=False)
             except:
@@ -123,7 +123,6 @@ admin = AdminClient({'bootstrap.servers': 'kafka-service:9093'})
 admin.create_topics([NewTopic("CFirstCall", num_partitions=1, replication_factor=1), NewTopic("CFirstCallAck", num_partitions=1, replication_factor=1),NewTopic("UpdateTopics", num_partitions=1, replication_factor=1)])
 
 if __name__ == "__main__":
-    print("main")
 
     db_conf = {
             'host':'db',
@@ -172,7 +171,7 @@ if __name__ == "__main__":
             print(topics_temp)
             unpacked_list_temp = [item[0] for item in topics_temp]
             topics_temp=unpacked_list_temp
-            print(topics_temp)
+            logger.info(topics_temp)
 
             if len(topics_temp)>0:
                 cursor.execute("select id_controller FROM controller where controller_name=%s ;",(data["Host"],))
@@ -211,6 +210,7 @@ if __name__ == "__main__":
                     data["Host"]+str(i)
                     try:
                         print(data["Host"]+str(i))
+                        logger.info(data["Host"]+str(i))
                         admin.create_topics([NewTopic(data["Host"]+str(i), num_partitions=1, replication_factor=3)],validate_only=False)
                     except:
                         pass
