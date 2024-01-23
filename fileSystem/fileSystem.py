@@ -40,7 +40,7 @@ def receipt(err,msg):
         print('Error: {}'.format(err))
     else:
         message = 'Prodotto un messaggio sul topic {} con il valore {}\n'.format(msg.topic(), msg.value().decode('utf-8'))
-        #logger.info(message)
+        logger.info(message)
         print(message)
 
 #check per le estensioni permesse
@@ -179,8 +179,6 @@ def updateLocalFiles(id,topicNumber):
             if data["id"]!=id:
                 continue
             print(data)
-            #logger.info(data)
-
             if data["last"]==True:
                 updateConsumer.commit()
 
@@ -216,8 +214,6 @@ if __name__== "__main__":
     
     while "Upload"+str(topicNumber) not in c.list_topics().topics:
         print("in attesa del manager")
-        #logger.info("in attesa del manager")
-
         time.sleep(0.2)
 
     uploadConsumer=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':str(id),'auto.offset.reset':'earliest','enable.auto.commit': False})
@@ -228,7 +224,6 @@ if __name__== "__main__":
     deleteConsumer=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
     deleteConsumer.subscribe(["Delete"+str(topicNumber)])
     print("ho fatto l'inizio")
-    #logger.info("ho fatto l'inizio")
 
 
     while True:

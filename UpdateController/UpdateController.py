@@ -64,53 +64,59 @@ def UpdateFileOnTopic(id,topic):
     response=requests.get("http://"+host+"/discover")
     try:
         json_data = response.json()
-    except:
-        json_data=""
-    for i in json_data:
-        code=get_random_string(10)
-        control=json_data[i].split(".")
-        if len(control)!=2:
-            continue
-        data={
-            "fileName":json_data[i],
-            "returnTopic":"UpdateIntermediate",
-            "code":code
-            }     
-        produceJson(topic,data)
-        count=0
-        while True:
-            msg=consumerIntermediate.poll(0.01)
-            if msg is None:
+        
+        for i in json_data:
+            code=get_random_string(10)
+            control=json_data[i].split(".")
+            if len(control)!=2:
                 continue
-            elif msg.error():
-                print('Error: {}'.format(msg.error()))
-                continue
-            else:
-                data=json.loads(msg.value().decode('utf-8'))
-                if data["filename"] != json_data[i] or data["code"] != code:
-                    consumerIntermediate.commit()
+            data={
+                "fileName":json_data[i],
+                "returnTopic":"UpdateIntermediate",
+                "code":code
+                }     
+            produceJson(topic,data)
+            count=0
+            while True:
+                msg=consumerIntermediate.poll(0.01)
+                if msg is None:
                     continue
-                if data["last"] == True:
-                    
-                    consumerIntermediate.commit()
-                    break
+                elif msg.error():
+                    print('Error: {}'.format(msg.error()))
+                    continue
                 else:
-                    data={
-                    "fileName": json_data[i],
-                    "data":data["data"],
-                    "last":False, 
-                    "count":count,
-                    "id":id
-                    }                    
-                    count=count+1
-                    produceJson("UpdateDownload",data)
-                    consumerIntermediate.commit()
-    data={
-            
-            "last":True, 
-            "id":id
-            } 
-    produceJson("UpdateDownload",data)
+                    data=json.loads(msg.value().decode('utf-8'))
+                    if data["filename"] != json_data[i] or data["code"] != code:
+                        consumerIntermediate.commit()
+                        continue
+                    if data["last"] == True:
+                        
+                        consumerIntermediate.commit()
+                        break
+                    else:
+                        data={
+                        "fileName": json_data[i],
+                        "data":data["data"],
+                        "last":False, 
+                        "count":count,
+                        "id":id
+                        }                    
+                        count=count+1
+                        produceJson("UpdateDownload",data)
+                        consumerIntermediate.commit()
+        data={
+                
+                "last":True, 
+                "id":id
+                } 
+        produceJson("UpdateDownload",data)
+    except:
+        data={
+                
+                "last":True, 
+                "id":id
+                } 
+        produceJson("UpdateDownload",data)
 
 
 
