@@ -89,3 +89,5 @@ if __name__ == "__main__":
     createDownloadManager()
     createFileSystem()
     createUploadManager()
+    while True:
+        time.sleep(20)
