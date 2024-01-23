@@ -3,6 +3,11 @@ import random
 import string
 import time
 import logging
+from prometheus_api_client import PrometheusConnect
+
+prometheus_url = "http://prometheus-service:9090"
+prometheus = PrometheusConnect(url=prometheus_url, disable_ssl=True)
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 def get_random_string(length):
@@ -91,10 +96,22 @@ def createUploadManager():
     print("creato un "+name)
     logger.info("creato un "+name)
 
+# Sezione recupero metriche da prometheus
+
+def query():
+    # Query for a specific metric
+    query = 'flask_requests_total'
+
+    # Get the metric data
+    metric_data = prometheus.custom_query(query)
+
+    print(f"Metric data for {query}: {metric_data}")
+
 if __name__ == "__main__":
-    time.sleep(100)
-    createDownloadManager()
-    createFileSystem()
-    #createUploadManager()
-    while True:
-        time.sleep(20)
+    # time.sleep(100)
+    # createDownloadManager()
+    # createFileSystem()
+    # #createUploadManager()
+    # while True:
+    #     time.sleep(20)
+    
