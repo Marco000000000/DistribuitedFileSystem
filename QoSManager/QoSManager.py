@@ -1,6 +1,7 @@
 from kubernetes import client, config
 import random
 import string
+import time
 def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
@@ -42,6 +43,7 @@ def create_deployment(api_instance, deployment_name, container_image, replicas):
             )
             break
         except:
+            time.sleep(2)
             print("Probabilmente ha preso un nome uguale")
             continue
    
