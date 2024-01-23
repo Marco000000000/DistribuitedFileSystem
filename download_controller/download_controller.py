@@ -25,13 +25,24 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'rar', '
 # Variabili per prometheus
 download_file_latency_histogram = Histogram(
     'download_file_latency_seconds',
-    'Latency of the download_file function in seconds',
+    'Latency of the download_file function in seconds until the first yield of data is sent',
     buckets=[0.1, 0.5, 1, 5, 10, 30, 60, 120, 300, 600, 1800, 3600]
 )
 
 download_file_latency_summary = Summary(
     'download_file_latency_summary_seconds',
-    'Latency of the download_file function in seconds'
+    'Latency of the download_file function in seconds until the first yield of data is sent'
+)
+
+download_file_throughput_histogram = Histogram(
+    'download_file_throughput_seconds',
+    'Throughput of the download_file function in seconds',
+    buckets=[0.1, 0.5, 1, 5, 10, 30, 60, 120, 300, 600, 1800, 3600]
+)
+
+download_file_throughput_summary = Summary(
+    'download_file_throughput_summary_seconds',
+    'Throughput of the download_file function in seconds'
 )
 
 returnTopic=""
@@ -165,6 +176,7 @@ def generate_data(topics,filename,code,consumer, prometheus_start_time):
     # Generazione dati per il download
     
     count=0
+    total_len = 0
     
     
     temp_vet={}
@@ -207,13 +219,17 @@ def generate_data(topics,filename,code,consumer, prometheus_start_time):
             if last:
                 cond=False
             for temp in temp_vet:
-                print(len(temp_vet[temp]))
+                total_len += len(temp_vet[temp])
                 yield temp_vet[temp]
                 if not yield_run:
                     yield_run = True
                     end_time = time()
                     download_file_latency_histogram.observe(end_time - prometheus_start_time)
                     download_file_latency_summary.observe(end_time - prometheus_start_time)
+            end_time = time()
+            throughput = total_len/(end_time - prometheus_start_time)
+            download_file_throughput_histogram.observe(throughput)
+            download_file_throughput_summary.observe(throughput)
             temp_vet.clear() 
 
 

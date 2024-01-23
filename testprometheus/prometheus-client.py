@@ -1,28 +1,38 @@
-from flask import Flask
-from prometheus_client import Counter, Histogram, generate_latest, REGISTRY, Gauge
-from prometheus_client.exposition import CONTENT_TYPE_LATEST
+from flask import Flask, request
+from prometheus_client import Counter, Histogram, generate_latest, REGISTRY
+from time import sleep, time
 
 app = Flask(__name__)
 
-# Define some example metrics
-counter = Counter('my_flask_app_requests_total', 'Total number of requests received')
-histogram = Histogram('my_flask_app_request_duration_seconds', 'Duration of requests in seconds')
-gauge = Gauge('my_flask_app_active_users', 'Number of active users')
+# Define Prometheus metrics
+REQUEST_COUNTER = Counter('flask_app_request_count', 'Total number of requests')
+REQUEST_DURATION = Histogram('flask_app_request_duration_seconds', 'Request duration in seconds')
 
-# Define a route that updates metrics
-@app.route('/process')
-def process():
-    # Update metrics
-    counter.inc()
-    histogram.observe(1.5)  # Simulate a request duration of 1.5 seconds
-    gauge.set(42)  # Simulate 42 active users
+# Flask middleware to measure request duration
+@app.before_request
+def before_request():
+    request.start_time = time()
 
-    return 'Processing request'
+@app.after_request
+def after_request(response):
+    duration = time() - request.start_time
+    REQUEST_COUNTER.inc()
+    REQUEST_DURATION.observe(duration)
+    return response
 
-# Define a route for Prometheus to scrape metrics
+# Endpoint to expose Prometheus metrics
 @app.route('/metrics')
 def metrics():
-    return generate_latest(REGISTRY), 200, {'Content-Type': CONTENT_TYPE_LATEST}
+    return generate_latest(REGISTRY)
+
+# Your main endpoint where you want to measure the time spent
+@app.route('/')
+def your_function():
+    with REQUEST_DURATION.time():
+        # Your function logic here
+        sleep(1)  # Simulating some work
+    
+    return 'Hello, World!'
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, threaded=True)
