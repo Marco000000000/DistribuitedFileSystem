@@ -1,5 +1,4 @@
 from kubernetes import client, config
-import yaml
 
 def create_deployment(api_instance, deployment_name, container_image, replicas):
     # Define the deployment manifest
@@ -35,13 +34,15 @@ def create_deployment(api_instance, deployment_name, container_image, replicas):
 
 def main():
     # Load in-cluster Kubernetes configuration
-    config.load_kube_config()
+    config.load_incluster_config()
 
     # Create the Kubernetes API client
     api_instance = client.AppsV1Api()
 
     # Create the initial deployment
-    create_deployment(api_instance, "filesystem", "distribuitedfilesystem-filesystem1:latest", 1)
+    create_deployment(api_instance, "filesystem22", "distribuitedfilesystem-filesystem1:latest", 1)
+    while True:
+        print("CREATOOOOOOOOOOOOOOOO!")
 
     print("Parent deployment created.")
 
