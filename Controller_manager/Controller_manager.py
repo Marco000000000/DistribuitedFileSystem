@@ -24,7 +24,7 @@ def mysql_custom_connect(conf):
 
                 if db.is_connected():
                     print("Connected to MySQL database")
-                    logger.info("Connected to MySQL database")
+                    #logger.info("Connected to MySQL database")
                     return db
             except mysql.connector.Error as err:
                 print("Something went wrong: {}".format(err))
@@ -44,7 +44,7 @@ def receipt(err,msg):
         print('Error: {}'.format(err))
     else:
         message = 'Prodotto un messaggio sul topic {} con il valore {}\n'.format(msg.topic(), msg.value().decode('utf-8'))
-        logger.info(message)
+        #logger.info(message)
         print(message)
 
 
@@ -101,7 +101,7 @@ logging.basicConfig(format='%(asctime)s %(message)s',
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 consumer = Consumer(conf)
-logger.info("prima dell'admin consumer creato")
+#logger.info("prima dell'admin consumer creato")
 def updateTopics():
     produceJson("UpdateTopics",topics)
     cursor.execute("Select controller_name from controller ;")
@@ -110,7 +110,7 @@ def updateTopics():
     for controller in unpacked_list:
         for i in (topics):
             print(controller+str(i))
-            logger.info(controller+str(i))
+            #logger.info(controller+str(i))
             try:
                 admin.create_topics([NewTopic(controller+str(i), num_partitions=1, replication_factor=1)],validate_only=False)
             except:
@@ -171,7 +171,7 @@ if __name__ == "__main__":
             print(topics_temp)
             unpacked_list_temp = [item[0] for item in topics_temp]
             topics_temp=unpacked_list_temp
-            logger.info(topics_temp)
+            #logger.info(topics_temp)
 
             if len(topics_temp)>0:
                 cursor.execute("select id_controller FROM controller where controller_name=%s ;",(data["Host"],))
@@ -210,7 +210,7 @@ if __name__ == "__main__":
                     data["Host"]+str(i)
                     try:
                         print(data["Host"]+str(i))
-                        logger.info(data["Host"]+str(i))
+                        #logger.info(data["Host"]+str(i))
                         admin.create_topics([NewTopic(data["Host"]+str(i), num_partitions=1, replication_factor=1)],validate_only=False)
                     except:
                         pass

@@ -68,7 +68,7 @@ def createFileSystem():
  # Create the initial deployment
     create_deployment(api_instance, name, image, 1)
     print("creato un "+name)
-    logger.info("creato un "+name)
+    #logger.info("creato un "+name)
 
 def createDownloadManager():
     # Load in-cluster Kubernetes configuration
@@ -81,7 +81,7 @@ def createDownloadManager():
     # Create the initial deployment
     create_deployment(api_instance, name, image, 1)
     print("creato un "+name)
-    logger.info("creato un "+name)
+    #logger.info("creato un "+name)
 
 def createUploadManager():
     # Load in-cluster Kubernetes configuration
@@ -94,7 +94,7 @@ def createUploadManager():
   # Create the initial deployment
     create_deployment(api_instance, name, image, 1)
     print("creato un "+name)
-    logger.info("creato un "+name)
+    #logger.info("creato un "+name)
 
 # Sezione recupero metriche da prometheus
 

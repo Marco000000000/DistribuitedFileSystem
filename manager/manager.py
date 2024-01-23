@@ -86,7 +86,7 @@ def receipt(err,msg):
         print('Error: {}'.format(err))
     else:
         message = 'Prodotto un messaggio sul topic {} con il valore {}\n'.format(msg.topic(), msg.value().decode('utf-8'))
-        logger.info(message)
+        #logger.info(message)
         print(message)
 
 
@@ -133,7 +133,7 @@ if __name__ == "__main__":
             cursor.execute("SELECT id, topic from partitions where partition_name = %s;",(data["Code"],))
             dati=cursor.fetchone()
             print("dati",dati)
-            logger.info("dati",dati)
+            #logger.info("dati",dati)
 
             if cursor.rowcount>0:
                 data["id"]=dati[0]
@@ -151,7 +151,7 @@ if __name__ == "__main__":
                 max_topic=cursor.fetchone()[0]
                 data["Topic"]=max_topic
         print("maxTopic",max_topic)
-        logger.info("maxTopic",max_topic)
+        #logger.info("maxTopic",max_topic)
 
         new_topics = [NewTopic("Upload"+str(data["Topic"]), num_partitions=1, replication_factor=1), NewTopic("Request"+str(data["Topic"]), num_partitions=1, replication_factor=1),NewTopic("Delete"+str(data["Topic"]), num_partitions=1, replication_factor=1)]
         admin.create_topics(new_topics)
@@ -160,7 +160,7 @@ if __name__ == "__main__":
         db.commit()
 
         print("{} record inserted.".format(cursor.rowcount))
-        logger.info("{} record inserted.".format(cursor.rowcount))
+        #logger.info("{} record inserted.".format(cursor.rowcount))
 
         cursor.execute("SELECT MAX(id) FROM partitions WHERE partition_name = %s", (data["Code"],))
 
