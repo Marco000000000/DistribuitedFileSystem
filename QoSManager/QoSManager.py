@@ -86,8 +86,9 @@ def createUploadManager():
     print("creato un "+name)
 
 if __name__ == "__main__":
+    time.sleep(100)
     createDownloadManager()
     createFileSystem()
-    createUploadManager()
+    #createUploadManager()
     while True:
         time.sleep(20)
