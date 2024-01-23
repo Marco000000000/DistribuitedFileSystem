@@ -16,33 +16,22 @@ import logging
 from flask import Flask, Response
 import mysql.connector
 from werkzeug.utils import secure_filename
-from prometheus_client import Summary, Histogram, CONTENT_TYPE_LATEST, generate_latest
+from prometheus_client import Gauge, CONTENT_TYPE_LATEST, generate_latest
 from time import time
 
 # Variabili globali
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'rar', 'zip', 'mp3'}
 
 # Variabili per prometheus
-download_file_latency_histogram = Histogram(
+
+download_file_latency= Gauge(
     'download_file_latency_seconds',
-    'Latency of the download_file function in seconds until the first yield of data is sent',
-    buckets=[0.1, 0.5, 1, 5, 10, 30, 60, 120, 300, 600, 1800, 3600]
+    'Latency of the download_file function in seconds'
 )
 
-download_file_latency_summary = Summary(
-    'download_file_latency_summary_seconds',
-    'Latency of the download_file function in seconds until the first yield of data is sent'
-)
-
-download_file_throughput_histogram = Histogram(
-    'download_file_throughput_seconds',
-    'Throughput of the download_file function in seconds',
-    buckets=[0.1, 0.5, 1, 5, 10, 30, 60, 120, 300, 600, 1800, 3600]
-)
-
-download_file_throughput_summary = Summary(
-    'download_file_throughput_summary_seconds',
-    'Throughput of the download_file function in seconds'
+download_file_throughput = Gauge(
+    'download_file_throughput_bytes',
+    'Throughput of the download_file function in bytes'
 )
 
 returnTopic=""
@@ -224,12 +213,10 @@ def generate_data(topics,filename,code,consumer, prometheus_start_time):
                 if not yield_run:
                     yield_run = True
                     end_time = time()
-                    download_file_latency_histogram.observe(end_time - prometheus_start_time)
-                    download_file_latency_summary.observe(end_time - prometheus_start_time)
+                    download_file_latency.set(end_time - prometheus_start_time)
             end_time = time()
             throughput = total_len/(end_time - prometheus_start_time)
-            download_file_throughput_histogram.observe(throughput)
-            download_file_throughput_summary.observe(throughput)
+            download_file_throughput.set(throughput)
             temp_vet.clear() 
 
 
