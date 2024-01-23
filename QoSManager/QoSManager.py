@@ -40,10 +40,24 @@ def create_deployment(api_instance, deployment_name, container_image, replicas):
                 body=deployment_manifest,
                 namespace="default"
             )
+            break
         except:
             print("Probabilmente ha preso un nome uguale")
             continue
    
+            
+
+def createFileSystem():
+    # Load in-cluster Kubernetes configuration
+    config.load_incluster_config()
+    image="distribuitedfilesystem-filesystem1:latest"
+    name="filesystem-deployment"
+    # Create the Kubernetes API client
+    api_instance = client.AppsV1Api()
+
+ # Create the initial deployment
+    create_deployment(api_instance, name, image, 1)
+    print("creato un "+name)
 
 def createDownloadManager():
     # Load in-cluster Kubernetes configuration
