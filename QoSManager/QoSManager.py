@@ -99,15 +99,17 @@ def createUploadManager():
 # Sezione recupero metriche da prometheus
 
 def query():
-    # Query for a specific metric
-    query = 'flask_requests_total'
+    download_file_latency_query = 'download_file_latency_seconds'
+    download_file_throughput_query = 'download_file_throughput_bytes'
 
-    # Get the metric data
-    metric_data = prometheus.custom_query(query)
+    latest_latency_data = prometheus.custom_query(download_file_latency_query)
+    latest_throughput_data = prometheus.custom_query(download_file_throughput_query)
 
-    print(f"Metric data for {query}: {metric_data}")
+    print(f"Metric data for {download_file_latency_query}: {latest_latency_data}")
+    print(f"Metric data for {download_file_throughput_query}: {latest_throughput_data}")
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
+    query()
     # time.sleep(100)
     # createDownloadManager()
     # createFileSystem()
