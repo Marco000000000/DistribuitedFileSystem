@@ -149,6 +149,7 @@ if __name__ == "__main__":
             else:
                 cursor.execute("SELECT MIN(mycount) FROM (SELECT topic,COUNT(topic) as mycount FROM partitions GROUP BY topic) as b;")
                 max_topic=cursor.fetchone()[0]
+                data["Topic"]=max_topic
         print("maxTopic",max_topic)
 
         new_topics = [NewTopic("Upload"+str(data["Topic"]), num_partitions=1, replication_factor=1), NewTopic("Request"+str(data["Topic"]), num_partitions=1, replication_factor=1),NewTopic("Delete"+str(data["Topic"]), num_partitions=1, replication_factor=1)]
