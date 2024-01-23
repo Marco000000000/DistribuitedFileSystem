@@ -62,8 +62,10 @@ def produceJson(topic, dictionaryData):
 def UpdateFileOnTopic(id,topic):
     host="download-controller-service"
     response=requests.get("http://"+host+"/discover")
-    json_data = response.json()
-    
+    try:
+        json_data = response.json()
+    except:
+        json_data=""
     for i in json_data:
         code=get_random_string(10)
         control=json_data[i].split(".")
