@@ -1,94 +1,75 @@
 from kubernetes import client, config
+import random
+import string
+def get_random_string(length):
+    letters = string.ascii_lowercase
+    result_str = ''.join(random.choice(letters) for i in range(length))
+    return result_str
 
 def create_deployment(api_instance, deployment_name, container_image, replicas):
     # Define the deployment manifest
-    deployment_manifest = {
-        "apiVersion": "apps/v1",
-        "kind": "Deployment",
-        "metadata": {"name": deployment_name},
-        "spec": {
-            "replicas": replicas,
-            "selector": {
-                "matchLabels": {"app": deployment_name}
-            },
-            "template": {
-                "metadata": {"labels": {"app": deployment_name}},
+    for i in range(5):
+            
+        try:
+            deployment_manifest = {
+                "apiVersion": "apps/v1",
+                "kind": "Deployment",
+                "metadata": {"name": deployment_name+get_random_string(20)},
                 "spec": {
-                    "containers": [
-                        {
-                            "name": deployment_name,
-                            "image": container_image,
-                            "imagePullPolicy": "Never"
+                    "replicas": replicas,
+                    "selector": {
+                        "matchLabels": {"app": deployment_name}
+                    },
+                    "template": {
+                        "metadata": {"labels": {"app": deployment_name}},
+                        "spec": {
+                            "containers": [
+                                {
+                                    "name": deployment_name,
+                                    "image": container_image,
+                                    "imagePullPolicy": "Never"
+                                }
+                            ]
                         }
-                    ]
+                    }
                 }
             }
-        }
-    }
 
-    # Create the deployment
-    api_instance.create_namespaced_deployment(
-        body=deployment_manifest,
-        namespace="default"
-    )
-def createUploadManager():
-    deploymentName="uploadcontroller-deployment"
-    namespace="dafault"
-    update_replicas(deploymentName,-1,namespace)
-    return
+            # Create the deployment
+            api_instance.create_namespaced_deployment(
+                body=deployment_manifest,
+                namespace="default"
+            )
+        except:
+            print("Probabilmente ha preso un nome uguale")
+            continue
+   
 
 def createDownloadManager():
-    deploymentName="download-controller-deployment"
-    namespace="dafault"
-    update_replicas(deploymentName,-1,namespace)
-    return
-
-
-def createFileSystem():
-    deploymentName="filesystem-deployment"
-    namespace="dafault"
-    update_replicas(deploymentName,-1,namespace)
-    return
-
-def update_replicas(deployment_name, new_replica_count, namespace):
-    config.load_incluster_config()  # Load in-cluster config
-
-    api_instance = client.AppsV1Api()
-
-    # Get the deployment
-    deployment = api_instance.read_namespaced_deployment(
-        name=deployment_name,
-        namespace=namespace
-    )
-
-    # Update the replicas field
-    if new_replica_count==-1:
-        deployment.spec.replicas=deployment.spec.replicas+1
-    else:
-        deployment.spec.replicas = new_replica_count
-
-    # Apply the changes
-    api_instance.replace_namespaced_deployment(
-        name=deployment_name,
-        namespace=namespace,
-        body=deployment
-    )
-    print(f"Replicas for '{deployment_name}' set to {new_replica_count}.") 
-
-def main():
     # Load in-cluster Kubernetes configuration
-    createFileSystem()
     config.load_incluster_config()
-
+    image="distribuitedfilesystem-download_controller1:latest"
+    name="download-controller-deployment"
     # Create the Kubernetes API client
     api_instance = client.AppsV1Api()
 
     # Create the initial deployment
-    create_deployment(api_instance, "filesystem22", "distribuitedfilesystem-filesystem1:latest", 1)
-    while True:
-        print("CREATOOOOOOOOOOOOOOOO!")
+    create_deployment(api_instance, name, image, 1)
+    print("creato un "+name)
 
-    print("Parent deployment created.")
+def createUploadManager():
+    # Load in-cluster Kubernetes configuration
+    config.load_incluster_config()
+    image="distribuitedfilesystem-uploadcontroller:latest"
+    name="uploadcontroller-deployment"
+    # Create the Kubernetes API client
+    api_instance = client.AppsV1Api()
+
+  # Create the initial deployment
+    create_deployment(api_instance, name, image, 1)
+    print("creato un "+name)
 
 if __name__ == "__main__":
-    main()
+    createDownloadManager()
+    createFileSystem()
+    createUploadManager()
