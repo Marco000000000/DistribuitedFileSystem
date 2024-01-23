@@ -107,7 +107,7 @@ def query():
 
     print(f"Metric data for {query}: {metric_data}")
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     # time.sleep(100)
     # createDownloadManager()
     # createFileSystem()
