@@ -1,4 +1,5 @@
 confluent_kafka==2.3.0
 mysql_connector_python==8.0.26
 prometheus-api-client==0.5.4
+Flask==3.0.0
 kubernetes

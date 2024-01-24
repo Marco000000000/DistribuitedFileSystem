@@ -4,6 +4,9 @@ import string
 import time
 import logging
 from prometheus_api_client import PrometheusConnect
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
 
 prometheus_url = "http://prometheus-service:9090"
 prometheus = PrometheusConnect(url=prometheus_url, disable_ssl=True)
@@ -98,18 +101,27 @@ def createUploadManager():
 
 # Sezione recupero metriche da prometheus
 
-def query():
-    download_file_latency_query = 'download_file_latency_seconds'
-    download_file_throughput_query = 'download_file_throughput_bytes'
+# Queries possibili per il download
+# download_file_latency_query = 'download_file_latency_seconds'
+# download_file_throughput_query = 'download_file_throughput_bytes'
 
-    latest_latency_data = prometheus.custom_query(download_file_latency_query)
-    latest_throughput_data = prometheus.custom_query(download_file_throughput_query)
+@app.route('/query', methods=['GET'])
+def query_prometheus():
+    query = request.args.get('query', '')
+    aggregate = request.args.get('aggregate', 'false').lower() == 'true'
 
-    print(f"Metric data for {download_file_latency_query}: {latest_latency_data}")
-    print(f"Metric data for {download_file_throughput_query}: {latest_throughput_data}")
+    try:
+        if aggregate:
+            result = prometheus.custom_query_range(query, end_time='now')
+        else:
+            result = prometheus.custom_query(query)
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    query()
+    app.run(host='0.0.0.0', port=5000, threaded=True)
     # time.sleep(100)
     # createDownloadManager()
     # createFileSystem()
