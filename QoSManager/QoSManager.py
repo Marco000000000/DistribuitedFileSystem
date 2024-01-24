@@ -121,7 +121,7 @@ def query_prometheus():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, threaded=True)
+    app.run(host='0.0.0.0', port=80, threaded=True)
     # time.sleep(100)
     # createDownloadManager()
     # createFileSystem()
