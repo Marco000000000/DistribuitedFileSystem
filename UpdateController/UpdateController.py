@@ -1,6 +1,7 @@
 from confluent_kafka.admin import AdminClient, NewTopic
 from confluent_kafka import Consumer, Producer, KafkaException, KafkaError
 import mysql.connector
+from circuitbreaker import circuit
 import sys
 import json
 import logging
@@ -59,6 +60,7 @@ def produceJson(topic, dictionaryData):
     p.flush() # Serve per attendere la ricezione di tutti i messaggi
     
 # Funzione che elabora il messaggio ricevuto dal consumer
+@circuit(failure_threshold=10, recovery_timeout=30, expected_exception=requests.exceptions.RequestException, fallback_function=lambda x: print("Circuit broken! DownloadController not reachable!"))
 def UpdateFileOnTopic(id,topic):
     host="download-controller-service"
     response=requests.get("http://"+host+"/discover")
@@ -136,7 +138,7 @@ def receipt(err,msg):
 # Instanziazione dell'oggetto AdminClient per le operazioni di creazione dei topic
 admin = AdminClient({'bootstrap.servers': 'kafka-service:9093'})
 
-# Creazione "hardcoded" dei topic "FirstCall" e "FirstCallAck
+# Creazione "hardcoded" dei topic "UpdateRequest" e "UpdateDownload"
 hardcoded_topics = [NewTopic("UpdateRequest", num_partitions=1, replication_factor=1), NewTopic("UpdateDownload", num_partitions=1, replication_factor=1), NewTopic("UpdateIntermediate", num_partitions=1, replication_factor=1)]
 admin.create_topics(hardcoded_topics)
 
