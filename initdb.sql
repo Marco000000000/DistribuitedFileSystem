@@ -35,6 +35,14 @@ CREATE TABLE IF NOT EXISTS controllertopic (
     FOREIGN KEY (id_controller) REFERENCES controller (id_controller)
 );
 
+CREATE TABLE IF NOT EXISTS metrics (
+    id_metric INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    metric_name VARCHAR (255) UNIQUE NOT NULL,
+    metric_type VARCHAR(20)  NOT NULL,
+    metric_value VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 
 -- Creazione utente file_manager
 -- CREATE USER  'file_manager'@'localhost' IDENTIFIED BY 'file';
