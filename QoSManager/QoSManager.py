@@ -115,9 +115,19 @@ def query_prometheus():
 
     try:
         if aggregate:
-            result = prometheus.custom_query_range(query, start=start_time, end=end_time, step=step)
+            if query == 'download_file_latency_seconds':
+                result = prometheus.custom_query(query, start=start_time, end=end_time, step=step)
+            elif query == 'download_file_throughput_bytes':
+                result = prometheus.custom_query(query, start=start_time, end=end_time, step=step)
+            else:
+                return jsonify({"error": "Invalid query"}), 400
         else:
-            result = prometheus.custom_query(query)
+            if query == 'download_file_latency_seconds':
+                result = prometheus.custom_query_range(query, start=start_time, end=end_time, step=step)
+            elif query == 'download_file_throughput_bytes':
+                result = prometheus.custom_query_range(query, start=start_time, end=end_time, step=step)
+            else:
+                return jsonify({"error": "Invalid query"}), 400
         
         return jsonify(result)
     except Exception as e:
