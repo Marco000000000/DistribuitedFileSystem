@@ -60,14 +60,14 @@ def produceJson(topic, dictionaryData):
     p.flush() # Serve per attendere la ricezione di tutti i messaggi
     
 @circuit(failure_threshold=5, recovery_timeout=30)
-def get_filenames():
+def get_filenames(id, topic):
     host="download-controller-service"
     response=requests.get("http://"+host+"/discover")
     return response.json()
 
 # Funzione che elabora il messaggio ricevuto dal consumer
 def UpdateFileOnTopic(id,topic):
-    json_data = get_filenames()
+    json_data = get_filenames(id, topic)
     
     for i in json_data:
         code=get_random_string(10)
