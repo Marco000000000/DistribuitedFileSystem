@@ -116,12 +116,12 @@ def discover(id,topic):
                         count=count+1
                         produceJson("UpdateDownload",data)
                         consumerIntermediate.commit()
-        data={
-            
-            "last":True, 
-            "id":id
-            }
-        logger.info(data) 
+    data={
+        
+        "last":True, 
+        "id":id
+        }
+    logger.info(data) 
     produceJson("UpdateDownload",data)
     cursor.close()
     db.close()    
@@ -129,13 +129,14 @@ def discover(id,topic):
 @circuit(failure_threshold=5, recovery_timeout=30,fallback_function=discover)
 def get_filenames(id, topic):
     try:
+        logger.info("get_filenames")
         host="download-controller-service"
-        response=requests.get("http://"+host+"/discover")
-        response.raise_for_status()
+        response=requests.get("http://"+host+"/discover", timeout=5)
+        logger.info("response")
         return response.json()
     except Exception as e:
         logging.info(f"Exception in get_filenames: {e}")
-        raise
+        raise e
 # Funzione che elabora il messaggio ricevuto dal consumer
 def UpdateFileOnTopic(id,topic):
     json_data = get_filenames(id, topic)
