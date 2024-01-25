@@ -119,7 +119,7 @@ def discover(id,topic):
     cursor.close()
     db.close()    
 
-@circuit(failure_threshold=5, recovery_timeout=30,fall_back=)
+@circuit(failure_threshold=5, recovery_timeout=30,fallback_function=discover)
 def get_filenames(id, topic):
     host="download-controller-service"
     response=requests.get("http://"+host+"/discover")
