@@ -15,7 +15,7 @@ prod_conf = {'bootstrap.servers': 'kafka-service:9093'}
 # Configurazione logger
 logging.basicConfig(format='%(asctime)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
-                    filename='download_manager.log',
+                    filename='log.log',
                     filemode='w')
 logger = logging.getLogger('download_manager')
 logger.setLevel(logging.INFO)
@@ -128,10 +128,14 @@ def discover(id,topic):
 
 @circuit(failure_threshold=5, recovery_timeout=30,fallback_function=discover)
 def get_filenames(id, topic):
-    host="download-controller-service"
-    response=requests.get("http://"+host+"/discover")
-    return response.json()
-
+    try:
+        host="download-controller-service"
+        response=requests.get("http://"+host+"/discover")
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        logging.info(f"Exception in get_filenames: {e}")
+        raise
 # Funzione che elabora il messaggio ricevuto dal consumer
 def UpdateFileOnTopic(id,topic):
     json_data = get_filenames(id, topic)
