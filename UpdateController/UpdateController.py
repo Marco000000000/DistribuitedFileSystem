@@ -58,8 +58,68 @@ def produceJson(topic, dictionaryData):
     p.poll(0.01)
     p.produce(topic, m.encode('utf-8'), callback=receipt)
     p.flush() # Serve per attendere la ricezione di tutti i messaggi
-    
-@circuit(failure_threshold=5, recovery_timeout=30)
+
+def discover(id,topic):
+    db = mysql_custom_connect(db_conf)
+    cursor=db.cursor(buffered=True)
+    mysql_query = "SELECT distinct file_name FROM files WHERE ready=true;"
+    cursor.execute(mysql_query)
+    files=cursor.fetchall()
+    print(files)
+    if cursor.rowcount>0:
+        unpacked_list = [item[0] for item in files]
+        files={}
+        for i in range(len(unpacked_list)):
+            files[i]=unpacked_list[i]
+        for i in files:
+            code=get_random_string(10)
+            control=files[i].split(".")
+            if len(control)!=2:
+                continue
+            data={
+                "fileName":files[i],
+                "returnTopic":"UpdateIntermediate",
+                "code":code
+                }     
+            produceJson(topic,data)
+            count=0
+            while True:
+                msg=consumerIntermediate.poll(0.01)
+                if msg is None:
+                    continue
+                elif msg.error():
+                    print('Error: {}'.format(msg.error()))
+                    continue
+                else:
+                    data=json.loads(msg.value().decode('utf-8'))
+                    if data["filename"] != files[i] or data["code"] != code:
+                        consumerIntermediate.commit()
+                        continue
+                    if data["last"] == True:
+                        
+                        consumerIntermediate.commit()
+                        break
+                    else:
+                        data={
+                        "fileName": files[i],
+                        "data":data["data"],
+                        "last":False, 
+                        "count":count,
+                        "id":id
+                        }                    
+                        count=count+1
+                        produceJson("UpdateDownload",data)
+                        consumerIntermediate.commit()
+        data={
+            
+            "last":True, 
+            "id":id
+            } 
+    produceJson("UpdateDownload",data)
+    cursor.close()
+    db.close()    
+
+@circuit(failure_threshold=5, recovery_timeout=30,fall_back=)
 def get_filenames(id, topic):
     host="download-controller-service"
     response=requests.get("http://"+host+"/discover")
