@@ -59,13 +59,15 @@ def produceJson(topic, dictionaryData):
     p.produce(topic, m.encode('utf-8'), callback=receipt)
     p.flush() # Serve per attendere la ricezione di tutti i messaggi
     
-# Funzione che elabora il messaggio ricevuto dal consumer
-@circuit(failure_threshold=10, recovery_timeout=30, expected_exception=requests.exceptions.RequestException, fallback_function=lambda x: print("Circuit broken! DownloadController not reachable!"))
-def UpdateFileOnTopic(id,topic):
+@circuit(failure_threshold=5, recovery_timeout=30)
+def get_filenames():
     host="download-controller-service"
     response=requests.get("http://"+host+"/discover")
+    return response.json()
 
-    json_data = response.json()
+# Funzione che elabora il messaggio ricevuto dal consumer
+def UpdateFileOnTopic(id,topic):
+    json_data = get_filenames()
     
     for i in json_data:
         code=get_random_string(10)
