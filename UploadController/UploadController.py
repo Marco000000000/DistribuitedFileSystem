@@ -55,7 +55,7 @@ cursor=db.cursor(buffered=True)
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
     p=Producer({'bootstrap.servers':'kafka-service:9093'})
     m=json.dumps(dictionaryData)
-    p.poll(0.001)
+    p.poll(0.01)
     p.produce(topicName, m.encode('utf-8'),callback=receipt)
     p.flush()
 
@@ -65,7 +65,7 @@ def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic
         
     c.subscribe([topicName])
     while True:
-            msg=c.poll(1.0) #timeout
+            msg=c.poll(0.01) 
             if msg is None:
                 continue
             elif msg.error():
@@ -88,7 +88,7 @@ def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un 
     c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
     c.subscribe([topicName])
     while True:
-            msg=c.poll(1.0) #timeout
+            msg=c.poll(0.01) #timeout
             if msg is None:
                 continue
             elif msg.error():
@@ -203,7 +203,7 @@ def upload_file():#gestione di un file in upload
                     print([data["fileName"],data["count"]])
                     count+=1
                     m=json.dumps(data)
-                    p.poll(0.001)
+                    p.poll(0.01)
                     p.produce("Upload"+str(topic), m.encode('utf-8'),callback=receipt)
                     
                 
@@ -217,7 +217,7 @@ def update(topics,groupId):
     c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
     c.subscribe(["UpdateTopics"])
     while True:
-            msg=c.poll(10.0) #timeout
+            msg=c.poll(1.0) #timeout
             if msg is None:
                 continue
             elif msg.error():

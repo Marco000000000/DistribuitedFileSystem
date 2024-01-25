@@ -73,8 +73,8 @@ def download_file(filename,returnTopic,code):
                     }
                     m=json.dumps(data)
                     index=index+1
-                    p.poll(0.001)
-                    p.produce(topicName, m.encode('utf-8'),callback=receipt)
+                    p.poll(0.01)
+                    p.produce(topicName, m.encode('utf-8'))
                     p.flush()
                 else:
                     data={
@@ -83,7 +83,7 @@ def download_file(filename,returnTopic,code):
                         "last":True
                         }
                     m=json.dumps(data)
-                    p.poll(1)
+                    p.poll(0.01)
                     p.produce(topicName, m.encode('utf-8'),callback=receipt)
                     p.flush()
                 return
@@ -94,13 +94,13 @@ def download_file(filename,returnTopic,code):
                         "last":True
                         }
                 m=json.dumps(data)
-                p.poll(1)
+                p.poll(0.01)
                 p.produce(topicName, m.encode('utf-8'),callback=receipt)
                 p.flush()
 def produceJson(topicName,dictionaryData):
     p=Producer({'bootstrap.servers':'kafka-service:9093'})
     m=json.dumps(dictionaryData)
-    p.poll(1)
+    p.poll(0.01)
     p.produce(topicName, m.encode('utf-8'),callback=receipt)
     p.flush()
 
@@ -129,14 +129,14 @@ def first_Call():
     data={"Code":gethostname(),
           "Dim":FILESYSTEM_DIMENSION}
     m=json.dumps(data)
-    p.poll(1)
+    p.poll(0.01)
     p.produce('FirstCall', m.encode('utf-8'),callback=receipt)
     p.flush()
     print(m)
     c.subscribe(['FirstCallAck'])
     code=data["Code"]
     while True:
-            msg=c.poll(1.0) #timeout
+            msg=c.poll(0.01) #timeout
             print(msg)
             if msg is None:
                 continue
@@ -163,11 +163,11 @@ def updateLocalFiles(id,topicNumber):
     data={"id":id,
           "topic":topicNumber}
     m=json.dumps(data)
-    p.poll(1)
+    p.poll(0.01)
     p.produce('UpdateRequest', m.encode('utf-8'),callback=receipt)
     p.flush()
     while True:
-        msgUpdate=updateConsumer.poll(0.001)
+        msgUpdate=updateConsumer.poll(0.01)
 
         if msgUpdate is None:
                     pass
@@ -227,9 +227,9 @@ if __name__== "__main__":
 
 
     while True:
-        msg=requestConsumer.poll(0.001)
-        msgUpload=uploadConsumer.poll(0.001)
-        msgDelete=deleteConsumer.poll(0.001)
+        msg=requestConsumer.poll(0.01)
+        msgUpload=uploadConsumer.poll(0.01)
+        msgDelete=deleteConsumer.poll(0.01)
         if msg is None:
             pass
         elif msg.error():

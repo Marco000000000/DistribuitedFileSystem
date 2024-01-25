@@ -53,7 +53,7 @@ def register_filesystem(consumer, topic):
     consumer.subscribe([topic])
 
     while True:
-        msg = consumer.poll(1.0)
+        msg = consumer.poll(0.01)
         if msg is None: continue
 
         if msg.error():
