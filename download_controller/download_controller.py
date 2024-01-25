@@ -92,7 +92,7 @@ def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic
     c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
     c.subscribe([topicName])
     while True:
-            msg=c.poll(1.0) #timeout
+            msg=c.poll(0.01) #timeout
             if msg is None:
                 continue
             elif msg.error():
@@ -112,7 +112,7 @@ def consumeJson(topicName, groupId):
     c = Consumer({'bootstrap.servers': 'kafka-service:9093', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
     c.subscribe([topicName])
     while True:
-            msg=c.poll(1.0) #timeout
+            msg=c.poll(0.01) #timeout
             if msg is None:
                 continue
             elif msg.error():
@@ -181,7 +181,7 @@ def generate_data(topics,filename,code,consumer, prometheus_start_time):
             if(i  in temp_vet):
                 i=i+1
                 continue
-            msg=cons.poll(0.001)
+            msg=cons.poll(0.01)
             if msg is None:
                 continue
             elif msg.error():

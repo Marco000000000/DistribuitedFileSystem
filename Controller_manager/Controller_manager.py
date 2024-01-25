@@ -36,7 +36,7 @@ def mysql_custom_connect(conf):
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
     p=Producer({'bootstrap.servers':'kafka-service:9093'})
     m=json.dumps(dictionaryData)
-    p.poll(1)
+    p.poll(0.01)
     p.produce(topicName, m.encode('utf-8'),callback=receipt)
     p.flush()
 def receipt(err,msg):
@@ -52,7 +52,7 @@ def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un 
     c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Qui l'enable.auto.commit è settato a True di default, l'ho messo a False
     c.subscribe([topicName])
     while True:
-            msg=c.poll(1.0) #timeout
+            msg=c.poll(0.01) #timeout
             if msg is None:
                 continue
             elif msg.error():
@@ -68,7 +68,7 @@ topics=[]
 oldTopics=[]         
 def register_controller(consumer,oldTopics):
     while True:
-        msg = consumer.poll(timeout=1.0)
+        msg = consumer.poll(timeout=0.01)
         if msg is None: 
             data=None
             break  
