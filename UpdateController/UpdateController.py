@@ -8,11 +8,17 @@ import logging
 from time import sleep
 import string
 import random
-
-import requests
+import logging
+import requests 
 # Configurazione del producer e instanziazione
 prod_conf = {'bootstrap.servers': 'kafka-service:9093'}
-print("aaa")
+# Configurazione logger
+logging.basicConfig(format='%(asctime)s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    filename='download_manager.log',
+                    filemode='w')
+logger = logging.getLogger('download_manager')
+logger.setLevel(logging.INFO)
 producer = Producer(prod_conf)
 def get_random_string(length):
     letters = string.ascii_lowercase
@@ -114,7 +120,8 @@ def discover(id,topic):
             
             "last":True, 
             "id":id
-            } 
+            }
+        logger.info(data) 
     produceJson("UpdateDownload",data)
     cursor.close()
     db.close()    
