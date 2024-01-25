@@ -74,7 +74,7 @@ def download_file(filename,returnTopic,code):
                     m=json.dumps(data)
                     index=index+1
                     p.poll(0.01)
-                    p.produce(topicName, m.encode('utf-8'),callback=receipt)
+                    p.produce(topicName, m.encode('utf-8'))
                     p.flush()
                 else:
                     data={
