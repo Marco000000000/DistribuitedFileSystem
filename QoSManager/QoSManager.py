@@ -109,10 +109,13 @@ def createUploadManager():
 def query_prometheus():
     query = request.args.get('query', '')
     aggregate = request.args.get('aggregate', 'false').lower() == 'true'
+    start_time = request.args.get('start', 'now-1h')
+    end_time = request.args.get('end', 'now')
+    step = request.args.get('step', '15s')
 
     try:
         if aggregate:
-            result = prometheus.custom_query_range(query, end_time='now')
+            result = prometheus.custom_query_range(query, start=start_time, end=end_time, step=step)
         else:
             result = prometheus.custom_query(query)
         
