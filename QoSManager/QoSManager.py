@@ -61,37 +61,29 @@ def create_deployment(api_instance, deployment_name, container_image, replicas):
             
 
 def createFileSystem():
-    # Load in-cluster Kubernetes configuration
     config.load_incluster_config()
     image="distribuitedfilesystem-filesystem1:latest"
     name="filesystem-deployment"
-    # Create the Kubernetes API client
     api_instance = client.AppsV1Api()
 
- # Create the initial deployment
     create_deployment(api_instance, name, image, 1)
     print("creato un "+name)
     #logger.info("creato un "+name)
 
 def createDownloadManager():
-    # Load in-cluster Kubernetes configuration
     config.load_incluster_config()
     image="distribuitedfilesystem-download_controller1:latest"
     name="download-controller-deployment"
-    # Create the Kubernetes API client
     api_instance = client.AppsV1Api()
 
-    # Create the initial deployment
     create_deployment(api_instance, name, image, 1)
     print("creato un "+name)
     #logger.info("creato un "+name)
 
 def createUploadManager():
-    # Load in-cluster Kubernetes configuration
     config.load_incluster_config()
     image="distribuitedfilesystem-uploadcontroller:latest"
     name="uploadcontroller-deployment"
-    # Create the Kubernetes API client
     api_instance = client.AppsV1Api()
 
   # Create the initial deployment
