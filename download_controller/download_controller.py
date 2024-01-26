@@ -261,6 +261,7 @@ def download_file(filename):
                     consumers=threadConsumers[i]
                     threadConsumers[i]["available"]=False
                     condition=False
+                    break
         finally:
             mutex.release()
             if condition:
