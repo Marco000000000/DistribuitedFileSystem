@@ -170,7 +170,7 @@ spec:
       - name: kafka-exporter
         image: danielqsj/kafka-exporter:latest
         args:
-          - "--kafka.server=kafka-service:9093"
+          - "--kafka.server=kafka-service-exporter:9093"
         ports:
           - name: metrics
             containerPort: 9308
@@ -181,6 +181,21 @@ apiVersion: v1
 kind: Service
 metadata:
   name: kafka-service
+spec:
+  selector:
+    app: kafka
+  ports:
+    - protocol: TCP
+      port: 9093
+      targetPort: 9093    
+  type: ClusterIP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service-exporter
   annotations:
       prometheus.io/scrape: 'true'
       prometheus.io/port:   '9308'
@@ -188,14 +203,9 @@ spec:
   selector:
     app: kafka
   ports:
-    - name: inside
-      port: 9093
-      targetPort: 9093
-      protocol: TCP
-    - name: metrics
+    - protocol: TCP
       port: 9308
       targetPort: 9308
-      protocol: TCP
   type: ClusterIP
 
 ---
