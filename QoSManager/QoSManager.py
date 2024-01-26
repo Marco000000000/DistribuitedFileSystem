@@ -101,14 +101,15 @@ def createUploadManager():
 def query_prometheus():
     query = request.args.get('query', '')
     range = request.args.get('range', 'false').lower() == 'true'
-    start_time = request.args.get('start', 'now-1h')
+    start_time = request.args.get('start', '1')
+    start_time ="now-"+start_time+"h"
     end_time = request.args.get('end', 'now')
     step = request.args.get('step', '15s')
     aggregation = request.args.get('aggregation', '')
     rate_interval = request.args.get('rate_interval', '5m')
     
     allowed_queries = ['download_file_latency_seconds', 'download_file_throughput_bytes']
-
+    
     try:
         if range:
             if query in allowed_queries:
