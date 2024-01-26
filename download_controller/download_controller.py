@@ -256,6 +256,7 @@ def download_file(filename):
         mutex.acquire()
         try:
             for i in range(threadLimit):
+                logger.info(threadConsumers[i]["available"])
                 if threadConsumers[i]["available"]==True:
                     consumers=threadConsumers[i]
                     threadConsumers[i]["available"]=False
