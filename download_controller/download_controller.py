@@ -336,5 +336,5 @@ if __name__ == "__main__":
     hostname = socket.gethostname()
     print(hostname)
     print(socket.gethostbyname_ex(hostname))
-    app.run(debug=True,host=socket.gethostbyname_ex(hostname)[2][0],port=80)
+    app.run(debug=False,host=socket.gethostbyname_ex(hostname)[2][0],port=80)
     
