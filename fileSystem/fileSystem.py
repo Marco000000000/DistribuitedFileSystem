@@ -1,4 +1,5 @@
 import os
+import threading
 from werkzeug.utils import secure_filename
 from confluent_kafka import Producer
 from confluent_kafka import Consumer
@@ -13,8 +14,10 @@ from socket import gethostname
 PARTITION_GRANULARITY=os.getenv("PARTITION_GRANULARITY", default = 131072)
 UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", default = 'downloadable')
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'rar', 'zip', 'mp3'}
-FILESYSTEM_DIMENSION=os.getenv("FILESYSTEM_DIMENSION", default = 100)#Mb
 
+downloadingFiles=[]
+mutex = threading.Lock()
+uploadingFiles=[]
 #creazione di una stringa random 
 def get_random_string(length):
     letters = string.ascii_lowercase
@@ -126,8 +129,8 @@ def upload_file(filename,pack):
 #Chiamata per la registrazione nei topic kafka
 def first_Call():
     p=Producer({'bootstrap.servers':'kafka-service:9093'})
-    data={"Code":gethostname(),
-          "Dim":FILESYSTEM_DIMENSION}
+    data={"Code":gethostname()
+          }
     m=json.dumps(data)
     p.poll(0.01)
     p.produce('FirstCall', m.encode('utf-8'),callback=receipt)
@@ -197,6 +200,125 @@ def delete_file(filename):
     if os.path.exists(os.path.join( UPLOAD_FOLDER,filename)):
         os.remove(os.path.join( UPLOAD_FOLDER,filename))
 
+
+def deleter(deleteConsumer):
+    while True:
+        msgDelete=deleteConsumer.poll(0.01)
+        if msgDelete is None:
+            pass
+        elif msgDelete.error():
+            print('Error: {}'.format(msgDelete.error()))
+        else:
+            data=json.loads(msgDelete.value().decode('utf-8'))
+            print(data)
+
+            if data["fileName"]!="":
+                cond=True
+
+                while cond:
+                    mutex.acquire()
+
+                    try:
+                        # Access the shared resource
+                        if data["fileName"] not in downloadingFiles:
+                            cond=False
+                            uploadingFiles.append(data["fileName"])
+                    finally:
+                        # Release the mutex to allow other threads to access the shared resource
+                        mutex.release()
+                        if not(cond):
+                            time.sleep(1)
+                        
+                delete_file(secure_filename(data["fileName"]))
+                mutex.acquire()
+                try:
+                    # Access the shared resource
+                    uploadingFiles.remove(data["fileName"])
+                finally:
+                    # Release the mutex to allow other threads to access the shared resource
+                    mutex.release()   
+                deleteConsumer.commit()
+def downloadThreaded(data):
+    cond=True
+    while cond:
+        mutex.acquire()
+
+        try:
+            # Access the shared resource
+            if data["fileName"] not in uploadingFiles:
+                downloadingFiles.append(data["fileName"])
+                cond=False
+        finally:
+            # Release the mutex to allow other threads to access the shared resource
+            mutex.release()
+            if not(cond):
+                time.sleep(1)
+        
+    download_file(secure_filename(data["fileName"]),data["returnTopic"],data["code"])
+
+    mutex.acquire()
+
+    try:
+        downloadingFiles.remove(data["fileName"])
+    finally:
+        # Release the mutex to allow other threads to access the shared resource
+        mutex.release()
+def downloader(requestConsumer):
+    while True:
+        msg=requestConsumer.poll(0.01)
+        if msg is None:
+            pass
+        elif msg.error():
+            print('Error: {}'.format(msg.error()))
+            
+        else:
+
+            data=json.loads(msg.value().decode('utf-8'))
+            if data["fileName"]!="":
+                downloadThread = threading.Thread(target=downloadThreaded, args=(data,))
+                downloadThread.start()
+                requestConsumer.commit()
+    
+def uploader(uploadConsumer):
+    while True:
+        msgUpload=uploadConsumer.poll(0.01)
+        if msgUpload is None:
+            pass
+        elif msgUpload.error():
+            print('Error: {}'.format(msgUpload.error()))
+            
+        else:
+            data=json.loads(msgUpload.value().decode('utf-8'))
+            print(data["fileName"])
+            if data["fileName"]!="":
+                if not os.path.exists(UPLOAD_FOLDER):
+                    os.makedirs(UPLOAD_FOLDER)
+                cond=True
+
+                while cond:
+                    mutex.acquire()
+
+                    try:
+                        # Access the shared resource
+                        if data["fileName"] not in downloadingFiles:
+                            cond=False
+                            uploadingFiles.append(data["fileName"])
+                    finally:
+                        # Release the mutex to allow other threads to access the shared resource
+                        mutex.release()
+                        if not(cond):
+                            time.sleep(1)
+                upload_file(secure_filename(data["fileName"]),data)
+                mutex.acquire()
+
+                try:
+                    # Access the shared resource
+                    uploadingFiles.remove(data["fileName"])
+                finally:
+                    # Release the mutex to allow other threads to access the shared resource
+                    mutex.release()
+                uploadConsumer.commit()
+
 c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':get_random_string(20),'auto.offset.reset':'latest','enable.auto.commit': False})
 updateConsumer=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':"1",'auto.offset.reset':'earliest','enable.auto.commit': False})
 updateConsumer.subscribe(["UpdateDownload"])
@@ -225,48 +347,24 @@ if __name__== "__main__":
     deleteConsumer.subscribe(["Delete"+str(topicNumber)])
     print("ho fatto l'inizio")
 
+    thread1 = threading.Thread(target=uploader, args=(uploadConsumer,))
+    thread2 = threading.Thread(target=downloader, args=(requestConsumer,))
+    thread3 = threading.Thread(target=deleter, args=(deleteConsumer,))
 
-    while True:
-        msg=requestConsumer.poll(0.01)
-        msgUpload=uploadConsumer.poll(0.01)
-        msgDelete=deleteConsumer.poll(0.01)
-        if msg is None:
-            pass
-        elif msg.error():
-            print('Error: {}'.format(msg.error()))
-            pass
-        else:
+    # Start the threads
+    thread1.start()
+    thread2.start()
+    thread3.start()
 
-            data=json.loads(msg.value().decode('utf-8'))
-            if data["fileName"]!="":
-                download_file(secure_filename(data["fileName"]),data["returnTopic"],data["code"])
-                requestConsumer.commit()
+    # Wait for both threads to finish
+    thread1.join()
+    thread2.join()
+    thread3.join()
 
-
-        if msgUpload is None:
-            pass
-        elif msgUpload.error():
-            print('Error: {}'.format(msg.error()))
-            pass
-        else:
-            data=json.loads(msgUpload.value().decode('utf-8'))
-            print(data["fileName"])
-            if data["fileName"]!="":
-                if not os.path.exists(UPLOAD_FOLDER):
-                    os.makedirs(UPLOAD_FOLDER)
-                upload_file(secure_filename(data["fileName"]),data)
-                uploadConsumer.commit()
+        
 
 
-        if msgDelete is None:
-            continue
-        elif msgDelete.error():
-            print('Error: {}'.format(msg.error()))
-            continue
-        else:
-            data=json.loads(msgDelete.value().decode('utf-8'))
-            print(data)
+        
 
-            if data["fileName"]!="":
-                delete_file(secure_filename(data["fileName"]))   
-                deleteConsumer.commit()
+
+        

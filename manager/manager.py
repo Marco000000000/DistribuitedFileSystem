@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
         new_topics = [NewTopic("Upload"+str(data["Topic"]), num_partitions=1, replication_factor=1), NewTopic("Request"+str(data["Topic"]), num_partitions=1, replication_factor=1),NewTopic("Delete"+str(data["Topic"]), num_partitions=1, replication_factor=1)]
         admin.create_topics(new_topics)
-        cursor.execute("INSERT INTO partitions (partition_name, used_space, topic) VALUES (%s, %s, %s)", (data["Code"], data["Dim"], data["Topic"]))
+        cursor.execute("INSERT INTO partitions (partition_name, topic) VALUES (%s, %s, %s)", (data["Code"], data["Topic"]))
         
         db.commit()
 
