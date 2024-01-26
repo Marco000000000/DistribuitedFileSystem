@@ -47,13 +47,13 @@ def mysql_custom_connect(conf):
         sleep(5)
 
 # Funzione che elabora il messaggio ricevuto dal consumer
-def register_filesystem(consumer, topic):
+def register_filesystem(consumer):
     data={}
 
-    consumer.subscribe([topic])
 
     while True:
         msg = consumer.poll(0.01)
+        print(msg)
         if msg is None: continue
 
         if msg.error():
@@ -112,6 +112,7 @@ if __name__ == "__main__":
     db = mysql_custom_connect(db_conf)
 
     cursor = db.cursor()
+    consumer.subscribe(["FirstCall"])
 
     while True:
         # Recupero del numero di partizioni
@@ -121,7 +122,7 @@ if __name__ == "__main__":
         
         print(max_topic)
         # Richiesta di registrazione da parte del filesystem + inserimento nel database della partizione
-        data = register_filesystem(consumer, "FirstCall")
+        data = register_filesystem(consumer)
         
         if len(data)==0:
             continue
@@ -141,6 +142,7 @@ if __name__ == "__main__":
                 producer.poll(0.01)
 
                 producer.produce('FirstCallAck', json.dumps(data).encode('utf-8'), callback=receipt)
+                producer.flush()
                 db.commit()
                 continue
             # Se ci sono partizioni assegna il valore massimo + 1
@@ -168,5 +170,5 @@ if __name__ == "__main__":
         
         producer.poll(0.01)
         producer.produce('FirstCallAck', json.dumps(data).encode('utf-8'), callback=receipt)
-
+        producer.flush()
  
