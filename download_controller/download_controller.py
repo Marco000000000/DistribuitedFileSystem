@@ -160,7 +160,6 @@ def first_Call():#funzione per la ricezione di topic iniziali
     print(data)
     produceJson("CFirstCall",data)
     aList=consumeJsonFirstCall("CFirstCallAck",name)
-    #format per Federico ->jsonStr = '{"cose":"a caso","topics":[1, 2,3, 4]}'
     return name
 
 def generate_data(topics,filename,code,consumer, prometheus_start_time):
@@ -270,7 +269,7 @@ def download_file(filename):
     start_time = time()
     print(filename)
     if len(filename) > 99:
-        # Truncate the filename if it's longer than 99 characters
+        # Tronca il nome del file se più lungo di 99 caratteri
         filename = filename[:99]
     if not allowed_file(filename):
         return {"error":"File extension not allowed!", "HTTP_status_code:": 400}
@@ -323,6 +322,8 @@ def download_file(filename):
 @app.route('/metrics')
 def metrics():
     return Response(generate_latest(), content_type=CONTENT_TYPE_LATEST)
+
+
 threadConsumers=[]
 threadLimit=10
 
