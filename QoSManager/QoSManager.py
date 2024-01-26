@@ -3,6 +3,9 @@ import random
 import string
 import time
 import logging
+import mysql.connector
+from datetime import datetime, timedelta
+
 from prometheus_api_client import PrometheusConnect
 from flask import Flask, jsonify, request
 
@@ -13,7 +16,10 @@ sla_rules = {}
 
 prometheus_url = "http://prometheus-service:9090"
 prometheus = PrometheusConnect(url=prometheus_url, disable_ssl=True)
-
+max_desired_latency=4.5
+min_desired_throughput=5000000
+lastLatency=0
+lastThroughput=0
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 def get_random_string(length):
@@ -61,7 +67,28 @@ def create_deployment(api_instance, deployment_name, container_image, replicas):
             print("Probabilmente ha preso un nome uguale")
             continue
    
-            
+db_conf = {
+            'host':'db',
+            'port':3306,
+            'database':'ds_filesystem',
+            'user':'root',
+            'password':'giovanni'
+            }
+
+def mysql_custom_connect(conf):
+    while True:
+        try:
+
+            db = mysql.connector.connect(**conf)
+
+            if db.is_connected():
+                print("Connected to MySQL database")
+                return db
+        except mysql.connector.Error as err:
+            print("Something went wrong: {}".format(err))
+        
+        print("Trying again...")
+        time.sleep(5)           
 
 def createFileSystem():
     config.load_incluster_config()
@@ -103,23 +130,7 @@ def update_sla_rule(sla_rule, sla_value = 0):
     #sla_rules[sla_rule]['threshold'] = 0 #Aggiungere campo threshold all'api update_sla_rule (dovrebbe essere lui il valore desidereto?)
     return jsonify({"message": "SLA rule updated successfully"}), 200
         
-
-# Queries possibili per il download
-# download_file_latency_query = 'download_file_latency_seconds'
-# download_file_throughput_query = 'download_file_throughput_bytes'
-
-@app.route('/query', methods=['GET'])
-def query_prometheus():
-    query = request.args.get('query', '')
-    ranged_query = request.args.get('range', 'false').lower() == 'true'
-    start_time = request.args.get('start', '1')
-    start_time ="now-"+start_time+"h"
-    end_time = request.args.get('end', 'now')
-    step = request.args.get('step', '15s')
-    aggregation = request.args.get('aggregation', '').lower()
-    rate_interval = request.args.get('rate_interval', '5m')
-    
-    allowed_queries = ['download_file_latency_seconds', 'download_file_throughput_bytes']
+def valueQuery(query,allowed_queries,ranged_query,aggregation,start_time,end_time,step,rate_interval):
     allowed_aggregations = ['avg', 'min', 'max', 'sum', 'count', 'stddev', 'stdvar', 'rate', '']
     
     try:
@@ -153,6 +164,62 @@ def query_prometheus():
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+# Queries possibili per il download
+# download_file_latency_query = 'download_file_latency_seconds'
+# download_file_throughput_query = 'download_file_throughput_bytes'
+
+@app.route('/query', methods=['GET'])
+def query_prometheus():
+    query = request.args.get('query', '')
+    ranged_query = request.args.get('range', 'false').lower() == 'true'
+    start_time = request.args.get('start', '1')
+    interval_value=start_time
+    start_time ="now-"+start_time+"h"
+    end_time = request.args.get('end', 'now')
+    step = request.args.get('step', '15s')
+    aggregation = request.args.get('aggregation', '').lower()
+    rate_interval = request.args.get('rate_interval', '5m')
+    
+    allowed_queries = ['download_file_latency_seconds', 'download_file_throughput_bytes']
+    
+    if type=="value":
+        valueQuery(query,allowed_queries,ranged_query,aggregation,start_time,end_time,step,rate_interval)
+
+    elif type=="desired_value":
+        if query == allowed_queries[0]:
+            return jsonify({"desidered_"+query: max_desired_latency}), 200
+        elif query== allowed_queries[1]:
+            return jsonify({"desidered_"+query: min_desired_throughput}), 200
+
+    elif type== "violation":
+
+        time_interval = timedelta(hours=interval_value)
+        start_time = datetime.utcnow() - time_interval
+        
+
+        if query == allowed_queries[0]:
+            if interval_value <=0:
+                return jsonify({"is_violating": lastLatency>max_desired_latency}), 200
+            cursor.execute("SELECT count(id_metric) where metric_value > %s and created_at > %s",(max_desired_latency,start_time)) 
+        elif query== allowed_queries[1]:
+            if interval_value <=0:
+                return jsonify({"is_violating": lastThroughput>min_desired_throughput}), 200
+            cursor.execute("SELECT count(id_metric) where metric_value z %s and created_at > %s",(min_desired_throughput,start_time)) 
+        else:
+            return jsonify({"error": "Invalid query"}), 400
+
+        count=cursor.fetchone()[0]
+
+        return jsonify({"violations": count}), 200
+        
+    elif type== "violation_probability":
+        pass
+    else:
+        return jsonify({"error": "Invalid type"}), 400
+
+db = mysql_custom_connect(db_conf)
+
+cursor=db.cursor()
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=80, threaded=True)
@@ -162,4 +229,31 @@ if __name__ == "__main__":
     # #createUploadManager()
     # while True:
     #     time.sleep(20)
-    
+    while True:
+        current_throughput=10000000000000
+        current_latency=0
+        throughputList = prometheus.custom_query("download_file_throughput_bytes")
+        latencyList = prometheus.custom_query("download_file_latency_seconds")
+        for i in range (latencyList):
+
+            tempThroughput=throughputList[i]["value"][1]
+            tempLatency=throughputList[i]["value"][1]
+            if tempLatency>current_latency:
+                current_latency=tempLatency
+            if tempThroughput<current_throughput:
+                current_throughput=tempThroughput
+
+        if lastLatency!= current_latency:
+            cursor.execute("INSERT INTO metrics (metric_name, metric_value) VALUES (%s,  %s)", ("download_file_latency_seconds", current_latency))
+            lastLatency=current_latency
+            db.commit()
+            if current_latency<max_desired_latency and predictLatencyMinute(current_latency,1):
+                createDownloadManager()
+        if lastThroughput!= current_throughput:
+            cursor.execute("INSERT INTO metrics (metric_name, metric_value) VALUES (%s,  %s)", ("download_file_latency_seconds", current_latency))
+            lastThroughput=current_throughput
+            db.commit()
+            if current_throughput<min_desired_throughput and predictThroughputMinute(current_throughput,1):
+                createFileSystem()#Sarebbe anche necessario aggiornare il limite al numero di partizioni
+
+        time.sleep(1)    
