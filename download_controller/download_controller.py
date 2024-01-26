@@ -6,6 +6,7 @@
 # 	- Fornisce api per richiesta file
 #   - Registrazione su NGINX
 import json
+import threading
 from confluent_kafka import Producer, Consumer, KafkaError
 import base64
 import socket
@@ -21,6 +22,7 @@ from time import time
 
 # Variabili globali
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'rar', 'zip', 'mp3'}
+mutex = threading.Lock()
 
 # Variabili per prometheus
 
@@ -190,7 +192,6 @@ def generate_data(topics,filename,code,consumer, prometheus_start_time):
             else:
                 data=json.loads(msg.value().decode('utf-8'))
                 if data["filename"] != filename or data["code"] != code:
-                    cons.commit()
                     continue
                 if data["last"] == True:
                     temp_vet[i]=""
@@ -217,7 +218,13 @@ def generate_data(topics,filename,code,consumer, prometheus_start_time):
             end_time = time()
             throughput = total_len/(end_time - prometheus_start_time)
             download_file_throughput.set(throughput)
-            temp_vet.clear() 
+            temp_vet.clear()
+    mutex.acquire()
+    try:
+        
+        consumers["available"]=True
+    finally:
+        mutex.release() 
 
 
 
@@ -242,6 +249,21 @@ def discover():
 # Gestione di un file in download
 def download_file(filename):
     # Avvio timer per prometheus
+    consumers=None
+    condition=True
+    while condition:
+        mutex.acquire()
+        try:
+            for i in range(threadLimit):
+                if threadConsumers[i]["available"]==True:
+                    consumers=threadConsumers[i]
+                    threadConsumers[i]["available"]=False
+                    condition=False
+        finally:
+            mutex.release()
+            if condition:
+                time.sleep(0.1)
+    
     start_time = time()
     print(filename)
     if len(filename) > 99:
@@ -298,10 +320,14 @@ def download_file(filename):
 @app.route('/metrics')
 def metrics():
     return Response(generate_latest(), content_type=CONTENT_TYPE_LATEST)
+threadConsumers=[]
+threadLimit=10
 
 consumers={}
 c = Consumer({'bootstrap.servers': 'kafka-service:9093', 'group.id': 'download', 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
 if __name__ == "__main__":
+    for i in range(threadLimit):
+        threadConsumers.append({"available":True})
     # Ricezione topics necessari per il download
     returnTopic = first_Call()
     sleep(5)

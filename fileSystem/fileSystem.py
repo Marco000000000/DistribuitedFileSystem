@@ -226,7 +226,7 @@ def deleter(deleteConsumer):
                     finally:
                         # Release the mutex to allow other threads to access the shared resource
                         mutex.release()
-                        if not(cond):
+                        if (cond):
                             time.sleep(1)
                         
                 delete_file(secure_filename(data["fileName"]))
@@ -251,7 +251,7 @@ def downloadThreaded(data):
         finally:
             # Release the mutex to allow other threads to access the shared resource
             mutex.release()
-            if not(cond):
+            if (cond):
                 time.sleep(1)
         
     download_file(secure_filename(data["fileName"]),data["returnTopic"],data["code"])
@@ -306,7 +306,7 @@ def uploader(uploadConsumer):
                     finally:
                         # Release the mutex to allow other threads to access the shared resource
                         mutex.release()
-                        if not(cond):
+                        if (cond):
                             time.sleep(1)
                 upload_file(secure_filename(data["fileName"]),data)
                 mutex.acquire()
