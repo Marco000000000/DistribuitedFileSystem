@@ -179,7 +179,8 @@ def generate_data(topics,filename,code,consumer, prometheus_start_time):
         for e in consumer:
             cons=consumer[e]
             #print(temp_vet.keys())
-
+            if(type(cons)==bool):
+                continue
             if(i  in temp_vet):
                 i=i+1
                 continue
@@ -262,7 +263,7 @@ def download_file(filename):
         finally:
             mutex.release()
             if condition:
-                time.sleep(0.1)
+                sleep(0.1)
     
     start_time = time()
     print(filename)
