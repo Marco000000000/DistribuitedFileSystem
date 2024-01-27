@@ -170,10 +170,12 @@ def valueQuery(query,allowed_queries,ranged_query,aggregation,start_time,end_tim
 
 @app.route('/query', methods=['GET'])
 def query_prometheus():
+    type = request.args.get('type', '')
+
     query = request.args.get('query', '')
     ranged_query = request.args.get('range', 'false').lower() == 'true'
     start_time = request.args.get('start', '1')
-    interval_value=start_time
+    interval_value=int(start_time)
     start_time ="now-"+start_time+"h"
     end_time = request.args.get('end', 'now')
     step = request.args.get('step', '15s')
@@ -200,11 +202,11 @@ def query_prometheus():
         if query == allowed_queries[0]:
             if interval_value <=0:
                 return jsonify({"is_violating": lastLatency>max_desired_latency}), 200
-            cursor.execute("SELECT count(id_metric) where metric_value > %s and created_at > %s",(max_desired_latency,start_time)) 
+            cursor.execute("SELECT count(id_metric) from metrics where metric_value > %s and created_at > %s",(max_desired_latency,start_time)) 
         elif query== allowed_queries[1]:
             if interval_value <=0:
                 return jsonify({"is_violating": lastThroughput>min_desired_throughput}), 200
-            cursor.execute("SELECT count(id_metric) where metric_value z %s and created_at > %s",(min_desired_throughput,start_time)) 
+            cursor.execute("SELECT count(id_metric) from metrics where metric_value < %s and created_at > %s",(min_desired_throughput,start_time)) 
         else:
             return jsonify({"error": "Invalid query"}), 400
 
