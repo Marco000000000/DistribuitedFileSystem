@@ -185,7 +185,7 @@ def query_prometheus():
     allowed_queries = ['download_file_latency_seconds', 'download_file_throughput_bytes']
     
     if type=="value":
-        valueQuery(query,allowed_queries,ranged_query,aggregation,start_time,end_time,step,rate_interval)
+        return valueQuery(query,allowed_queries,ranged_query,aggregation,start_time,end_time,step,rate_interval)
 
     elif type=="desired_value":
         if query == allowed_queries[0]:
