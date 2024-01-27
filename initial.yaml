@@ -12,28 +12,28 @@ spec:
     http:
       paths:
       - path: /discover
-        pathType: Exact
+        pathType: Prefix
         backend:
           service:
             name: download-controller-service
             port:
               number: 80
       - path: /download
-        pathType: Exact
+        pathType: Prefix
         backend:
           service:
             name: download-controller-service
             port:
               number: 80
       - path: /upload
-        pathType: Exact
+        pathType: Prefix
         backend:
           service:
             name: uploadcontroller-service
             port:
               number: 80
       - path: /query
-        pathType: Exact
+        pathType: Prefix
         backend:
           service:
             name: qosmanager-service
