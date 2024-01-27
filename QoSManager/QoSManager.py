@@ -5,7 +5,7 @@ import time
 import logging
 import mysql.connector
 from datetime import datetime, timedelta
-
+import json
 from prometheus_api_client import PrometheusConnect
 from flask import Flask, jsonify, request
 
@@ -202,22 +202,38 @@ def query_prometheus():
         if query == allowed_queries[0]:
             if interval_value <=0:
                 return jsonify({"is_violating": lastLatency>max_desired_latency}), 200
-            cursor.execute("SELECT count(id_metric) from metrics where metric_value > %s and created_at > %s",(max_desired_latency,start_time)) 
+            cursor.execute("SELECT count(id_metric) from metrics where metric_name = %s and metric_value > %s and created_at > %s",(query,max_desired_latency,start_time)) 
         elif query== allowed_queries[1]:
             if interval_value <=0:
                 return jsonify({"is_violating": lastThroughput>min_desired_throughput}), 200
-            cursor.execute("SELECT count(id_metric) from metrics where metric_value < %s and created_at > %s",(min_desired_throughput,start_time)) 
+            cursor.execute("SELECT count(id_metric) from metrics where metric_name = %s and metric_value < %s and created_at > %s",(query,min_desired_throughput,start_time)) 
         else:
             return jsonify({"error": "Invalid query"}), 400
 
         count=cursor.fetchone()[0]
 
         return jsonify({"violations": count}), 200
-        
+    elif type=="all_data":
+        if query == allowed_queries[0]:
+            cursor.execute("SELECT * from metrics where metric_name = %s",(query,))
+    
+        elif query== allowed_queries[1]:
+            cursor.execute("SELECT * from metrics where metric_name = %s",(query,))
+
+        topics_temp=cursor.fetchall()
+        unpacked_list_temp = [item[0] for item in topics_temp] 
+        return json.dumps(unpacked_list_temp)
+
     elif type== "violation_probability":
         pass
     else:
         return jsonify({"error": "Invalid type"}), 400
+    
+
+def predictLatencyMinute(current_latency,minute):
+    return False
+def predictThroughputMinute(current_throughput,minute):
+    return False
 
 db = mysql_custom_connect(db_conf)
 
