@@ -224,8 +224,13 @@ def query_prometheus():
         else:
             return jsonify({"error": "Invalid query"}), 400
         topics_temp=cursor.fetchall()
+        unpacked_list_temp=[]
         print(topics_temp)
-        unpacked_list_temp = [item[0] for item in topics_temp]
+        for item in topics_temp:
+            print(item)
+            item=list(item)
+            item[3]=str(item[3])
+            unpacked_list_temp.append(item)
         print(unpacked_list_temp) 
         return json.dumps(unpacked_list_temp)
 
@@ -250,7 +255,7 @@ def mysql_updater():
     
     while True:
         current_throughput=10000000000000
-        current_latency=0
+        current_latency=-0
         throughputList = prometheus.custom_query("download_file_throughput_bytes")
         latencyList = prometheus.custom_query("download_file_latency_seconds")
         print(throughputList)
@@ -275,7 +280,7 @@ def mysql_updater():
             if current_latency<max_desired_latency and predictLatencyMinute(current_latency,1):
                 createDownloadManager()
         if lastThroughput!= current_throughput:
-            cursor.execute("INSERT INTO metrics (metric_name, metric_value) VALUES (%s,  %s)", ("download_file_throughput_bytes", current_latency))
+            cursor.execute("INSERT INTO metrics (metric_name, metric_value) VALUES (%s,  %s)", ("download_file_throughput_bytes", current_throughput))
             lastThroughput=current_throughput
             db.commit()
             if current_throughput<min_desired_throughput and predictThroughputMinute(current_throughput,1):
