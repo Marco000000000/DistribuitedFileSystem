@@ -12,11 +12,11 @@ def makeRandomRequest():
         print(url)
         with requests.get(url, stream=True) as r:
             r.raise_for_status()
-            for chunk in r.iter_content(chunk_size=8192): 
+            for chunk in r.iter_content(chunk_size=131072): 
                 # If you have chunk encoded response uncomment if
                 # and set chunk_size parameter to None.
                 #if chunk: 
-                print(chunk)
+                continue
         
 
         print("fatto")
@@ -24,12 +24,13 @@ if __name__=="__main__":
     #makeRandomRequest()
     while True:
         threads=[]
-        for i in range(3):
+        for i in range(2):
             thread = threading.Thread(target=makeRandomRequest)
             threads.append(thread)
             thread.start()
-            time.sleep(2)
+            time.sleep(1)
 
+        for i in range(2):
+            threads[i].join()
         
-        
-        time.sleep(4)
+        time.sleep(2)
