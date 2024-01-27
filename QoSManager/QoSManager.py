@@ -221,9 +221,12 @@ def query_prometheus():
     
         elif query== allowed_queries[1]:
             cursor.execute("SELECT * from metrics where metric_name = %s",(query,))
-
+        else:
+            return jsonify({"error": "Invalid query"}), 400
         topics_temp=cursor.fetchall()
-        unpacked_list_temp = [item[0] for item in topics_temp] 
+        print(topics_temp)
+        unpacked_list_temp = [item[0] for item in topics_temp]
+        print(unpacked_list_temp) 
         return json.dumps(unpacked_list_temp)
 
     elif type== "violation_probability":
@@ -252,13 +255,14 @@ def mysql_updater():
         latencyList = prometheus.custom_query("download_file_latency_seconds")
         print(throughputList)
         print(latencyList)
-
+        logger.info(throughputList)
+        logger.info(latencyList)
         for i in range (len(throughputList)):
-            tempThroughput=int(throughputList[i]["value"][1])
-            if tempThroughput<current_throughput:
+            tempThroughput=float(throughputList[i]["value"][1])
+            if tempThroughput<current_throughput or current_throughput==0:
                 current_throughput=tempThroughput
         for i in range(len(latencyList)):
-            tempLatency=int(tempLatency[i]["value"][1])
+            tempLatency=float(latencyList[i]["value"][1])
             if tempLatency>current_latency:
                 current_latency=tempLatency
             
@@ -271,7 +275,7 @@ def mysql_updater():
             if current_latency<max_desired_latency and predictLatencyMinute(current_latency,1):
                 createDownloadManager()
         if lastThroughput!= current_throughput:
-            cursor.execute("INSERT INTO metrics (metric_name, metric_value) VALUES (%s,  %s)", ("download_file_latency_seconds", current_latency))
+            cursor.execute("INSERT INTO metrics (metric_name, metric_value) VALUES (%s,  %s)", ("download_file_throughput_bytes", current_latency))
             lastThroughput=current_throughput
             db.commit()
             if current_throughput<min_desired_throughput and predictThroughputMinute(current_throughput,1):

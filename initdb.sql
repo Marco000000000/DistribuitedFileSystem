@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS controllertopic (
 CREATE TABLE IF NOT EXISTS metrics (
     id_metric INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     metric_name VARCHAR (255) NOT NULL,
-    metric_value VARCHAR(255) NOT NULL,
+    metric_value FLOAT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
