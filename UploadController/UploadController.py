@@ -142,13 +142,9 @@ def upload_file():#gestione di un file in upload
         return render_template('upload.html')
     else:
         file = request.files['file']
-        fileName=secure_filename(file.filename)
-        if len(fileName) > 99:
-        # Truncate the filename if it's longer than 99 characters
-            filename = fileName[:99]
-        else:
-            filename=fileName
-        if file and allowed_file(fileName):
+        filename=secure_filename(file.filename)
+        
+        if file and allowed_file(filename):
 
             cursor.execute("SELECT file_name,ready FROM files where file_name= %s",(filename,))
             
@@ -205,7 +201,7 @@ def upload_file():#gestione di un file in upload
                     m=json.dumps(data)
                     p.poll(0.01)
                     p.produce("Upload"+str(topic), m.encode('utf-8'),callback=receipt)
-                    p.flush()
+                    
                     
                 
             db.commit()
