@@ -120,7 +120,8 @@ def upload_file(filename,pack):
         data={"commit":True}
         produceJson(pack["returnTopic"],data)
         return
-
+    logger.info(filename)
+    logger.info(pack["count"])
     file = base64.b64decode(pack["data"])
 
     with open(directory, "ab+") as f:
