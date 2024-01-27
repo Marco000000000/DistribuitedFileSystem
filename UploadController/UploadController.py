@@ -166,7 +166,6 @@ def upload_file():#gestione di un file in upload
                 produceJson("Delete"+str(topic),data)  
             for topic in topics:
                 cursor.execute("INSERT INTO files (file_name ,partition_id,ready) VALUES (%s, %s,%s)",(filename,topic,False))
-                #problema possibile di request mentre è ancora in corso l'upload
                 db.commit()
             count=0
             fileNotFinished=True
@@ -205,6 +204,7 @@ def upload_file():#gestione di un file in upload
                     m=json.dumps(data)
                     p.poll(0.01)
                     p.produce("Upload"+str(topic), m.encode('utf-8'),callback=receipt)
+                    p.flush()
                     
                 
             db.commit()

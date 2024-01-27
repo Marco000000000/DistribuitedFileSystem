@@ -135,7 +135,7 @@ spec:
 
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: kafka-deployment
 spec:
@@ -219,7 +219,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: /your/preferred/path
+    path: /
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
