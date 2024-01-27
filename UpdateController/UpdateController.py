@@ -63,7 +63,7 @@ def produceJson(topic, dictionaryData):
     print(m)
     p.poll(0.01)
     p.produce(topic, m.encode('utf-8'), callback=receipt)
-    p.flush() # Serve per attendere la ricezione di tutti i messaggi
+    p.flush() 
 
 def discover(id,topic):
     db = mysql_custom_connect(db_conf)

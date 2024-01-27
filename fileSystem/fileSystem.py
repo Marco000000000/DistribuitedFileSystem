@@ -309,6 +309,8 @@ def uploader(uploadConsumer):
                         mutex.release()
                         if (cond):
                             time.sleep(1)
+                logger.info(data["fileName"])
+
                 upload_file(secure_filename(data["fileName"]),data)
                 mutex.acquire()
 
@@ -321,7 +323,7 @@ def uploader(uploadConsumer):
                 uploadConsumer.commit()
 
 c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':get_random_string(20),'auto.offset.reset':'latest','enable.auto.commit': False})
-updateConsumer=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':"1",'auto.offset.reset':'earliest','enable.auto.commit': False})
+updateConsumer=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':get_random_string(20),'auto.offset.reset':'earliest','enable.auto.commit': False})
 updateConsumer.subscribe(["UpdateDownload"])
 if __name__== "__main__":
 
@@ -330,10 +332,12 @@ if __name__== "__main__":
         time.sleep(0.2)
     id,topicNumber=first_Call() #ricezione dati necessari per la ricezione
     print(id,topicNumber)
-    
+
+
     updateLocalFiles(id,topicNumber)
     
-    
+    logger.info("Dopo l'update")
+
     
     while "Upload"+str(topicNumber) not in c.list_topics().topics:
         print("in attesa del manager")
@@ -347,6 +351,7 @@ if __name__== "__main__":
     deleteConsumer=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
     deleteConsumer.subscribe(["Delete"+str(topicNumber)])
     print("ho fatto l'inizio")
+    logger.info("ho fatto l'inizio")
 
     thread1 = threading.Thread(target=uploader, args=(uploadConsumer,))
     thread2 = threading.Thread(target=downloader, args=(requestConsumer,))

@@ -250,13 +250,18 @@ def mysql_updater():
         current_latency=0
         throughputList = prometheus.custom_query("download_file_throughput_bytes")
         latencyList = prometheus.custom_query("download_file_latency_seconds")
-        for i in range (len(latencyList)):
+        print(throughputList)
+        print(latencyList)
+
+        for i in range (len(throughputList)):
             tempThroughput=int(throughputList[i]["value"][1])
-            tempLatency=int(throughputList[i]["value"][1])
-            if tempLatency>current_latency:
-                current_latency=tempLatency
             if tempThroughput<current_throughput:
                 current_throughput=tempThroughput
+        for i in range(len(latencyList)):
+            tempLatency=int(tempLatency[i]["value"][1])
+            if tempLatency>current_latency:
+                current_latency=tempLatency
+            
         print(lastThroughput)
         print(current_throughput)
         if lastLatency!= current_latency:
