@@ -4,7 +4,7 @@
 # Dividere file
 # Produrre nei vari topic kafka
 #multithreading
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template,jsonify
 from werkzeug.utils import secure_filename
 import json
 import socket
@@ -157,7 +157,7 @@ def upload_file():#gestione di un file in upload
                 print(fetch)
                 logger.info(fetch)
                 if(fetch[1]==False):
-                    return {"error":"File in updating"}
+                    return jsonify({"error":"File in updating"}), 400
             cursor.execute("delete from files where file_name= %s",(filename,))
             for topic in topics:
                 data={
@@ -212,7 +212,7 @@ def upload_file():#gestione di un file in upload
             return "ok"
 
         else:
-            return {"error":"Incorrect extenction"}
+            return jsonify({"error":"Incorrect extenction"}), 400
 def update(topics,groupId):
     c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
     c.subscribe(["UpdateTopics"])
