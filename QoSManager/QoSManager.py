@@ -260,7 +260,8 @@ if __name__ == "__main__":
                 current_latency=tempLatency
             if tempThroughput<current_throughput:
                 current_throughput=tempThroughput
-
+        print(lastThroughput)
+        print(current_throughput)
         if lastLatency!= current_latency:
             cursor.execute("INSERT INTO metrics (metric_name, metric_value) VALUES (%s,  %s)", ("download_file_latency_seconds", current_latency))
             lastLatency=current_latency
