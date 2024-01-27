@@ -188,6 +188,7 @@ def upload_file():#gestione di un file in upload
                         }
                         print(data)
                         logger.info(data)
+                        p.flush()
                         produceJson("Upload"+str(topic),data)  
                         consumeJson(returnTopic,"1")
                         cursor.execute("UPDATE files SET ready = true WHERE file_name= %s",(filename,))
@@ -204,7 +205,7 @@ def upload_file():#gestione di un file in upload
                     m=json.dumps(data)
                     p.poll(0.01)
                     p.produce("Upload"+str(topic), m.encode('utf-8'),callback=receipt)
-                    p.flush()
+                    
                     
                 
             db.commit()
