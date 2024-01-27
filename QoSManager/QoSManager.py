@@ -1,3 +1,4 @@
+import threading
 from kubernetes import client, config
 import random
 import string
@@ -20,6 +21,7 @@ max_desired_latency=4.5
 min_desired_throughput=5000000
 lastLatency=0
 lastThroughput=0
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 def get_random_string(length):
@@ -239,23 +241,18 @@ db = mysql_custom_connect(db_conf)
 
 cursor=db.cursor()
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=80, threaded=True)
-    # time.sleep(100)
-    # createDownloadManager()
-    # createFileSystem()
-    # #createUploadManager()
-    # while True:
-    #     time.sleep(20)
+def mysql_updater():
+    global lastThroughput
+    global lastLatency
+    
     while True:
         current_throughput=10000000000000
         current_latency=0
         throughputList = prometheus.custom_query("download_file_throughput_bytes")
         latencyList = prometheus.custom_query("download_file_latency_seconds")
-        for i in range (latencyList):
-
-            tempThroughput=throughputList[i]["value"][1]
-            tempLatency=throughputList[i]["value"][1]
+        for i in range (len(latencyList)):
+            tempThroughput=int(throughputList[i]["value"][1])
+            tempLatency=int(throughputList[i]["value"][1])
             if tempLatency>current_latency:
                 current_latency=tempLatency
             if tempThroughput<current_throughput:
@@ -276,3 +273,13 @@ if __name__ == "__main__":
                 createFileSystem()#Sarebbe anche necessario aggiornare il limite al numero di partizioni
 
         time.sleep(1)    
+
+
+if __name__ == "__main__":
+
+    thread1 = threading.Thread(target=mysql_updater)
+    thread1.start()
+    app.run(host='0.0.0.0', port=80, threaded=True)
+
+
+
