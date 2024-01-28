@@ -1,16 +1,5 @@
 [
-  [
-    1,
-    "download_file_throughput_bytes",
-    10000000000000.0,
-    "2024-01-28 14:25:44"
-  ],
-  [
-    2,
-    "download_file_throughput_bytes",
-    0.0,
-    "2024-01-28 14:25:54"
-  ],
+
   [
     5,
     "download_file_throughput_bytes",
@@ -522,66 +511,6 @@
     "2024-01-28 14:44:14"
   ],
   [
-    98,
-    "download_file_throughput_bytes",
-    10000000000000.0,
-    "2024-01-28 14:45:32"
-  ],
-  [
-    98,
-    "download_file_throughput_bytes",
-    10000000000000.0,
-    "2024-01-28 14:45:32"
-  ],
-  [
-    98,
-    "download_file_throughput_bytes",
-    10000000000000.0,
-    "2024-01-28 14:45:32"
-  ],
-  [
-    98,
-    "download_file_throughput_bytes",
-    10000000000000.0,
-    "2024-01-28 14:45:32"
-  ],
-  [
-    98,
-    "download_file_throughput_bytes",
-    10000000000000.0,
-    "2024-01-28 14:45:32"
-  ],
-  [
-    99,
-    "download_file_throughput_bytes",
-    0.0,
-    "2024-01-28 14:46:49"
-  ],
-  [
-    99,
-    "download_file_throughput_bytes",
-    0.0,
-    "2024-01-28 14:46:49"
-  ],
-  [
-    99,
-    "download_file_throughput_bytes",
-    0.0,
-    "2024-01-28 14:46:49"
-  ],
-  [
-    99,
-    "download_file_throughput_bytes",
-    0.0,
-    "2024-01-28 14:46:49"
-  ],
-  [
-    99,
-    "download_file_throughput_bytes",
-    0.0,
-    "2024-01-28 14:46:49"
-  ],
-  [
     101,
     "download_file_throughput_bytes",
     273144.0,
@@ -641,18 +570,7 @@
     269738.0,
     "2024-01-28 14:47:32"
   ],
-  [
-    1,
-    "download_file_throughput_bytes",
-    10000000000000.0,
-    "2024-01-28 14:57:03"
-  ],
-  [
-    2,
-    "download_file_throughput_bytes",
-    0.0,
-    "2024-01-28 14:57:15"
-  ],
+  
   [
     7,
     "download_file_throughput_bytes",
@@ -1031,18 +949,7 @@
     4824570.0,
     "2024-01-28 15:04:50"
   ],
-  [
-    1,
-    "download_file_throughput_bytes",
-    10000000000000.0,
-    "2024-01-28 15:08:27"
-  ],
-  [
-    2,
-    "download_file_throughput_bytes",
-    0.0,
-    "2024-01-28 15:08:38"
-  ],
+
   [
     6,
     "download_file_throughput_bytes",
