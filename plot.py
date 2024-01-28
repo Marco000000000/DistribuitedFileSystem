@@ -1,5 +1,6 @@
 import json
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Specify the path to your input JSON file
 input_file_path = 'latency_sorted.json'
@@ -9,16 +10,22 @@ with open(input_file_path, 'r') as file:
     data = json.load(file)
 
 fourth_elements = []
+fourth_elements_view = []
+i = 0
 
 for inner_list in data:
     if inner_list[2] < 20:
-        fourth_elements.append(inner_list[2])
+        fourth_elements.append([i, inner_list[2]])
+        fourth_elements_view.append(inner_list[2])
+        i += 1
 
 # Create a plot
-plt.plot(fourth_elements, marker='o')
+plt.plot(fourth_elements_view, marker='o')
 plt.title('Latency')
 plt.xlabel('Sample')
 plt.ylabel('Latency (s)')
+
+
 
 # Show the plot
 plt.show()
