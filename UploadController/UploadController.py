@@ -50,7 +50,6 @@ def mysql_custom_connect(conf):
 
 db = mysql_custom_connect(db_conf)
 
-cursor=db.cursor(buffered=True)
 
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
     p=Producer({'bootstrap.servers':'kafka-service:9093'})
@@ -137,6 +136,7 @@ def first_Call():#funzione per la ricezione di topic iniziali
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():#gestione di un file in upload 
+    cursor=db.cursor()
 
     if request.method == 'GET':
         return render_template('upload.html')
@@ -205,13 +205,13 @@ def upload_file():#gestione di un file in upload
                     
                 
             db.commit()
-
+            cursor.close()
             return "ok"
 
         else:
             return jsonify({"error":"Incorrect extenction"}), 400
 def update(topics,groupId):
-    c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
+    c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) 
     c.subscribe(["UpdateTopics"])
     while True:
             msg=c.poll(1.0) #timeout

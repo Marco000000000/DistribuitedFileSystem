@@ -253,7 +253,9 @@ def mysql_updater():
     global lastThroughput
     global lastLatency
     
+
     while True:
+        cursor=db.cursor()
         current_throughput=10000000000000
         current_latency=-0
         throughputList = prometheus.custom_query("download_file_throughput_bytes")
@@ -287,7 +289,7 @@ def mysql_updater():
                 createFileSystem()#Sarebbe anche necessario aggiornare il limite al numero di partizioni
 
         time.sleep(1)    
-
+        cursor.close
 
 if __name__ == "__main__":
 

@@ -28,9 +28,9 @@ if __name__=="__main__":
             thread = threading.Thread(target=makeRandomRequest)
             threads.append(thread)
             thread.start()
-            time.sleep(1)
+            time.sleep(3)
 
         for i in range(2):
             threads[i].join()
         
-        time.sleep(2)
+        time.sleep(3)

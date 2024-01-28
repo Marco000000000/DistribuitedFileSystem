@@ -231,6 +231,7 @@ def generate_data(topics,filename,code,consumer, prometheus_start_time):
 @app.route("/discover", methods=['GET'])
 def discover():
     db.commit()
+    cursor=db.cursor(buffered=True)
     mysql_query = "SELECT distinct file_name FROM files WHERE ready=true;"
     cursor.execute(mysql_query)
     files=cursor.fetchall()
@@ -251,6 +252,8 @@ def download_file(filename):
     # Avvio timer per prometheus
     consumers=None
     condition=True
+    cursor=db.cursor(buffered=True)
+
     while condition:
         mutex.acquire()
         try:
