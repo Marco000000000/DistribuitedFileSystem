@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Specify the path to your input JSON file
-input_file_path = 'StepLatency.json'
+input_file_path = 'StepThroughput.json'
 
 # Read the file and load its content into a Python list
 with open(input_file_path, 'r') as file:
@@ -17,8 +17,8 @@ std=[]
 mean=[]
 times=100
 step=5
-output_json_std = 'std_Latency.json'
-output_json_mean = 'mean_Latency.json'
+output_json_std = 'std_Throughput.json'
+output_json_mean = 'mean_Throughput.json'
 
 
 
