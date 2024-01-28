@@ -222,7 +222,7 @@ def generate_data(topics,filename,code,consumer,index, prometheus_start_time):
     mutex.acquire()
     try:
         
-        threadConsumers[i]["available"]=True
+        threadConsumers[index]["available"]=True
     finally:
         mutex.release() 
 
