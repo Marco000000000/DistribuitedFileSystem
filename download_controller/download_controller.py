@@ -162,7 +162,7 @@ def first_Call():#funzione per la ricezione di topic iniziali
     aList=consumeJsonFirstCall("CFirstCallAck",name)
     return name
 
-def generate_data(topics,filename,code,consumer, prometheus_start_time):
+def generate_data(topics,filename,code,consumer,index, prometheus_start_time):
     # Generazione dati per il download
     
     count=0
@@ -222,7 +222,7 @@ def generate_data(topics,filename,code,consumer, prometheus_start_time):
     mutex.acquire()
     try:
         
-        consumers["available"]=True
+        threadConsumers[i]["available"]=True
     finally:
         mutex.release() 
 
@@ -253,7 +253,8 @@ def download_file(filename):
     consumers=None
     condition=True
     cursor=db.cursor(buffered=True)
-
+    index=0
+    print(threadConsumers)
     while condition:
         mutex.acquire()
         try:
@@ -263,6 +264,7 @@ def download_file(filename):
                     consumers=threadConsumers[i]
                     threadConsumers[i]["available"]=False
                     condition=False
+                    index=i
                     break
         finally:
             mutex.release()
@@ -318,7 +320,7 @@ def download_file(filename):
                 }
                 produceJson("Request" + str(topic), data)
 
-            return Response(generate_data(unpacked_list,data["fileName"],code,consumers, start_time), mimetype='application/octet-stream')
+            return Response(generate_data(unpacked_list,data["fileName"],code,consumers,index, start_time), mimetype='application/octet-stream')
         else:
             return {"error":"File not ready for download!", "HTTP_status_code:": 400}
 

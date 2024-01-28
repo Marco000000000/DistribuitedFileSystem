@@ -136,7 +136,8 @@ def first_Call():#funzione per la ricezione di topic iniziali
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():#gestione di un file in upload 
-    cursor=db.cursor()
+    cursor=db.cursor(buffered=True)
+
 
     if request.method == 'GET':
         return render_template('upload.html')
