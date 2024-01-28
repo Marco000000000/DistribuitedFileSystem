@@ -167,7 +167,7 @@ def generate_data(topics,filename,code,consumer, prometheus_start_time):
     
     count=0
     total_len = 0
-    
+    startTime=time()
     
     temp_vet={}
     cond=True
@@ -216,7 +216,7 @@ def generate_data(topics,filename,code,consumer, prometheus_start_time):
                     end_time = time()
                     download_file_latency.set(end_time - prometheus_start_time)
             end_time = time()
-            throughput = total_len/(end_time - prometheus_start_time)
+            throughput = total_len/(end_time - startTime)
             download_file_throughput.set(throughput)
             temp_vet.clear()
     mutex.acquire()

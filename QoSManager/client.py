@@ -4,11 +4,11 @@ import random
 import threading
 
 def makeRandomRequest():
-        response=requests.get("http://192.168.1.168:30000/discover")
+        response=requests.get("http://192.168.1.128:30000/discover")
         print(response)
         names=response.json()
         random_key = random.choice(list(names.keys()))
-        url="http://192.168.1.168:30000/download/"+names[random_key]
+        url="http://192.168.1.128:30000/download/"+names[random_key]
         print(url)
         with requests.get(url, stream=True) as r:
             r.raise_for_status()
