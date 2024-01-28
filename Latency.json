@@ -1,0 +1,730 @@
+[
+  [
+    3,
+    "download_file_latency_seconds",
+    3.00589,
+    "2024-01-28 14:26:43"
+  ],
+  [
+    4,
+    "download_file_latency_seconds",
+    3.00592,
+    "2024-01-28 14:26:46"
+  ],
+  [
+    6,
+    "download_file_latency_seconds",
+    3.05993,
+    "2024-01-28 14:26:51"
+  ],
+  [
+    8,
+    "download_file_latency_seconds",
+    3.00496,
+    "2024-01-28 14:26:56"
+  ],
+  [
+    11,
+    "download_file_latency_seconds",
+    4.00548,
+    "2024-01-28 14:27:07"
+  ],
+  [
+    14,
+    "download_file_latency_seconds",
+    3.32714,
+    "2024-01-28 14:27:17"
+  ],
+  [
+    18,
+    "download_file_latency_seconds",
+    3.01449,
+    "2024 -01-28 14:27:29"
+  ],
+  [
+    19,
+    "download_file_latency_seconds",
+    3.0039,
+    "2024-01-28 14:27:34"
+  ],
+  [
+    20,
+    "download_file_latency_seconds",
+    4.42104,
+    "2024-01-28 14:27:39"
+  ],
+  [
+    21,
+    "download_file_latency_seconds",
+    7.0565,
+    "2024-01-28 14:28:47"
+  ],
+  [
+    23,
+    "download_file_latency_seconds",
+    6.42059,
+    "2024-01-28 14:28: 52"
+  ],
+  [
+    27,
+    "download_file_latency_seconds",
+    3.0362,
+    "2024-01-28 14:30:06"
+  ],
+  [
+    30,
+    "download_file_latency_seconds",
+    22.0175,
+    "2024-01-28 14:30:39"
+  ],
+  [
+    32,
+    "download_file_latency_seconds",
+    25.0058,
+    "2024-01-28 14:30:41"
+  ],
+  [
+    34,
+    "download_file_latency_seconds",
+    3.00453,
+    "2024-01-28 14:31:01"
+  ],
+  [
+    36,
+    " download_file_latency_seconds",
+    6.39797,
+    "2024-01-28 14:31:04"
+  ],
+  [
+    38,
+    "download_file_latency_seconds",
+    6.40445,
+    "2024-01-28 14:31:09"
+  ],
+  [
+    41,
+    "download_file_latency_seconds",
+    3.0156,
+    "2024-01-28 14:31:24"
+  ],
+  [
+    43,
+    "download_file_latency_seconds",
+    3.01553,
+    "2024-01-28 14:31:29"
+  ],
+  [
+    47,
+    "download_file_latency_seconds",
+    3.01611,
+    "2024- 01-28 14:31:44"
+  ],
+  [
+    49,
+    "download_file_latency_seconds",
+    3.00517,
+    "2024-01-28 14:31:54"
+  ],
+  [
+    52,
+    "download_file_latency_seconds",
+    44.013,
+    "2024-01-28 14 :32:53"
+  ],
+  [
+    55,
+    "download_file_latency_seconds",
+    41.0112,
+    "2024-01-28 14:32:59"
+  ],
+  [
+    57,
+    "download_file_latency_seconds",
+    3.53297,
+    "2024-01-28 14:33:02 "
+  ],
+  [
+    58,
+    "download_file_latency_seconds",
+    7.43619,
+    "2024-01-28 14:33:12"
+  ],
+  [
+    60,
+    "download_file_latency_seconds",
+    3.00577,
+    "2024-01-28 14:33:17"
+  ],
+  [
+    62,
+    "download_file_latency_seconds",
+    3.00498,
+    "2024-01-28 14:33:22"
+  ],
+  [
+    64,
+    "download_file_latency_seconds",
+    3.01561,
+    "2024-01-28 14:33:27"
+  ],
+  [
+    66,
+    "download_file_latency_seconds ",
+    3.00422,
+    "2024-01-28 14:33:32"
+  ],
+  [
+    68,
+    "download_file_latency_seconds",
+    3.00428,
+    "2024-01-28 14:33:37"
+  ],
+  [
+    70,
+    "download_file_latency_seconds",
+    3.00519,
+    "2024-01-28 14:33:42"
+  ],
+  [
+    72,
+    "download_file_latency_seconds",
+    3.00538,
+    "2024-01-28 14:33:44"
+  ],
+  [
+    75,
+    "download_file_latency_seconds",
+    3.00536,
+    "2024-01 -28 14:33:54"
+  ],
+  [
+    76,
+    "download_file_latency_seconds",
+    3.00477,
+    "2024-01-28 14:34:04"
+  ],
+  [
+    77,
+    "download_file_latency_seconds",
+    3.0058,
+    "2024-01-28 14:34:12"
+  ],
+  [
+    80,
+    "download_file_latency_seconds",
+    3.0051,
+    "2024-01-28 14:34:17"
+  ],
+  [
+    82,
+    "download_file_latency_seconds",
+    22.46,
+    "2024-01-28 14:35:51"
+  ],
+  [
+    84,
+    "download_file_latency_seconds",
+    25.0435,
+    "2024 -01-28 14:35:54"
+  ],
+  [
+    86,
+    "download_file_latency_seconds",
+    41.8732,
+    "2024-01-28 14:36:04"
+  ],
+  [
+    88,
+    "download_file_latency_seconds",
+    22.46,
+    "2024-01-28 14:36:59"
+  ],
+  [
+    90,
+    "download_file_latency_seconds",
+    3.01593,
+    "2024-01-28 14:37:01"
+  ],
+  [
+    91,
+    "download_file_latency_seconds",
+    13.7427,
+    "2024-01-28 14:37: 19"
+  ],
+  [
+    95,
+    "download_file_latency_seconds",
+    3.00549,
+    "2024-01-28 14:44:14"
+  ],
+  [
+    97,
+    "download_file_latency_seconds",
+    0.0,
+    "2024-01-28 14:45:32"
+  ],
+  [
+    100,
+    "download_file_latency_seconds",
+    10.5008,
+    "2024-01-28 14:47:02"
+  ],
+  [
+    102,
+    "download_file_latency_seconds",
+    12.8216,
+    "2024-01-28 14:47:09"
+  ],
+  [
+    103,
+    " download_file_latency_seconds",
+    12.7701,
+    "2024-01-28 14:47:14"
+  ],
+  [
+    104,
+    "download_file_latency_seconds",
+    10.5008,
+    "2024-01-28 14:47:19"
+  ],
+  [
+    105,
+    "download_file_latency_seconds",
+    10.6107,
+    "28-01-2024 14:47:32"
+  ],
+  [
+    3,
+    "download_file_latency_seconds",
+    3.00682,
+    "2024-01-28 14:58:24"
+  ],
+  [
+    4,
+    "download_file_latency_seconds",
+    3.00615,
+    "2024-01-28 14:58:29"
+  ],
+  [
+    5,
+    "download_file_latency_seconds",
+    3.00527,
+    "2024-01-28 14:58:34"
+  ],
+  [
+    6,
+    "download_file_latency_seconds",
+    3.00712,
+    "2024-01-28 14:58:36"
+  ],
+  [
+    8,
+    "download_file_latency_seconds",
+    3.00539,
+    "2024-01-28 14:58:41"
+  ],
+  [
+    12,
+    "download_file_latency_seconds",
+    3.0059,
+    "2024-01-28 14:58:51"
+  ],
+  [
+    14,
+    "download_file_latency_seconds",
+    3.00538,
+    "2024 -01-28 14:58:56"
+  ],
+  [
+    16,
+    "download_file_latency_seconds",
+    3.00528,
+    "2024-01-28 14:58:59"
+  ],
+  [
+    19,
+    "download_file_latency_seconds",
+    3.00486,
+    "2024-01-28 14:59:04"
+  ],
+  [
+    22,
+    "download_file_latency_seconds",
+    3.00508,
+    "2024-01-28 14:59:15"
+  ],
+  [
+    24,
+    "download_file_latency_seconds",
+    3.30682,
+    "2024-01-28 14:59: 17"
+  ],
+  [
+    26,
+    "download_file_latency_seconds",
+    3.00508,
+    "2024-01-28 14:59:22"
+  ],
+  [
+    28,
+    "download_file_latency_seconds",
+    3.00403,
+    "2024-01-28 14:59:25"
+  ],
+  [
+    30,
+    "download_file_latency_seconds",
+    3.00469,
+    "2024-01-28 14:59:27"
+  ],
+  [
+    34,
+    "download_file_latency_seconds",
+    3.00363,
+    "2024-01-28 14:59:37"
+  ],
+  [
+    35,
+    " download_file_latency_seconds",
+    3.00349,
+    "2024-01-28 14:59:40"
+  ],
+  [
+    37,
+    "download_file_latency_seconds",
+    3.00446,
+    "2024-01-28 14:59:45"
+  ],
+  [
+    40,
+    "download_file_latency_seconds",
+    10.1486,
+    "2024-01-28 15:00:02"
+  ],
+  [
+    42,
+    "download_file_latency_seconds",
+    13.0077,
+    "2024-01-28 15:00:05"
+  ],
+  [
+    44,
+    "download_file_latency_seconds",
+    10.1486,
+    "2024- 01-28 15:00:15"
+  ],
+  [
+    46,
+    "download_file_latency_seconds",
+    3.05803,
+    "2024-01-28 15:00:17"
+  ],
+  [
+    48,
+    "download_file_latency_seconds",
+    5.82452,
+    "2024-01-28 15 :00:22"
+  ],
+  [
+    51,
+    "download_file_latency_seconds",
+    3.02146,
+    "2024-01-28 15:00:32"
+  ],
+  [
+    53,
+    "download_file_latency_seconds",
+    3.36068,
+    "2024-01-28 15:00:35 "
+  ],
+  [
+    55,
+    "download_file_latency_seconds",
+    4.05098,
+    "2024-01-28 15:00:37"
+  ],
+  [
+    62,
+    "download_file_latency_seconds",
+    3.00441,
+    "2024-01-28 15:01:12"
+  ],
+  [
+    64,
+    "download_file_latency_seconds",
+    3.00593,
+    "2024-01-28 15:01:15"
+  ],
+  [
+    67,
+    "download_file_latency_seconds",
+    3.74447,
+    "2024-01-28 15:01:26"
+  ],
+  [
+    69,
+    "download_file_latency_seconds ",
+    20.007,
+    "2024-01-28 15:01:56"
+  ],
+  [
+    72,
+    "download_file_latency_seconds",
+    28.2279,
+    "2024-01-28 15:02:06"
+  ],
+  [
+    75,
+    "download_file_latency_seconds",
+    3.00494,
+    "2024-01-28 15:02:26"
+  ],
+  [
+    77,
+    "download_file_latency_seconds",
+    3.00383,
+    "2024-01-28 15:02:31"
+  ],
+  [
+    81,
+    "download_file_latency_seconds",
+    3.1293,
+    "2024-01 -28 15:02:40"
+  ],
+  [
+    85,
+    "download_file_latency_seconds",
+    15.7191,
+    "2024-01-28 15:02:54"
+  ],
+  [
+    87,
+    "download_file_latency_seconds",
+    3.0718,
+    "2024-01-28 15:02:59"
+  ],
+  [
+    89,
+    "download_file_latency_seconds",
+    3.01615,
+    "2024-01-28 15:03:04"
+  ],
+  [
+    91,
+    "download_file_latency_seconds",
+    3.01576,
+    "2024-01-28 15:03:09"
+  ],
+  [
+    94,
+    "download_file_latency_seconds",
+    16.0063,
+    "2024 -01-28 15:04:01"
+  ],
+  [
+    97,
+    "download_file_latency_seconds",
+    25.5271,
+    "2024-01-28 15:04:11"
+  ],
+  [
+    99,
+    "download_file_latency_seconds",
+    3.01576,
+    "2024-01-28 15:04:16"
+  ],
+  [
+    101,
+    "download_file_latency_seconds",
+    3.01543,
+    "2024-01-28 15:04:19"
+  ],
+  [
+    103,
+    "download_file_latency_seconds",
+    3.01673,
+    "2024-01-28 15:04: 22"
+  ],
+  [
+    105,
+    "download_file_latency_seconds",
+    14.8372,
+    "2024-01-28 15:04:37"
+  ],
+  [
+    108,
+    "download_file_latency_seconds",
+    19.8284,
+    "2024-01-28 15:04:50"
+  ],
+  [
+    [
+      3,
+      "download_file_latency_seconds",
+      3.00618,
+      "2024-01-28 15:10:03"
+    ],
+    [
+      4,
+      "download_file_latency_seconds",
+      3.00524,
+      "2024-01-28 15:10:08"
+    ],
+    [
+      5,
+      "download_file_latency_seconds",
+      3.00551,
+      "2024-01-28 15:10:09"
+    ],
+    [
+      7,
+      "download_file_latency_seconds",
+      3.00535,
+      "2024-01-28 15:10:14"
+    ],
+    [
+      9,
+      "download_file_latency_seconds",
+      3.00524,
+      "2024-01-28 15:10:19"
+    ],
+    [
+      11,
+      "download_file_latency_seconds",
+      3.00605,
+      "2024-01-28 15:10:23"
+    ],
+    [
+      15,
+      "download_file_latency_seconds",
+      3.00497,
+      "2024 -01-28 15:10:38"
+    ],
+    [
+      17,
+      "download_file_latency_seconds",
+      3.00396,
+      "2024-01-28 15:10:39"
+    ],
+    [
+      19,
+      "download_file_latency_seconds",
+      3.07411,
+      "2024-01-28 15:10:48"
+    ],
+    [
+      21,
+      "download_file_latency_seconds",
+      5.42366,
+      "2024-01-28 15:10:53"
+    ],
+    [
+      24,
+      "download_file_latency_seconds",
+      3.94839,
+      "2024-01-28 15:11: 08"
+    ],
+    [
+      26,
+      "download_file_latency_seconds",
+      17.2002,
+      "2024-01-28 15:11:28"
+    ],
+    [
+      31,
+      "download_file_latency_seconds",
+      3.08436,
+      "2024-01-28 15:11:48"
+    ],
+    [
+      33,
+      "download_file_latency_seconds",
+      3.00524,
+      "2024-01-28 15:11:53"
+    ],
+    [
+      36,
+      "download_file_latency_seconds",
+      4.80557,
+      "2024-01-28 15:12:03"
+    ],
+    [
+      38,
+      " download_file_latency_seconds",
+      3.00493,
+      "2024-01-28 15:12:08"
+    ],
+    [
+      41,
+      "download_file_latency_seconds",
+      3.04427,
+      "2024-01-28 15:12:18"
+    ],
+    [
+      43,
+      "download_file_latency_seconds",
+      8.56257,
+      "2024-01-28 15:12:23"
+    ],
+    [
+      45,
+      "download_file_latency_seconds",
+      3.03129,
+      "2024-01-28 15:12:28"
+    ],
+    [
+      48,
+      "download_file_latency_seconds",
+      3.00565,
+      "2024- 01-28 15:12:43"
+    ],
+    [
+      51,
+      "download_file_latency_seconds",
+      3.00511,
+      "2024-01-28 15:12:53"
+    ],
+    [
+      53,
+      "download_file_latency_seconds",
+      33.0072,
+      "2024-01-28 15 :13:27"
+    ],
+    [
+      54,
+      "download_file_latency_seconds",
+      14.3451,
+      "2024-01-28 15:13:47"
+    ],
+    [
+      56,
+      "download_file_latency_seconds",
+      16.7798,
+      "2024-01-28 15:14:58 "
+    ],
+    [
+      58,
+      "download_file_latency_seconds",
+      62.658,
+      "2024-01-28 15:15:58"
+    ],
+    [
+      60,
+      "download_file_latency_seconds",
+      3.98352,
+      "2024-01-28 15:16:33"
+    ],
+    [
+      62,
+      "download_file_latency_seconds",
+      3.00525,
+      "2024-01-28 15:16:43"
+    ],
+    [
+      65,
+      "download_file_latency_seconds",
+      3.0053,
+      "2024-01-28 15:17:03"
+    ]
+  ]
+]
