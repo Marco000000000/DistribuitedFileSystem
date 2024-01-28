@@ -8,8 +8,11 @@ input_file_path = 'latency_sorted.json'
 with open(input_file_path, 'r') as file:
     data = json.load(file)
 
-# Extract the fourth element of each inner list
-fourth_elements = [inner_list[2] for inner_list in data]
+fourth_elements = []
+
+for inner_list in data:
+    if inner_list[2] < 20:
+        fourth_elements.append(inner_list[2])
 
 # Create a plot
 plt.plot(fourth_elements, marker='o')
