@@ -1,50 +1,88 @@
-# Eseguire prima questo apply: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml poi dopo qualche secondo questo apply
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+# # Eseguire prima questo apply: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml poi dopo qualche secondo questo apply
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: nginx-ingress
+#   annotations:
+#     kubernetes.io/ingress.class: "nginx"
+#     nginx.ingress.kubernetes.io/proxy-body-size: "30000m"
+#     nginx.ingress.kubernetes.io/worker-processes: "5"
+#     nginx.ingress.kubernetes.io/worker-connections: "1024"
+#     nginx.ingress.kubernetes.io/proxy-connect-timeout: "75"
+#     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+#     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#   - host: localhost
+#     http:
+#       paths:
+#       - path: /discover
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: download-controller-service
+#             port:
+#               number: 80
+#       - path: /download
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: download-controller-service
+#             port:
+#               number: 80
+#       - path: /upload
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: uploadcontroller-service
+#             port:
+#               number: 80
+#       - path: /query
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: qosmanager-service
+#             port:
+#               number: 80
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: nginx-ingress
-  annotations:
-    kubernetes.io/ingress.class: "nginx"
-    nginx.ingress.kubernetes.io/proxy-body-size: "30g"
-    nginx.ingress.kubernetes.io/worker-processes: "5"
-    nginx.ingress.kubernetes.io/worker-connections: "1024"
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "75s"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "600s"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "600s"
+  name: nginx-deployment
 spec:
-  ingressClassName: nginx
-  rules:
-  - host: localhost
-    http:
-      paths:
-      - path: /discover
-        pathType: Prefix
-        backend:
-          service:
-            name: download-controller-service
-            port:
-              number: 80
-      - path: /download
-        pathType: Prefix
-        backend:
-          service:
-            name: download-controller-service
-            port:
-              number: 80
-      - path: /upload
-        pathType: Prefix
-        backend:
-          service:
-            name: uploadcontroller-service
-            port:
-              number: 80
-      - path: /query
-        pathType: Prefix
-        backend:
-          service:
-            name: qosmanager-service
-            port:
-              number: 80
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: distribuitedfilesystem-nginx:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+
+#      networks:
+#      - vpcbr
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 80
+      nodePort: 30000
+  type: NodePort
 
 ---
 apiVersion: apps/v1
