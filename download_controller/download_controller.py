@@ -17,6 +17,7 @@ import logging
 from flask import Flask, Response
 import mysql.connector
 from werkzeug.utils import secure_filename
+from circuitbreaker import circuit
 from prometheus_client import Gauge, CONTENT_TYPE_LATEST, generate_latest
 from time import time
 
@@ -58,20 +59,20 @@ db_conf = {
             'password':'giovanni'
             }
 
+@circuit(failure_threshold=5, recovery_timeout=30)
 def mysql_custom_connect(conf):
-    while True:
-        try:
+    try:
 
-            db = mysql.connector.connect(**conf)
+        db = mysql.connector.connect(**conf)
 
-            if db.is_connected():
-                print("Connected to MySQL database")
-                return db
-        except mysql.connector.Error as err:
-            print("Something went wrong: {}".format(err))
-        
-        print("Trying again...")
-        sleep(5)
+        if db.is_connected():
+            print("Connected to MySQL database")
+            return db
+    except mysql.connector.Error as err:
+        print("Something went wrong: {}".format(err))
+    
+    print("Trying again...")
+    sleep(5)
 
 db = mysql_custom_connect(db_conf)
 
