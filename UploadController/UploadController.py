@@ -43,11 +43,12 @@ def mysql_custom_connect(conf):
             return db
     except mysql.connector.Error as err:
         print("Something went wrong: {}".format(err))
-    
-    print("Trying again...")
-    sleep(5)
+    return None
 
-db = mysql_custom_connect(db_conf)
+db = None
+
+while db is None:
+    db = mysql_custom_connect(db_conf)
 
 @circuit(failure_threshold=5, recovery_timeout=30)
 def cir_subscribe(consumer, consumer_topics):
