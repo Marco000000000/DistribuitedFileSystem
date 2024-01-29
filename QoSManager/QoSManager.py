@@ -22,7 +22,7 @@ sla_rules = {}
 prometheus_url = "http://prometheus-service:9090"
 prometheus = PrometheusConnect(url=prometheus_url, disable_ssl=True)
 max_desired_latency=8
-min_desired_throughput=3000000
+min_desired_throughput=1000000
 lastLatency=0
 lastThroughput=0
 predictionTime=2
