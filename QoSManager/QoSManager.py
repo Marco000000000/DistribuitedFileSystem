@@ -9,7 +9,10 @@ from datetime import datetime, timedelta
 import json
 from prometheus_api_client import PrometheusConnect
 from flask import Flask, jsonify, request
-
+import numpy as np
+import scipy.stats
+import pickle
+import time
 app = Flask(__name__)
 
 # Dizionario per tenere traccia delle regole di QoS
@@ -235,7 +238,69 @@ def query_prometheus():
         return json.dumps(unpacked_list_temp)
 
     elif type== "violation_probability":
-        pass
+        if query == allowed_queries[0]:
+            minute=interval_value
+            fiveSecondFromMinute=minute*12
+            # Make predictions using the loaded model
+            prediction_time=int(time.time()-startTime)
+            print(prediction_time)
+            mean_pred = mean_Latency_model.predict(prediction_time,prediction_time+fiveSecondFromMinute, typ="levels")
+            std_dev_pred = std_Latency_model.predict(prediction_time, prediction_time+fiveSecondFromMinute, typ="levels")
+
+            # Define threshold and time interval
+            threshold = 8
+
+
+            # Calculate cumulative probabilities for each time step within the interval
+            cumulative_probabilities = []
+            for mean, std_dev in zip(mean_pred[:], std_dev_pred[:]):
+                probability = scipy.stats.norm.cdf(threshold, loc=mean, scale=std_dev)
+                cumulative_probabilities.append(probability)
+
+            print(cumulative_probabilities)
+            cumulative_probabilities=np.array(cumulative_probabilities)
+            cumulative_probabilities = cumulative_probabilities[~np.isnan(cumulative_probabilities)]
+
+            # Combine probabilities (e.g., take the maximum)
+            combined_probability =1- np.prod(cumulative_probabilities)
+            combined_probability_max=np.max(1-cumulative_probabilities)
+            meanValuePredicted=np.mean(mean_pred)
+            print(f"Probability of exceeding 1 time '{threshold} second' of latency in {minute} minute: {combined_probability*100:.6f}%")
+            print(f"Max instant Probability of exceeding {threshold} second of latency in {minute} minute: {combined_probability_max*100:.6f}%")
+            print(f"Mean value predicted in {minute} minute: {meanValuePredicted:.2f} s")
+            return jsonify({"p_at_least_once": combined_probability,"max_instant_p":combined_probability_max,"mean_value_predicted":meanValuePredicted}), 200
+        elif query== allowed_queries[1]:
+            minute=interval_value
+            fiveSecondFromMinute=minute*12
+            # Make predictions using the loaded model
+            prediction_time=int(time.time()-startTime)
+            print(prediction_time)
+            mean_pred = mean_Throughput_model.predict(prediction_time,prediction_time+fiveSecondFromMinute, typ="levels")
+            std_dev_pred = std_Throughput_model.predict(prediction_time, prediction_time+fiveSecondFromMinute, typ="levels")
+
+            # Define threshold and time interval
+            threshold = 3
+
+
+            # Calculate cumulative probabilities for each time step within the interval
+            cumulative_probabilities = []
+            for mean, std_dev in zip(mean_pred[:], std_dev_pred[:]):
+                probability = scipy.stats.norm.cdf(threshold, loc=mean, scale=std_dev)
+                cumulative_probabilities.append(probability)
+
+            print(cumulative_probabilities)
+            cumulative_probabilities=1-np.array(cumulative_probabilities)
+            cumulative_probabilities = cumulative_probabilities[~np.isnan(cumulative_probabilities)]
+
+            # Combine probabilities (e.g., take the maximum)
+            combined_probability =1- np.prod(cumulative_probabilities)
+            combined_probability_max=np.max(1-cumulative_probabilities)
+            meanValuePredicted=np.mean(mean_pred)
+            print(f"Probability of subceeding 1 time '{threshold} MB/s' of throughput in {minute} minute: {combined_probability*100:.6f}%")
+            print(f"Max instant Probability of subceeding '{threshold} MB/s' of throughput in {minute} minute: {combined_probability_max*100:.6f}%")
+            print(f"Mean value predicted in {minute} minute: {meanValuePredicted/1000000:.2f} MB/s")
+            return jsonify({"p_at_least_once": combined_probability,"max_instant_p":combined_probability_max,"mean_value_predicted":meanValuePredicted}), 200
+
     else:
         return jsonify({"error": "Invalid type"}), 400
     
@@ -291,8 +356,16 @@ def mysql_updater():
         time.sleep(1)    
         cursor.close
 
+startTime=time.time()
+with open('mean_Throughput_model.pkl', 'rb') as file:
+    mean_Throughput_model = pickle.load(file)
+with open('std_Throughput_model.pkl', 'rb') as file:
+    std_Throughput_model = pickle.load(file)
+with open('mean_Latency_model.pkl', 'rb') as file:
+    mean_Latency_model = pickle.load(file)
+with open('std_Latency_model.pkl', 'rb') as file:
+    std_Latency_model = pickle.load(file)
 if __name__ == "__main__":
-
     thread1 = threading.Thread(target=mysql_updater)
     thread1.start()
     app.run(host='0.0.0.0', port=80, threaded=True)
