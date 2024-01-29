@@ -10,10 +10,20 @@ import random
 import time
 import string
 from socket import gethostname
+from circuitbreaker import circuit
 
 PARTITION_GRANULARITY=os.getenv("PARTITION_GRANULARITY", default = 131072)
 UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", default = 'downloadable')
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'rar', 'zip', 'mp3'}
+
+def fallback():
+    time.sleep(1)
+    print("Lissening on open Circuit")
+    return None
+
+@circuit(failure_threshold=3, recovery_timeout=5,fallback_function=fallback)
+def cir_subscribe(consumer, consumer_topics):
+    consumer.subscribe(consumer_topics)
 
 downloadingFiles=[]
 mutex = threading.Lock()
@@ -137,7 +147,12 @@ def first_Call():
     p.produce('FirstCall', m.encode('utf-8'),callback=receipt)
     p.flush()
     print(m)
-    c.subscribe(['FirstCallAck'])
+    while True:
+        try:
+            cir_subscribe(c,['FirstCallAck'])
+            break
+        except:
+            continue
     code=data["Code"]
     while True:
             msg=c.poll(0.01) #timeout
@@ -324,7 +339,13 @@ def uploader(uploadConsumer):
 
 c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':get_random_string(20),'auto.offset.reset':'latest','enable.auto.commit': False})
 updateConsumer=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':get_random_string(20),'auto.offset.reset':'earliest','enable.auto.commit': False})
-updateConsumer.subscribe(["UpdateDownload"])
+while True:
+        try:
+            cir_subscribe(updateConsumer,['UpdateDownload'])
+            break
+        except:
+            continue
+
 if __name__== "__main__":
 
     while "FirstCall" not in c.list_topics().topics or "FirstCallAck" not in c.list_topics().topics:
@@ -344,12 +365,26 @@ if __name__== "__main__":
         time.sleep(0.2)
 
     uploadConsumer=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':str(id),'auto.offset.reset':'earliest','enable.auto.commit': False})
-
-    uploadConsumer.subscribe(["Upload"+str(topicNumber)])
+    while True:
+        try:
+            cir_subscribe(uploadConsumer,["Upload"+str(topicNumber)])
+            break
+        except:
+            continue
     requestConsumer=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
-    requestConsumer.subscribe(["Request"+str(topicNumber)])#forse il commit deve essere fatto dopo ma attenzione ai messaggi ripetuti
+    while True:
+        try:
+            cir_subscribe(requestConsumer,["Request"+str(topicNumber)])
+            break
+        except:
+            continue
     deleteConsumer=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':"000",'auto.offset.reset':'earliest','enable.auto.commit': False})
-    deleteConsumer.subscribe(["Delete"+str(topicNumber)])
+    while True:
+        try:
+            cir_subscribe(deleteConsumer,["Delete"+str(topicNumber)])
+            break
+        except:
+            continue
     print("ho fatto l'inizio")
     logger.info("ho fatto l'inizio")
 

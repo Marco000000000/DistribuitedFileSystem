@@ -82,8 +82,13 @@ db_conf = {
             'user':'root',
             'password':'password'
             }
+def fallback():
+    time.sleep(1)
+    print("Lissening on open Circuit")
+    return None
 
-@circuit(failure_threshold=5, recovery_timeout=30)
+
+@circuit(failure_threshold=5, recovery_timeout=30,fallback_function=fallback)
 def mysql_custom_connect(conf):
     try:
 
@@ -95,8 +100,6 @@ def mysql_custom_connect(conf):
     except mysql.connector.Error as err:
         print("Something went wrong: {}".format(err))
     
-    print("Trying again...")
-    time.sleep(5)
 
 def createFileSystem():
     config.load_incluster_config()
@@ -324,8 +327,14 @@ def predictThroughputMinute(minute,threshold):
     meanValuePredicted=np.mean(mean_pred)
     return combined_probability,combined_probability_max,meanValuePredicted
 
+db=None
 
-db = mysql_custom_connect(db_conf)
+while True:
+        try:
+            db = mysql_custom_connect(db_conf)
+            break
+        except:
+            continue
 
 cursor=db.cursor()
 

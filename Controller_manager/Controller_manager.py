@@ -12,16 +12,23 @@ import logging
 #	- Dare tutti i topic al controller di upload ( quello di aggiornamento )
 #	- Creazione topic di aggiornamento per I controller di upload
 #	- Vede se ci sono filesystem con topic senza un controller e glielo ritorna
-conf = {'bootstrap.servers': 'kafka-service:9093',
-        'group.id': 'manager',
-        'auto.offset.reset': 'earliest',
-        'enable.auto.commit': False}
-
-@circuit(failure_threshold=5, recovery_timeout=30)
+def fallback():
+    sleep(1)
+    print("Lissening on open Circuit")
+    return None
+@circuit(failure_threshold=3, recovery_timeout=5,fallback_function=fallback)
 def cir_subscribe(consumer, consumer_topics):
     consumer.subscribe(consumer_topics)
 
-@circuit(failure_threshold=5, recovery_timeout=30)
+db_conf = {
+            'host':'db',
+            'port':3306,
+            'database':'ds_filesystem',
+            'user':'root',
+            'password':'password'
+            }
+
+@circuit(failure_threshold=5, recovery_timeout=30,fallback_function=fallback)
 def mysql_custom_connect(conf):
     try:
 
@@ -32,9 +39,7 @@ def mysql_custom_connect(conf):
             return db
     except mysql.connector.Error as err:
         print("Something went wrong: {}".format(err))
-    
-    print("Trying again...")
-    sleep(5)
+
 
 
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
@@ -54,7 +59,12 @@ def receipt(err,msg):
 
 def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un gruppo
     c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Qui l'enable.auto.commit è settato a True di default, l'ho messo a False
-    cir_subscribe(c, [topicName])
+    while True:
+        try:
+            cir_subscribe(c, [topicName])
+            break
+        except:
+            continue 
     while True:
             msg=c.poll(0.01) #timeout
             if msg is None:
@@ -128,15 +138,15 @@ admin.create_topics([NewTopic("CFirstCall", num_partitions=1, replication_factor
 
 if __name__ == "__main__":
 
-    db_conf = {
-            'host':'db',
-            'port':3306,
-            'database':'ds_filesystem',
-            'user':'root',
-            'password':'password'
-            }
 
-    db = mysql_custom_connect(db_conf)
+    db = None
+
+    while db is None:
+        try:
+            db = mysql_custom_connect(db_conf)
+            break
+        except:
+            pass
 
     cursor=db.cursor(buffered=True)
 
@@ -149,7 +159,12 @@ if __name__ == "__main__":
             print("topics",topics)
             oldTopics=len(topics)
         sleep(1)
-    cir_subscribe(consumer, ["CFirstCall"])
+    while True:
+        try:
+            cir_subscribe(consumer, ["CFirstCall"])
+            break
+        except:
+            continue
     while True:
         db.commit()
         cursor.execute("SELECT DISTINCT topic FROM partitions")

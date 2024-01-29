@@ -24,8 +24,12 @@ cons_conf = {'bootstrap.servers': 'kafka-service:9093',
 
 consumer = Consumer(cons_conf)
 limitTopic=2
+def fallback():
+    sleep(1)
+    print("Lissening on open Circuit")
+    return None
 
-@circuit(failure_threshold=5, recovery_timeout=30)
+@circuit(failure_threshold=3, recovery_timeout=5,fallback_function=fallback)
 def cir_subscribe(consumer, consumer_topics):
     consumer.subscribe(consumer_topics)
 
@@ -37,7 +41,7 @@ db_conf = {
             'password':'password'
             }
 
-@circuit(failure_threshold=5, recovery_timeout=30)
+@circuit(failure_threshold=5, recovery_timeout=30,fallback_function=fallback)
 def mysql_custom_connect(conf):
     try:
 
@@ -49,8 +53,6 @@ def mysql_custom_connect(conf):
     except mysql.connector.Error as err:
         print("Something went wrong: {}".format(err))
     
-    print("Trying again...")
-    sleep(5)
 
 # Funzione che elabora il messaggio ricevuto dal consumer
 def register_filesystem(consumer):
@@ -114,11 +116,22 @@ admin.create_topics(hardcoded_topics)
 #     return False
 print("manager")
 if __name__ == "__main__":
-    
-    db = mysql_custom_connect(db_conf)
+    db=None
+    while db is None:
+        try:
+            db = mysql_custom_connect(db_conf)
+            break
+        except:
+            pass
 
     cursor = db.cursor()
-    cir_subscribe(consumer, ["FirstCall"])
+    while True:
+        try:
+            cir_subscribe(consumer, ["FirstCall"])
+            break
+        except:
+            continue
+    
 
     while True:
         # Recupero del numero di partizioni

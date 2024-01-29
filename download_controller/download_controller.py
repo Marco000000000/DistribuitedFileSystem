@@ -40,13 +40,6 @@ download_file_throughput = Gauge(
 returnTopic=""
 # Instanzio l'applicazione Flask
 app = Flask(__name__)
-
-
-@circuit(failure_threshold=5, recovery_timeout=30)
-def cir_subscribe(consumer, consumer_topics):
-    consumer.subscribe(consumer_topics)
-
-
 # Configurazione logger
 logging.basicConfig(format='%(asctime)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
@@ -55,6 +48,13 @@ logging.basicConfig(format='%(asctime)s %(message)s',
 logger = logging.getLogger('download_manager')
 logger.setLevel(logging.INFO)
 
+def fallback():
+    sleep(1)
+    print("Lissening on open Circuit")
+    return None
+@circuit(failure_threshold=3, recovery_timeout=5,fallback_function=fallback)
+def cir_subscribe(consumer, consumer_topics):
+    consumer.subscribe(consumer_topics)
 
 db_conf = {
             'host':'db',
@@ -64,7 +64,7 @@ db_conf = {
             'password':'password'
             }
 
-@circuit(failure_threshold=5, recovery_timeout=30)
+@circuit(failure_threshold=5, recovery_timeout=30,fallback_function=fallback)
 def mysql_custom_connect(conf):
     try:
 
@@ -75,11 +75,14 @@ def mysql_custom_connect(conf):
             return db
     except mysql.connector.Error as err:
         print("Something went wrong: {}".format(err))
-    
-    print("Trying again...")
-    sleep(5)
+db=None
+while True:
+        try:
+            db = mysql_custom_connect(db_conf)
+            break
+        except:
+            continue 
 
-db = mysql_custom_connect(db_conf)
 
 cursor=db.cursor(buffered=True)
 
@@ -97,7 +100,12 @@ def produceJson(topic, dictionaryData):
 
 def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic e in un gruppo controllando il codice
     c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
-    cir_subscribe(c, [topicName])
+    while True:
+        try:
+            cir_subscribe(c, [topicName])
+            break
+        except:
+            continue
     while True:
             msg=c.poll(0.01) #timeout
             if msg is None:
@@ -116,7 +124,12 @@ def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic
 # Consuma json da un consumer di un dato gruppo (solo per first_Call())
 def consumeJson(topicName, groupId):
     c = Consumer({'bootstrap.servers': 'kafka-service:9093', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
-    cir_subscribe(c, [topicName])
+    while True:
+        try:
+            cir_subscribe(c, [topicName])
+            break
+        except:
+            continue
     while True:
             msg=c.poll(0.01) #timeout
             if msg is None:
@@ -313,8 +326,12 @@ def download_file(filename):
                 print(topic,consumers)
                 if str(topic) not in consumers:
                     consumers[str(topic)]=Consumer({'bootstrap.servers': 'kafka-service:9093', 'group.id': get_random_string(10), 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
-                    cir_subscribe(consumers[str(topic)], [returnTopic+str(topic)])
-
+                    while True:
+                        try:
+                            cir_subscribe(consumers[str(topic)], [returnTopic+str(topic)])
+                            break
+                        except:
+                            continue
             code=get_random_string(10)
             for topic in unpacked_list:
                 data = {

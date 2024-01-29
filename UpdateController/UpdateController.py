@@ -35,6 +35,7 @@ consumerIntermediate= Consumer(cons_conf)
 limitTopic=3
 def fallback():
     sleep(1)
+    print("Lissening on open Circuit")
     return None
 @circuit(failure_threshold=3, recovery_timeout=5,fallback_function=fallback)
 def cir_subscribe(consumer, consumer_topics):
@@ -60,8 +61,7 @@ def mysql_custom_connect(conf):
     except mysql.connector.Error as err:
         print("Something went wrong: {}".format(err))
     
-    print("Trying again...")
-    sleep(5)
+
     
 def produceJson(topic, dictionaryData):
     print("a")

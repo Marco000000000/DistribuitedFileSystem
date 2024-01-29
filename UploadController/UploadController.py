@@ -32,7 +32,23 @@ db_conf = {
             'password':'password'
             }
 
-@circuit(failure_threshold=5, recovery_timeout=30)
+def fallback():
+    sleep(1)
+    print("Lissening on open Circuit")
+    return None
+@circuit(failure_threshold=3, recovery_timeout=5,fallback_function=fallback)
+def cir_subscribe(consumer, consumer_topics):
+    consumer.subscribe(consumer_topics)
+
+db_conf = {
+            'host':'db',
+            'port':3306,
+            'database':'ds_filesystem',
+            'user':'root',
+            'password':'password'
+            }
+
+@circuit(failure_threshold=5, recovery_timeout=30,fallback_function=fallback)
 def mysql_custom_connect(conf):
     try:
 
@@ -43,16 +59,18 @@ def mysql_custom_connect(conf):
             return db
     except mysql.connector.Error as err:
         print("Something went wrong: {}".format(err))
-    return None
+
+
 
 db = None
 
 while db is None:
-    db = mysql_custom_connect(db_conf)
+    try:
+        db = mysql_custom_connect(db_conf)
+        break
+    except:
+        pass
 
-@circuit(failure_threshold=5, recovery_timeout=30)
-def cir_subscribe(consumer, consumer_topics):
-    consumer.subscribe(consumer_topics)
 
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
     p=Producer({'bootstrap.servers':'kafka-service:9093'})
@@ -64,8 +82,12 @@ def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json
 
 def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic e in un gruppo controllando il codice
     c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
-        
-    cir_subscribe(c, [topicName])
+    while True:
+        try:
+            cir_subscribe(c, [topicName])
+            break
+        except:
+            continue    
     while True:
             msg=c.poll(0.01) 
             if msg is None:
@@ -216,7 +238,12 @@ def upload_file():#gestione di un file in upload
             return jsonify({"error":"Incorrect extenction"}), 400
 def update(topics,groupId):
     c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) 
-    cir_subscribe(c, ["UpdateTopics"])
+    while True:
+        try:
+            cir_subscribe(c, ["UpdateTopics"])
+            break
+        except:
+            continue
     while True:
             msg=c.poll(1.0) #timeout
             if msg is None:
