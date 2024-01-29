@@ -14,6 +14,7 @@ import scipy.stats
 import pickle
 import time
 app = Flask(__name__)
+limitTopic=3
 
 # Dizionario per tenere traccia delle regole di QoS
 sla_rules = {}
@@ -328,7 +329,7 @@ def mysql_updater():
     while True:
         cursor=db.cursor()
         current_throughput=10000000000000
-        current_latency=-0
+        current_latency=0
         throughputList = prometheus.custom_query("download_file_throughput_bytes")
         latencyList = prometheus.custom_query("download_file_latency_seconds")
         print(throughputList)
@@ -351,18 +352,24 @@ def mysql_updater():
             lastLatency=current_latency
             db.commit()
             if current_latency>max_desired_latency and predictLatencyMinute(predictionTime)[2]>max_desired_latency and False:#inibita per mancanza di risorse locali
-                createDownloadManager()
+                if time.time()-latencyTime>600:
+                    createDownloadManager()
+                    latencyTime=time.time()
         if lastThroughput!= current_throughput:
             cursor.execute("INSERT INTO metrics (metric_name, metric_value) VALUES (%s,  %s)", ("download_file_throughput_bytes", current_throughput))
             lastThroughput=current_throughput
             db.commit()
             if current_throughput<min_desired_throughput and predictThroughputMinute(predictionTime)[2]<min_desired_throughput and False:#inibita per mancanza di risorse locali
-                createFileSystem()#Sarebbe anche necessario aggiornare il limite al numero di partizioni
-
+                if time.time()-throughputTime>600:
+                    for i in range(limitTopic):
+                        createFileSystem()#Sarebbe anche necessario aggiornare il limite al numero di partizioni
+                    throughputTime=time.time()
         time.sleep(1)    
         cursor.close
 
 startTime=time.time()
+latencyTime=startTime
+throughputTime=startTime
 with open('mean_Throughput_model.pkl', 'rb') as file:
     mean_Throughput_model = pickle.load(file)
 with open('std_Throughput_model.pkl', 'rb') as file:
