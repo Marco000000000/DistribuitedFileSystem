@@ -5,3 +5,4 @@ Flask==3.0.0
 kubernetes
 scipy
 statsmodels
+circuitbreaker==2.0.0
