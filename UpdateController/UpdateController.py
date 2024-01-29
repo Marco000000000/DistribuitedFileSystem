@@ -51,15 +51,11 @@ db_conf = {
 
 @circuit(failure_threshold=5, recovery_timeout=30,fallback_function=fallback)
 def mysql_custom_connect(conf):
-    try:
+    db = mysql.connector.connect(**conf)
 
-        db = mysql.connector.connect(**conf)
-
-        if db.is_connected():
-            print("Connected to MySQL database")
-            return db
-    except mysql.connector.Error as err:
-        print("Something went wrong: {}".format(err))
+    if db.is_connected():
+        print("Connected to MySQL database")
+        return db
     
 
     

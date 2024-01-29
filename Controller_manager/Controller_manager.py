@@ -13,8 +13,9 @@ import logging
 #	- Creazione topic di aggiornamento per I controller di upload
 #	- Vede se ci sono filesystem con topic senza un controller e glielo ritorna
 def fallback():
-    sleep(1)
     print("Lissening on open Circuit")
+
+    sleep(1)
     return None
 @circuit(failure_threshold=3, recovery_timeout=5,fallback_function=fallback)
 def cir_subscribe(consumer, consumer_topics):
@@ -30,15 +31,12 @@ db_conf = {
 
 @circuit(failure_threshold=5, recovery_timeout=30,fallback_function=fallback)
 def mysql_custom_connect(conf):
-    try:
+    db = mysql.connector.connect(**conf)
 
-        db = mysql.connector.connect(**conf)
+    if db.is_connected():
+        print("Connected to MySQL database")
+        return db
 
-        if db.is_connected():
-            print("Connected to MySQL database")
-            return db
-    except mysql.connector.Error as err:
-        print("Something went wrong: {}".format(err))
 
 
 
@@ -114,6 +112,10 @@ logging.basicConfig(format='%(asctime)s %(message)s',
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+conf = {'bootstrap.servers': 'kafka-service:9093',
+        'group.id': 'manager',
+        'auto.offset.reset': 'earliest',
+        'enable.auto.commit': False}
 consumer = Consumer(conf)
 #logger.info("prima dell'admin consumer creato")
 def updateTopics():
@@ -139,14 +141,13 @@ admin.create_topics([NewTopic("CFirstCall", num_partitions=1, replication_factor
 if __name__ == "__main__":
 
 
-    db = None
 
-    while db is None:
+    while True:
         try:
             db = mysql_custom_connect(db_conf)
             break
         except:
-            pass
+            continue
 
     cursor=db.cursor(buffered=True)
 
