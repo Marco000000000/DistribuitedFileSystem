@@ -368,13 +368,13 @@ def mysql_updater():
 startTime=time.time()
 latencyTime=startTime
 throughputTime=startTime
-with open('models/mean_Throughput_model.pkl', 'rb') as file:
+with open('app/mean_Throughput_model.pkl', 'rb') as file:
     mean_Throughput_model = pickle.load(file)
-with open('models/std_Throughput_model.pkl', 'rb') as file:
+with open('app/std_Throughput_model.pkl', 'rb') as file:
     std_Throughput_model = pickle.load(file)
-with open('models/mean_Latency_model.pkl', 'rb') as file:
+with open('app/mean_Latency_model.pkl', 'rb') as file:
     mean_Latency_model = pickle.load(file)
-with open('models/std_Latency_model.pkl', 'rb') as file:
+with open('app/std_Latency_model.pkl', 'rb') as file:
     std_Latency_model = pickle.load(file)
 if __name__ == "__main__":
     thread1 = threading.Thread(target=mysql_updater)
