@@ -258,12 +258,6 @@ spec:
         imagePullPolicy: Never
         
 
-#        volumes:
-#        - name: filesystem
-#          hostPath:
-#            path: /path/to/filesystem
-#      networks:
-#      - vpcbr
 ---
 apiVersion: v1
 kind: Service
@@ -298,12 +292,6 @@ spec:
         image: distribuitedfilesystem-manager:latest
         imagePullPolicy: Never
 
-#        volumes:
-#        - name: manager
-#          hostPath:
-#            path: /path/to/manager
-#      networks:
-#      - vpcbr
 
 ---
 apiVersion: v1
@@ -339,12 +327,7 @@ spec:
         image: distribuitedfilesystem-controller_manager:latest
         imagePullPolicy: Never
 
-#        volumes:
-#        - name: controller_manager
-#          hostPath:
-#            path: /path/to/controller_manager
-#      networks:
-#      - vpcbr
+
 ---
 apiVersion: v1
 kind: Service
@@ -377,21 +360,6 @@ spec:
       - name: downloadcontroller
         image: distribuitedfilesystem-download_controller1:latest
         imagePullPolicy: Never
----
-#        volumes:
-#        - name: download_controller1
-#          hostPath:
-#            path: /path/to/download_controller1
-#      networks:
-#      - vpcbr
-
-
-#        volumes:
-#        - name: download_controller2
-#          hostPath:
-#            path: /path/to/download_controller2
-#      networks:
-#      - vpcbr
 
 ---
 apiVersion: v1
