@@ -279,7 +279,7 @@ def predictLatencyMinute(minute,threshold):
         cumulative_probabilities.append(probability)
 
     print(cumulative_probabilities)
-    cumulative_probabilities=1-np.array(cumulative_probabilities)
+    cumulative_probabilities=np.array(cumulative_probabilities)
     cumulative_probabilities = cumulative_probabilities[~np.isnan(cumulative_probabilities)]
 
     # Combine probabilities (e.g., take the maximum)
@@ -301,11 +301,11 @@ def predictThroughputMinute(minute,threshold):
     # Calculate cumulative probabilities for each time step within the interval
     cumulative_probabilities = []
     for mean, std_dev in zip(mean_pred[:], std_dev_pred[:]):
-        probability = scipy.stats.norm.cdf(threshold, loc=mean, scale=std_dev)
+        probability =1- scipy.stats.norm.cdf(threshold, loc=mean, scale=std_dev)
         cumulative_probabilities.append(probability)
 
     print(cumulative_probabilities)
-    cumulative_probabilities=1-np.array(cumulative_probabilities)
+    cumulative_probabilities=np.array(cumulative_probabilities)
     cumulative_probabilities = cumulative_probabilities[~np.isnan(cumulative_probabilities)]
 
     # Combine probabilities (e.g., take the maximum)
