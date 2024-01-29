@@ -147,13 +147,6 @@ def valueQuery(query,allowed_queries,ranged_query,aggregation,start_time,end_tim
                 if aggregation in allowed_aggregations:
                     if aggregation == '':
                         result = prometheus.custom_query_range(query, start=start_time, end=end_time, step=step)
-                        if query==allowed_queries[0]:
-                            for i in range(len(result)):
-                                result[i]["isViolating"]=result[i]["value"][1]>max_desired_latency
-                                    
-                        elif query==allowed_queries[1]:
-                            for i in range(len(result)):
-                                result[i]["isViolating"]=result[i]["value"][1]<min_desired_throughput
                     elif aggregation != 'rate':
                         result = prometheus.custom_query_range(f'{aggregation}({query})', start=start_time, end=end_time, step=step)
                     else:
@@ -167,6 +160,14 @@ def valueQuery(query,allowed_queries,ranged_query,aggregation,start_time,end_tim
                 if aggregation in allowed_aggregations:
                     if aggregation == '':
                         result = prometheus.custom_query(query)
+                        if query==allowed_queries[0]:
+                            print(result)
+                            for i in range(len(result)):
+                                result[i]["isViolating"]=int(result[i]["value"][1])>max_desired_latency
+                                    
+                        elif query==allowed_queries[1]:
+                            for i in range(len(result)):
+                                result[i]["isViolating"]=int(result[i]["value"][1])<min_desired_throughput
                     elif aggregation != 'rate':
                         result = prometheus.custom_query(f'{aggregation}({query})')
                     else:
