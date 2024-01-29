@@ -18,6 +18,10 @@ conf = {'bootstrap.servers': 'kafka-service:9093',
         'enable.auto.commit': False}
 
 @circuit(failure_threshold=5, recovery_timeout=30)
+def cir_subscribe(consumer, consumer_topics):
+    consumer.subscribe(consumer_topics)
+
+@circuit(failure_threshold=5, recovery_timeout=30)
 def mysql_custom_connect(conf):
     try:
 
@@ -50,7 +54,7 @@ def receipt(err,msg):
 
 def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un gruppo
     c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Qui l'enable.auto.commit è settato a True di default, l'ho messo a False
-    c.subscribe([topicName])
+    cir_subscribe(c, [topicName])
     while True:
             msg=c.poll(0.01) #timeout
             if msg is None:
@@ -145,7 +149,7 @@ if __name__ == "__main__":
             print("topics",topics)
             oldTopics=len(topics)
         sleep(1)
-    consumer.subscribe(["CFirstCall"])
+    cir_subscribe(consumer, ["CFirstCall"])
     while True:
         db.commit()
         cursor.execute("SELECT DISTINCT topic FROM partitions")

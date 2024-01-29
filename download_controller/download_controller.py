@@ -42,6 +42,11 @@ returnTopic=""
 app = Flask(__name__)
 
 
+@circuit(failure_threshold=5, recovery_timeout=30)
+def cir_subscribe(consumer, consumer_topics):
+    consumer.subscribe(consumer_topics)
+
+
 # Configurazione logger
 logging.basicConfig(format='%(asctime)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
@@ -92,8 +97,7 @@ def produceJson(topic, dictionaryData):
 
 def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic e in un gruppo controllando il codice
     c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
-    c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
-    c.subscribe([topicName])
+    cir_subscribe(c, [topicName])
     while True:
             msg=c.poll(0.01) #timeout
             if msg is None:
@@ -112,8 +116,7 @@ def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic
 # Consuma json da un consumer di un dato gruppo (solo per first_Call())
 def consumeJson(topicName, groupId):
     c = Consumer({'bootstrap.servers': 'kafka-service:9093', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
-    c = Consumer({'bootstrap.servers': 'kafka-service:9093', 'group.id': groupId, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
-    c.subscribe([topicName])
+    cir_subscribe(c, [topicName])
     while True:
             msg=c.poll(0.01) #timeout
             if msg is None:
@@ -310,7 +313,7 @@ def download_file(filename):
                 print(topic,consumers)
                 if str(topic) not in consumers:
                     consumers[str(topic)]=Consumer({'bootstrap.servers': 'kafka-service:9093', 'group.id': get_random_string(10), 'auto.offset.reset': 'earliest', 'enable.auto.commit': False})
-                    consumers[str(topic)].subscribe([returnTopic+str(topic)])#metterli globali ed aggiornarli se ne trovi qualcuno in più nella select a riga 232
+                    cir_subscribe(consumers[str(topic)], [returnTopic+str(topic)])
 
             code=get_random_string(10)
             for topic in unpacked_list:

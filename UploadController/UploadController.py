@@ -49,6 +49,9 @@ def mysql_custom_connect(conf):
 
 db = mysql_custom_connect(db_conf)
 
+@circuit(failure_threshold=5, recovery_timeout=30)
+def cir_subscribe(consumer, consumer_topics):
+    consumer.subscribe(consumer_topics)
 
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic
     p=Producer({'bootstrap.servers':'kafka-service:9093'})
@@ -61,7 +64,7 @@ def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json
 def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic e in un gruppo controllando il codice
     c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
         
-    c.subscribe([topicName])
+    cir_subscribe(c, [topicName])
     while True:
             msg=c.poll(0.01) 
             if msg is None:
@@ -84,7 +87,7 @@ def consumeJsonFirstCall(topicName,groupId):#consuma un singolo json su un topic
 
 def consumeJson(topicName,groupId):#consuma un singolo json su un topic e in un gruppo
     c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) # Ho settato l'auto commit a False
-    c.subscribe([topicName])
+    cir_subscribe(c, [topicName])
     while True:
             msg=c.poll(0.01) #timeout
             if msg is None:
@@ -212,7 +215,7 @@ def upload_file():#gestione di un file in upload
             return jsonify({"error":"Incorrect extenction"}), 400
 def update(topics,groupId):
     c=Consumer({'bootstrap.servers':'kafka-service:9093','group.id':groupId,'auto.offset.reset':'earliest', 'enable.auto.commit': False}) 
-    c.subscribe(["UpdateTopics"])
+    cir_subscribe(c, ["UpdateTopics"])
     while True:
             msg=c.poll(1.0) #timeout
             if msg is None:

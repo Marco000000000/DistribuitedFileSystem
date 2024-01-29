@@ -33,6 +33,11 @@ cons_conf = {'bootstrap.servers': 'kafka-service:9093',
 consumer = Consumer(cons_conf)
 consumerIntermediate= Consumer(cons_conf)
 limitTopic=3
+
+@circuit(failure_threshold=5, recovery_timeout=30)
+def cir_subscribe(consumer, consumer_topics):
+    consumer.subscribe(consumer_topics)
+
 db_conf = {
             'host':'db',
             'port':3306,
@@ -233,8 +238,8 @@ admin.create_topics(hardcoded_topics)
 if __name__ == "__main__":
     
 
-    consumer.subscribe(["UpdateRequest"])
-    consumerIntermediate.subscribe(["UpdateIntermediate"])
+    cir_subscribe(consumer, ["UpdateRequest"])
+    cir_subscribe(consumerIntermediate, ["UpdateIntermediate"])
     while True:
         msg = consumer.poll(0.01)
         if msg is None: continue

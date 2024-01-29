@@ -24,6 +24,11 @@ cons_conf = {'bootstrap.servers': 'kafka-service:9093',
 
 consumer = Consumer(cons_conf)
 limitTopic=2
+
+@circuit(failure_threshold=5, recovery_timeout=30)
+def cir_subscribe(consumer, consumer_topics):
+    consumer.subscribe(consumer_topics)
+
 db_conf = {
             'host':'db',
             'port':3306,
@@ -113,7 +118,7 @@ if __name__ == "__main__":
     db = mysql_custom_connect(db_conf)
 
     cursor = db.cursor()
-    consumer.subscribe(["FirstCall"])
+    cir_subscribe(consumer, ["FirstCall"])
 
     while True:
         # Recupero del numero di partizioni
