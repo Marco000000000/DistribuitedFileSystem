@@ -169,13 +169,13 @@ spec:
           value: "9010"
         - name: KAFKA_LOG_RETENTION_MINUTES
           value: "1"
-      - name: kafka-exporter
-        image: danielqsj/kafka-exporter:latest
-        args:
-          - "--kafka.server=kafka-service-exporter:9093"
-        ports:
-          - name: metrics
-            containerPort: 9308
+      # - name: kafka-exporter
+      #   image: danielqsj/kafka-exporter:latest
+      #   args:
+      #     - "--kafka.server=kafka-service-exporter:9093"
+      #   ports:
+      #     - name: metrics
+      #       containerPort: 9308
 
 
 ---
@@ -194,23 +194,23 @@ spec:
 
 ---
 
-apiVersion: v1
-kind: Service
-metadata:
-  name: kafka-service-exporter
-  annotations:
-      prometheus.io/scrape: 'true'
-      prometheus.io/port:   '9308'
-spec:
-  selector:
-    app: kafka
-  ports:
-    - protocol: TCP
-      port: 9308
-      targetPort: 9308
-  type: ClusterIP
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: kafka-service-exporter
+#   annotations:
+#       prometheus.io/scrape: 'true'
+#       prometheus.io/port:   '9308'
+# spec:
+#   selector:
+#     app: kafka
+#   ports:
+#     - protocol: TCP
+#       port: 9308
+#       targetPort: 9308
+#   type: ClusterIP
 
----
+# ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
