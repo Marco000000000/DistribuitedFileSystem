@@ -242,7 +242,7 @@ def query_prometheus():
     elif type== "violation_probability":
         minute=interval_value
         if query == allowed_queries[0]:
-            combined_probability,combined_probability_max,meanValuePredicted=predictLatencyMinute(interval_value)
+            combined_probability,combined_probability_max,meanValuePredicted=predictLatencyMinute(interval_value,max_desired_latency)
             threshold = 8
             print(f"Probability of exceeding 1 time '{threshold} second' of latency in {minute} minute: {combined_probability*100:.6f}%")
             print(f"Max instant Probability of exceeding {threshold} second of latency in {minute} minute: {combined_probability_max*100:.6f}%")
@@ -250,7 +250,7 @@ def query_prometheus():
             return jsonify({"p_at_least_once": combined_probability,"max_instant_p":combined_probability_max,"mean_value_predicted":meanValuePredicted}), 200
         elif query== allowed_queries[1]:
             
-            combined_probability,combined_probability_max,meanValuePredicted=predictThroughputMinute(interval_value)
+            combined_probability,combined_probability_max,meanValuePredicted=predictThroughputMinute(interval_value,min_desired_throughput)
             threshold = 3
             print(f"Probability of subceeding 1 time '{threshold} MB/s' of throughput in {minute} minute: {combined_probability*100:.6f}%")
             print(f"Max instant Probability of subceeding '{threshold} MB/s' of throughput in {minute} minute: {combined_probability_max*100:.6f}%")
@@ -349,7 +349,7 @@ def mysql_updater():
             cursor.execute("INSERT INTO metrics (metric_name, metric_value) VALUES (%s,  %s)", ("download_file_latency_seconds", current_latency))
             lastLatency=current_latency
             db.commit()
-            if predictLatencyMinute(predictionTime)[2]>max_desired_latency and False:#inibita per mancanza di risorse locali
+            if predictLatencyMinute(predictionTime,max_desired_latency)[2]>max_desired_latency and False:#inibita per mancanza di risorse locali
                 if time.time()-latencyTime>600:
                     createDownloadManager()
                     latencyTime=time.time()
@@ -357,7 +357,7 @@ def mysql_updater():
             cursor.execute("INSERT INTO metrics (metric_name, metric_value) VALUES (%s,  %s)", ("download_file_throughput_bytes", current_throughput))
             lastThroughput=current_throughput
             db.commit()
-            if predictThroughputMinute(predictionTime)[2]<min_desired_throughput and False:#inibita per mancanza di risorse locali
+            if predictThroughputMinute(predictionTime,min_desired_throughput)[2]<min_desired_throughput and False:#inibita per mancanza di risorse locali
                 if time.time()-throughputTime>600:
                     for i in range(limitTopic):
                         createFileSystem()
