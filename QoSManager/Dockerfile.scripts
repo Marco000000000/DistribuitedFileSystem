@@ -10,4 +10,5 @@ RUN pip install --no-cache-dir -r requirements.txt && pip install requests
 
 # Copy application files for each Python application
 COPY QoSManager.py .
+COPY models .
 CMD ["python", "QoSManager.py"]
