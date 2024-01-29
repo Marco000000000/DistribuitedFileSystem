@@ -16,6 +16,7 @@ import base64
 import random
 import string
 from time import sleep
+from circuitbreaker import circuit
 import logging
 app=Flask(__name__)
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'rar', 'zip', 'mp3'}
@@ -31,22 +32,20 @@ db_conf = {
             'password':'giovanni'
             }
 
+@circuit(failure_threshold=5, recovery_timeout=30)
 def mysql_custom_connect(conf):
-    while True:
-        try:
+    try:
 
-            db = mysql.connector.connect(**conf)
+        db = mysql.connector.connect(**conf)
 
-            if db.is_connected():
-                print("Connected to MySQL database")
-                logger.info("Connected to MySQL database")
-
-                return db
-        except mysql.connector.Error as err:
-            print("Something went wrong: {}".format(err))
-        
-        print("Trying again...")
-        sleep(5)
+        if db.is_connected():
+            print("Connected to MySQL database")
+            return db
+    except mysql.connector.Error as err:
+        print("Something went wrong: {}".format(err))
+    
+    print("Trying again...")
+    sleep(5)
 
 db = mysql_custom_connect(db_conf)
 

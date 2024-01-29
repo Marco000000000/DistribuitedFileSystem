@@ -4,6 +4,7 @@ import mysql.connector
 import sys
 import json
 from time import sleep
+from circuitbreaker import circuit
 import logging
 #Fare gestore dei controller F
 #	- Creare topic iniziali (CFirstCall(nome, tipo = download, upload), CFirstCallAck(nome, topics))
@@ -16,21 +17,20 @@ conf = {'bootstrap.servers': 'kafka-service:9093',
         'auto.offset.reset': 'earliest',
         'enable.auto.commit': False}
 
+@circuit(failure_threshold=5, recovery_timeout=30)
 def mysql_custom_connect(conf):
-        while True:
-            try:
+    try:
 
-                db = mysql.connector.connect(**conf)
+        db = mysql.connector.connect(**conf)
 
-                if db.is_connected():
-                    print("Connected to MySQL database")
-                    #logger.info("Connected to MySQL database")
-                    return db
-            except mysql.connector.Error as err:
-                print("Something went wrong: {}".format(err))
-            
-            print("Trying again...")
-            sleep(5)
+        if db.is_connected():
+            print("Connected to MySQL database")
+            return db
+    except mysql.connector.Error as err:
+        print("Something went wrong: {}".format(err))
+    
+    print("Trying again...")
+    sleep(5)
 
 
 def produceJson(topicName,dictionaryData):#funzione per produrre un singolo Json su un topic

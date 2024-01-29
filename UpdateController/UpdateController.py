@@ -41,20 +41,21 @@ db_conf = {
             'password':'giovanni'
             }
 
+@circuit(failure_threshold=5, recovery_timeout=30)
 def mysql_custom_connect(conf):
-    while True:
-        try:
+    try:
 
-            db = mysql.connector.connect(**conf)
+        db = mysql.connector.connect(**conf)
 
-            if db.is_connected():
-                print("Connected to MySQL database")
-                return db
-        except mysql.connector.Error as err:
-            print("Something went wrong: {}".format(err))
-        
-        print("Trying again...")
-        sleep(5)
+        if db.is_connected():
+            print("Connected to MySQL database")
+            return db
+    except mysql.connector.Error as err:
+        print("Something went wrong: {}".format(err))
+    
+    print("Trying again...")
+    sleep(5)
+    
 def produceJson(topic, dictionaryData):
     print("a")
     p = Producer({'bootstrap.servers': 'kafka-service:9093'})
