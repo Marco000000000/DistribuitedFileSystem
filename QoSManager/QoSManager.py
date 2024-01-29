@@ -20,10 +20,11 @@ sla_rules = {}
 
 prometheus_url = "http://prometheus-service:9090"
 prometheus = PrometheusConnect(url=prometheus_url, disable_ssl=True)
-max_desired_latency=4.5
-min_desired_throughput=5000000
+max_desired_latency=8
+min_desired_throughput=3000000
 lastLatency=0
 lastThroughput=0
+predictionTime=2
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -238,64 +239,18 @@ def query_prometheus():
         return json.dumps(unpacked_list_temp)
 
     elif type== "violation_probability":
+        minute=interval_value
         if query == allowed_queries[0]:
-            minute=interval_value
-            fiveSecondFromMinute=minute*12
-            # Make predictions using the loaded model
-            prediction_time=int(time.time()-startTime)
-            print(prediction_time)
-            mean_pred = mean_Latency_model.predict(prediction_time,prediction_time+fiveSecondFromMinute, typ="levels")
-            std_dev_pred = std_Latency_model.predict(prediction_time, prediction_time+fiveSecondFromMinute, typ="levels")
-
-            # Define threshold and time interval
+            combined_probability,combined_probability_max,meanValuePredicted=predictLatencyMinute(interval_value)
             threshold = 8
-
-
-            # Calculate cumulative probabilities for each time step within the interval
-            cumulative_probabilities = []
-            for mean, std_dev in zip(mean_pred[:], std_dev_pred[:]):
-                probability = scipy.stats.norm.cdf(threshold, loc=mean, scale=std_dev)
-                cumulative_probabilities.append(probability)
-
-            print(cumulative_probabilities)
-            cumulative_probabilities=np.array(cumulative_probabilities)
-            cumulative_probabilities = cumulative_probabilities[~np.isnan(cumulative_probabilities)]
-
-            # Combine probabilities (e.g., take the maximum)
-            combined_probability =1- np.prod(cumulative_probabilities)
-            combined_probability_max=np.max(1-cumulative_probabilities)
-            meanValuePredicted=np.mean(mean_pred)
             print(f"Probability of exceeding 1 time '{threshold} second' of latency in {minute} minute: {combined_probability*100:.6f}%")
             print(f"Max instant Probability of exceeding {threshold} second of latency in {minute} minute: {combined_probability_max*100:.6f}%")
             print(f"Mean value predicted in {minute} minute: {meanValuePredicted:.2f} s")
             return jsonify({"p_at_least_once": combined_probability,"max_instant_p":combined_probability_max,"mean_value_predicted":meanValuePredicted}), 200
         elif query== allowed_queries[1]:
-            minute=interval_value
-            fiveSecondFromMinute=minute*12
-            # Make predictions using the loaded model
-            prediction_time=int(time.time()-startTime)
-            print(prediction_time)
-            mean_pred = mean_Throughput_model.predict(prediction_time,prediction_time+fiveSecondFromMinute, typ="levels")
-            std_dev_pred = std_Throughput_model.predict(prediction_time, prediction_time+fiveSecondFromMinute, typ="levels")
-
-            # Define threshold and time interval
+            
+            combined_probability,combined_probability_max,meanValuePredicted=predictThroughputMinute(interval_value)
             threshold = 3
-
-
-            # Calculate cumulative probabilities for each time step within the interval
-            cumulative_probabilities = []
-            for mean, std_dev in zip(mean_pred[:], std_dev_pred[:]):
-                probability = scipy.stats.norm.cdf(threshold, loc=mean, scale=std_dev)
-                cumulative_probabilities.append(probability)
-
-            print(cumulative_probabilities)
-            cumulative_probabilities=1-np.array(cumulative_probabilities)
-            cumulative_probabilities = cumulative_probabilities[~np.isnan(cumulative_probabilities)]
-
-            # Combine probabilities (e.g., take the maximum)
-            combined_probability =1- np.prod(cumulative_probabilities)
-            combined_probability_max=np.max(1-cumulative_probabilities)
-            meanValuePredicted=np.mean(mean_pred)
             print(f"Probability of subceeding 1 time '{threshold} MB/s' of throughput in {minute} minute: {combined_probability*100:.6f}%")
             print(f"Max instant Probability of subceeding '{threshold} MB/s' of throughput in {minute} minute: {combined_probability_max*100:.6f}%")
             print(f"Mean value predicted in {minute} minute: {meanValuePredicted/1000000:.2f} MB/s")
@@ -305,10 +260,61 @@ def query_prometheus():
         return jsonify({"error": "Invalid type"}), 400
     
 
-def predictLatencyMinute(current_latency,minute):
-    return False
-def predictThroughputMinute(current_throughput,minute):
-    return False
+def predictLatencyMinute(minute):
+    fiveSecondFromMinute=minute*12
+    # Make predictions using the loaded model
+    prediction_time=int(time.time()-startTime)
+    print(prediction_time)
+    mean_pred = mean_Throughput_model.predict(prediction_time,prediction_time+fiveSecondFromMinute, typ="levels")
+    std_dev_pred = std_Throughput_model.predict(prediction_time, prediction_time+fiveSecondFromMinute, typ="levels")
+
+    # Define threshold and time interval
+    threshold = 3
+
+
+    # Calculate cumulative probabilities for each time step within the interval
+    cumulative_probabilities = []
+    for mean, std_dev in zip(mean_pred[:], std_dev_pred[:]):
+        probability = scipy.stats.norm.cdf(threshold, loc=mean, scale=std_dev)
+        cumulative_probabilities.append(probability)
+
+    print(cumulative_probabilities)
+    cumulative_probabilities=1-np.array(cumulative_probabilities)
+    cumulative_probabilities = cumulative_probabilities[~np.isnan(cumulative_probabilities)]
+
+    # Combine probabilities (e.g., take the maximum)
+    combined_probability =1- np.prod(cumulative_probabilities)
+    combined_probability_max=np.max(1-cumulative_probabilities)
+    meanValuePredicted=np.mean(mean_pred)
+    return combined_probability,combined_probability_max,meanValuePredicted
+def predictThroughputMinute(minute):
+    fiveSecondFromMinute=minute*12
+    # Make predictions using the loaded model
+    prediction_time=int(time.time()-startTime)
+    print(prediction_time)
+    mean_pred = mean_Throughput_model.predict(prediction_time,prediction_time+fiveSecondFromMinute, typ="levels")
+    std_dev_pred = std_Throughput_model.predict(prediction_time, prediction_time+fiveSecondFromMinute, typ="levels")
+
+    # Define threshold and time interval
+    threshold = 3
+
+
+    # Calculate cumulative probabilities for each time step within the interval
+    cumulative_probabilities = []
+    for mean, std_dev in zip(mean_pred[:], std_dev_pred[:]):
+        probability = scipy.stats.norm.cdf(threshold, loc=mean, scale=std_dev)
+        cumulative_probabilities.append(probability)
+
+    print(cumulative_probabilities)
+    cumulative_probabilities=1-np.array(cumulative_probabilities)
+    cumulative_probabilities = cumulative_probabilities[~np.isnan(cumulative_probabilities)]
+
+    # Combine probabilities (e.g., take the maximum)
+    combined_probability =1- np.prod(cumulative_probabilities)
+    combined_probability_max=np.max(1-cumulative_probabilities)
+    meanValuePredicted=np.mean(mean_pred)
+    return combined_probability,combined_probability_max,meanValuePredicted
+
 
 db = mysql_custom_connect(db_conf)
 
@@ -344,13 +350,13 @@ def mysql_updater():
             cursor.execute("INSERT INTO metrics (metric_name, metric_value) VALUES (%s,  %s)", ("download_file_latency_seconds", current_latency))
             lastLatency=current_latency
             db.commit()
-            if current_latency<max_desired_latency and predictLatencyMinute(current_latency,1):
+            if current_latency>max_desired_latency and predictLatencyMinute(predictionTime)[2]>max_desired_latency:
                 createDownloadManager()
         if lastThroughput!= current_throughput:
             cursor.execute("INSERT INTO metrics (metric_name, metric_value) VALUES (%s,  %s)", ("download_file_throughput_bytes", current_throughput))
             lastThroughput=current_throughput
             db.commit()
-            if current_throughput<min_desired_throughput and predictThroughputMinute(current_throughput,1):
+            if current_throughput<min_desired_throughput and predictThroughputMinute(predictionTime)[2]<min_desired_throughput:
                 createFileSystem()#Sarebbe anche necessario aggiornare il limite al numero di partizioni
 
         time.sleep(1)    
