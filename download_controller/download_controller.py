@@ -61,7 +61,7 @@ db_conf = {
             'port':3306,
             'database':'ds_filesystem',
             'user':'root',
-            'password':'giovanni'
+            'password':'password'
             }
 
 @circuit(failure_threshold=5, recovery_timeout=30)

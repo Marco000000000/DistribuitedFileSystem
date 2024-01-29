@@ -58,7 +58,7 @@ spec:
         imagePullPolicy: Never
         env:
         - name: MYSQL_ROOT_PASSWORD
-          value: giovanni
+          value: password
         - name: MYSQL_DATABASE
           value: ds_filesystem
         - name: MYSQL_USER

@@ -133,7 +133,7 @@ if __name__ == "__main__":
             'port':3306,
             'database':'ds_filesystem',
             'user':'root',
-            'password':'giovanni'
+            'password':'password'
             }
 
     db = mysql_custom_connect(db_conf)
