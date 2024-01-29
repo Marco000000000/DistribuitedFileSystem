@@ -33,8 +33,10 @@ cons_conf = {'bootstrap.servers': 'kafka-service:9093',
 consumer = Consumer(cons_conf)
 consumerIntermediate= Consumer(cons_conf)
 limitTopic=3
-
-@circuit(failure_threshold=5, recovery_timeout=30)
+def fallback():
+    sleep(1)
+    return None
+@circuit(failure_threshold=3, recovery_timeout=5,fallback_function=fallback)
 def cir_subscribe(consumer, consumer_topics):
     consumer.subscribe(consumer_topics)
 
@@ -46,7 +48,7 @@ db_conf = {
             'password':'password'
             }
 
-@circuit(failure_threshold=5, recovery_timeout=30)
+@circuit(failure_threshold=5, recovery_timeout=30,fallback_function=fallback)
 def mysql_custom_connect(conf):
     try:
 
@@ -72,7 +74,12 @@ def produceJson(topic, dictionaryData):
     p.flush() 
 
 def discover(id,topic):
-    db = mysql_custom_connect(db_conf)
+    while True:
+        try:
+            db = mysql_custom_connect(db_conf)
+            break
+        except:
+            continue
     cursor=db.cursor(buffered=True)
     mysql_query = "SELECT distinct file_name FROM files WHERE ready=true;"
     cursor.execute(mysql_query)
@@ -145,11 +152,13 @@ def get_filenames(id, topic):
         raise e
 # Funzione che elabora il messaggio ricevuto dal consumer
 def UpdateFileOnTopic(id,topic):
-    try:
-        json_data = get_filenames(id, topic)
-    except:
-        discover(id,topic)
-        return
+    while True:
+        try:
+            json_data = get_filenames(id, topic)
+            break
+        except:
+            pass
+
     for i in json_data:
         code=get_random_string(10)
         control=json_data[i].split(".")
@@ -237,9 +246,13 @@ admin.create_topics(hardcoded_topics)
 
 if __name__ == "__main__":
     
-
-    cir_subscribe(consumer, ["UpdateRequest"])
-    cir_subscribe(consumerIntermediate, ["UpdateIntermediate"])
+    while True:
+        try:
+            cir_subscribe(consumer, ["UpdateRequest"])
+            cir_subscribe(consumerIntermediate, ["UpdateIntermediate"])
+            break
+        except:
+            pass
     while True:
         msg = consumer.poll(0.01)
         if msg is None: continue
