@@ -2,7 +2,7 @@
 
 # Inserire prima di tutto il seguente comando per accedere a mysql
 mysql -u root -p # Premere Invio
-# Inserire poi la password(="giovanni")
+# Inserire poi la password(="password")
 
 # Creazione utente 'file_manager' con password 'file'
 CREATE USER 'file_manager'@'localhost' IDENTIFIED BY 'file';
