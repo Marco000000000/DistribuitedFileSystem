@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: controller-manager-deployment
+  name: updatecontroller-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: controllermanager
+      app: updatecontroller
   template:
     metadata:
       labels:
-        app: controllermanager
+        app: updatecontroller
     spec:
       containers:
-      - name: controllermanager
-        image: distribuitedfilesystem-controller_manager:latest
+      - name: updatecontroller
+        image: distribuitedfilesystem-updatecontroller:latest
         imagePullPolicy: Never
 
 
@@ -22,10 +22,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: controller-manager-service
+  name: updatecontroller-service
 spec:
   selector:
-    app: controllermanager
+    app: updatecontroller
   ports:
     - protocol: TCP
       port: 80

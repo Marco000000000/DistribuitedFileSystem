@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: download-controller-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: downloadcontroller
+  template:
+    metadata:
+      labels:
+        app: downloadcontroller
+    spec:
+      containers:
+      - name: downloadcontroller
+        image: distribuitedfilesystem-download_controller1:latest
+        imagePullPolicy: Never
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: download-controller-service
+  annotations:
+      prometheus.io/scrape: 'true'
+      prometheus.io/port:   '80'
+spec:
+  selector:
+    app: downloadcontroller  # Common label selector for both download_controller1 and download_controller2
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP

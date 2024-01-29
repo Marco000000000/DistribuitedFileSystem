@@ -1,31 +1,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: controller-manager-deployment
+  name: filesystem-deployment
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: controllermanager
+      app: filesystem
   template:
     metadata:
       labels:
-        app: controllermanager
+        app: filesystem
     spec:
       containers:
-      - name: controllermanager
-        image: distribuitedfilesystem-controller_manager:latest
+      - name: filesystem
+        image: distribuitedfilesystem-filesystem1:latest
         imagePullPolicy: Never
-
+        
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: controller-manager-service
+  name: filesystem-service
 spec:
   selector:
-    app: controllermanager
+    app: filesystem
   ports:
     - protocol: TCP
       port: 80

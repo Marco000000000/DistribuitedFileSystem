@@ -1,33 +1,36 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: controller-manager-deployment
+  name: nginx-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: controllermanager
+      app: nginx
   template:
     metadata:
       labels:
-        app: controllermanager
+        app: nginx
     spec:
       containers:
-      - name: controllermanager
-        image: distribuitedfilesystem-controller_manager:latest
+      - name: nginx
+        image: distribuitedfilesystem-nginx:latest
         imagePullPolicy: Never
-
+        ports:
+        - containerPort: 80
 
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
-  name: controller-manager-service
+  name: nginx-service
 spec:
   selector:
-    app: controllermanager
+    app: nginx
   ports:
     - protocol: TCP
-      port: 80
+      port: 8080
       targetPort: 80
-  type: ClusterIP
+      nodePort: 30000
+  type: NodePort

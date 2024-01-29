@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: controller-manager-deployment
+  name: uploadcontroller-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: controllermanager
+      app: uploadcontroller
   template:
     metadata:
       labels:
-        app: controllermanager
+        app: uploadcontroller
     spec:
       containers:
-      - name: controllermanager
-        image: distribuitedfilesystem-controller_manager:latest
+      - name: uploadcontroller
+        image: distribuitedfilesystem-uploadcontroller:latest
         imagePullPolicy: Never
 
 
@@ -22,10 +22,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: controller-manager-service
+  name: uploadcontroller-service
 spec:
   selector:
-    app: controllermanager
+    app: uploadcontroller
   ports:
     - protocol: TCP
       port: 80
