@@ -266,8 +266,8 @@ def predictLatencyMinute(minute,threshold):
     # Make predictions using the loaded model
     prediction_time=int((time.time()-startTime)/5)
     print(prediction_time)
-    mean_pred = mean_Throughput_model.predict(prediction_time,prediction_time+fiveSecondFromMinute)
-    std_dev_pred = std_Throughput_model.predict(prediction_time, prediction_time+fiveSecondFromMinute)
+    mean_pred = mean_Latency_model.predict(prediction_time,prediction_time+fiveSecondFromMinute)
+    std_dev_pred = std_Latency_model.predict(prediction_time, prediction_time+fiveSecondFromMinute)
 
     # Define threshold and time interval
 
