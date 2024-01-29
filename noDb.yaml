@@ -167,6 +167,8 @@ spec:
           value: "zookeeper-service:2181"
         - name: JMX_PORT
           value: "9010"
+        - name: KAFKA_LOG_RETENTION_MINUTES
+          value: "1"
       - name: kafka-exporter
         image: danielqsj/kafka-exporter:latest
         args:
