@@ -346,6 +346,9 @@ def mysql_updater():
         print(lastThroughput)
         print(current_throughput)
         if lastLatency!= current_latency:
+            if(current_latency<=0 or current_latency>30):
+                time.sleep(1)
+                continue
             cursor.execute("INSERT INTO metrics (metric_name, metric_value) VALUES (%s,  %s)", ("download_file_latency_seconds", current_latency))
             lastLatency=current_latency
             db.commit()
@@ -354,6 +357,9 @@ def mysql_updater():
                     createDownloadManager()
                     latencyTime=time.time()
         if lastThroughput!= current_throughput:
+            if(current_latency<=0 ):
+                time.sleep(1)
+                continue
             cursor.execute("INSERT INTO metrics (metric_name, metric_value) VALUES (%s,  %s)", ("download_file_throughput_bytes", current_throughput))
             lastThroughput=current_throughput
             db.commit()
