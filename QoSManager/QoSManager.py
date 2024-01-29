@@ -14,7 +14,7 @@ import scipy.stats
 import pickle
 import time
 app = Flask(__name__)
-limitTopic=3
+limitTopic=2
 
 # Dizionario per tenere traccia delle regole di QoS
 sla_rules = {}
@@ -261,16 +261,15 @@ def query_prometheus():
         return jsonify({"error": "Invalid type"}), 400
     
 
-def predictLatencyMinute(minute):
+def predictLatencyMinute(minute,threshold):
     fiveSecondFromMinute=minute*12
     # Make predictions using the loaded model
-    prediction_time=int(time.time()-startTime)
+    prediction_time=int((time.time()-startTime)/5)
     print(prediction_time)
-    mean_pred = mean_Throughput_model.predict(prediction_time,prediction_time+fiveSecondFromMinute, typ="levels")
-    std_dev_pred = std_Throughput_model.predict(prediction_time, prediction_time+fiveSecondFromMinute, typ="levels")
+    mean_pred = mean_Throughput_model.predict(prediction_time,prediction_time+fiveSecondFromMinute)
+    std_dev_pred = std_Throughput_model.predict(prediction_time, prediction_time+fiveSecondFromMinute)
 
     # Define threshold and time interval
-    threshold = 3
 
 
     # Calculate cumulative probabilities for each time step within the interval
@@ -288,16 +287,15 @@ def predictLatencyMinute(minute):
     combined_probability_max=np.max(1-cumulative_probabilities)
     meanValuePredicted=np.mean(mean_pred)
     return combined_probability,combined_probability_max,meanValuePredicted
-def predictThroughputMinute(minute):
+def predictThroughputMinute(minute,threshold):
     fiveSecondFromMinute=minute*12
     # Make predictions using the loaded model
-    prediction_time=int(time.time()-startTime)
+    prediction_time=int((time.time()-startTime)/5)
     print(prediction_time)
-    mean_pred = mean_Throughput_model.predict(prediction_time,prediction_time+fiveSecondFromMinute, typ="levels")
-    std_dev_pred = std_Throughput_model.predict(prediction_time, prediction_time+fiveSecondFromMinute, typ="levels")
+    mean_pred = mean_Throughput_model.predict(prediction_time,prediction_time+fiveSecondFromMinute)
+    std_dev_pred = std_Throughput_model.predict(prediction_time, prediction_time+fiveSecondFromMinute)
 
     # Define threshold and time interval
-    threshold = 3
 
 
     # Calculate cumulative probabilities for each time step within the interval
@@ -351,7 +349,7 @@ def mysql_updater():
             cursor.execute("INSERT INTO metrics (metric_name, metric_value) VALUES (%s,  %s)", ("download_file_latency_seconds", current_latency))
             lastLatency=current_latency
             db.commit()
-            if current_latency>max_desired_latency and predictLatencyMinute(predictionTime)[2]>max_desired_latency and False:#inibita per mancanza di risorse locali
+            if predictLatencyMinute(predictionTime)[2]>max_desired_latency and False:#inibita per mancanza di risorse locali
                 if time.time()-latencyTime>600:
                     createDownloadManager()
                     latencyTime=time.time()
@@ -359,10 +357,10 @@ def mysql_updater():
             cursor.execute("INSERT INTO metrics (metric_name, metric_value) VALUES (%s,  %s)", ("download_file_throughput_bytes", current_throughput))
             lastThroughput=current_throughput
             db.commit()
-            if current_throughput<min_desired_throughput and predictThroughputMinute(predictionTime)[2]<min_desired_throughput and False:#inibita per mancanza di risorse locali
+            if predictThroughputMinute(predictionTime)[2]<min_desired_throughput and False:#inibita per mancanza di risorse locali
                 if time.time()-throughputTime>600:
                     for i in range(limitTopic):
-                        createFileSystem()#Sarebbe anche necessario aggiornare il limite al numero di partizioni
+                        createFileSystem()
                     throughputTime=time.time()
         time.sleep(1)    
         cursor.close

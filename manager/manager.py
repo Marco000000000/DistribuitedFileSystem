@@ -22,7 +22,7 @@ cons_conf = {'bootstrap.servers': 'kafka-service:9093',
         'enable.auto.commit': False}
 
 consumer = Consumer(cons_conf)
-limitTopic=3
+limitTopic=2
 db_conf = {
             'host':'db',
             'port':3306,
