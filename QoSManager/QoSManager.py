@@ -341,10 +341,11 @@ mutex = threading.Lock()
 
 cursor=db.cursor()
 learningTimer=time.time()
+
 def onlineLearning():
     metrics = ['download_file_latency_seconds', 'download_file_throughput_bytes']
 
-    if  time.time()-learningTimer>6000:
+    if  time.time()-learningTimer>3600:
 
 
         time_interval = timedelta(hours=1)
@@ -358,7 +359,7 @@ def onlineLearning():
             item=list(item)
             item[3]=str(item[3])
             unpacked_list_temp.append(item)
-
+        data=unpacked_list_temp
         finalData=datetime.strptime(data[-1][3], '%Y-%m-%d %H:%M:%S')
         firstData=datetime.strptime(data[0][3], '%Y-%m-%d %H:%M:%S')
 
@@ -390,7 +391,7 @@ def onlineLearning():
 
 
 
-        mean_train=np.array(std)
+        mean_train=np.array(mean)
         std_train=np.array(std)
         temp_mean_Latency=statsmodels.api.tsa.ARIMA(mean_train,order=mean_Latency_model.order())
         temp_std_Latency=statsmodels.api.tsa.ARIMA(std_train,order=std_Latency_model.order())
@@ -407,6 +408,7 @@ def onlineLearning():
             item=list(item)
             item[3]=str(item[3])
             unpacked_list_temp.append(item)
+        data=unpacked_list_temp
 
         finalData=datetime.strptime(data[-1][3], '%Y-%m-%d %H:%M:%S')
         firstData=datetime.strptime(data[0][3], '%Y-%m-%d %H:%M:%S')
@@ -439,7 +441,7 @@ def onlineLearning():
 
 
 
-        mean_train=np.array(std)
+        mean_train=np.array(mean)
         std_train=np.array(std)
         temp_mean_Throughput=statsmodels.api.tsa.ARIMA(mean_train,order=mean_Throughput_model.order())
         temp_std_Throughput=statsmodels.api.tsa.ARIMA(std_train,order=std_Throughput_model.order())
