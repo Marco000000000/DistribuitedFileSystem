@@ -8,6 +8,9 @@ from time import sleep
 from circuitbreaker import circuit
 import string
 import random
+import threading
+
+import requests
 # Configurazione del producer e instanziazione
 prod_conf = {'bootstrap.servers': 'kafka-service:9093'}
 print("aaa")
@@ -101,7 +104,19 @@ admin = AdminClient({'bootstrap.servers': 'kafka-service:9093'})
 hardcoded_topics = [NewTopic("FirstCall", num_partitions=1, replication_factor=1), NewTopic("FirstCallAck", num_partitions=1, replication_factor=1)]
 admin.create_topics(hardcoded_topics)
 
-
+def checkLimitTopic():
+    global limitTopic
+    while True:
+        try:
+            host="qosmanager-service"
+            response=requests.get("http://"+host+"/discover", timeout=5)
+            logger.info("response")
+             
+            limitTopic= response.json()
+        except Exception as e:
+            logging.info(f"Exception in get_filenames: {e}")
+            
+        sleep(60)
 # Prima di decommentare questa funzione, bisogna vedere se create topics sovrascrive i topic già esistenti
 # ritorna True se il topic esite, False altrimenti
 # def topic_exists(admin, topic):
@@ -112,6 +127,8 @@ admin.create_topics(hardcoded_topics)
 #     return False
 print("manager")
 if __name__ == "__main__":
+    thread=threading.Thread(target=checkLimitTopic)
+    thread.start()
     while True:
         try:
             db = mysql_custom_connect(db_conf)

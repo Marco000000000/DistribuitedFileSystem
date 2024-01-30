@@ -28,7 +28,7 @@ min_desired_throughput=1000000
 lastLatency=0
 lastThroughput=0
 predictionTime=2
-
+MAXLIMITOPIC=5
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 def get_random_string(length):
@@ -128,7 +128,9 @@ def createUploadManager():
     create_deployment(api_instance, name, image, 1)
     print("creato un "+name)
     #logger.info("creato un "+name)
-
+@app.route("/limitTopic",methods=['GET'])
+def getLimitTopic():
+    return limitTopic
 # Sezione gestione SLA e Prometheus
 @app.route('/update_sla_rule', methods=['POST'])
 def update_sla_rule(sla_rule, sla_value = 0):
@@ -459,6 +461,7 @@ def onlineLearning():
             mutex.release() 
     
         learningTimer=time.time()
+    time.sleep(600)
     
 def mysql_updater():
     global lastThroughput
@@ -505,6 +508,8 @@ def mysql_updater():
             lastThroughput=current_throughput
             db.commit()
             if predictThroughputMinute(predictionTime,min_desired_throughput)[2]<min_desired_throughput and False:#inibita per mancanza di risorse locali
+                if predictThroughputMinute(10,min_desired_throughput)[2]<min_desired_throughput and limitTopic<MAXLIMITOPIC:
+                    limitTopic+=1
                 if time.time()-throughputTime>600:
                     for i in range(limitTopic):
                         createFileSystem()
