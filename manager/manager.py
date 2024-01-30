@@ -110,9 +110,8 @@ def checkLimitTopic():
         try:
             host="qosmanager-service"
             response=requests.get("http://"+host+"/limitTopic", timeout=5)
-            logger.info("response")
-             
-            limitTopic= response.json()
+            logger.info("response") 
+            limitTopic= response.json()["limitTopic"]
         except Exception as e:
             logging.info(f"Exception in get_filenames: {e}")
             

@@ -130,7 +130,7 @@ def createUploadManager():
     #logger.info("creato un "+name)
 @app.route("/limitTopic",methods=['GET'])
 def getLimitTopic():
-    return limitTopic
+    return jsonify({"limitTopic":limitTopic})
 # Sezione gestione SLA e Prometheus
 @app.route('/update_sla_rule', methods=['POST'])
 def update_sla_rule(sla_rule, sla_value = 0):
