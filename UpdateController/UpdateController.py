@@ -153,7 +153,8 @@ def UpdateFileOnTopic(id,topic):
             json_data = get_filenames(id, topic)
             break
         except:
-            pass
+            discover(id, topic)
+            return
 
     for i in json_data:
         code=get_random_string(10)
