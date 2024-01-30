@@ -259,7 +259,7 @@ if __name__ == "__main__":
                 sys.stderr.write('%% %s [%d] ha raggiunto la fine dell\'offset %d\n' %
                                     (msg.topic(), msg.partition(), msg.offset()))
             elif msg.error():
-                raise KafkaException(msg.error())
+                continue
         else:
             data = json.loads(msg.value().decode('utf-8'))
             
