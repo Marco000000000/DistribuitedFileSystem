@@ -14,6 +14,7 @@ import numpy as np
 import scipy.stats
 import pickle
 import time
+import statsmodels
 app = Flask(__name__)
 limitTopic=2
 
@@ -275,9 +276,12 @@ def predictLatencyMinute(minute,threshold):
     # Make predictions using the loaded model
     prediction_time=int((time.time()-startTime)/5)
     print(prediction_time)
-    mean_pred = mean_Latency_model.predict(prediction_time,prediction_time+fiveSecondFromMinute)
-    std_dev_pred = std_Latency_model.predict(prediction_time, prediction_time+fiveSecondFromMinute)
-
+    mutex.acquire()
+    try:
+        mean_pred = mean_Latency_model.predict(prediction_time,prediction_time+fiveSecondFromMinute)
+        std_dev_pred = std_Latency_model.predict(prediction_time, prediction_time+fiveSecondFromMinute)
+    finally:
+        mutex.release()
     # Define threshold and time interval
 
 
@@ -301,9 +305,12 @@ def predictThroughputMinute(minute,threshold):
     # Make predictions using the loaded model
     prediction_time=int((time.time()-startTime)/5)
     print(prediction_time)
-    mean_pred = mean_Throughput_model.predict(prediction_time,prediction_time+fiveSecondFromMinute)
-    std_dev_pred = std_Throughput_model.predict(prediction_time, prediction_time+fiveSecondFromMinute)
-
+    mutex.acquire()
+    try:
+        mean_pred = mean_Throughput_model.predict(prediction_time,prediction_time+fiveSecondFromMinute)
+        std_dev_pred = std_Throughput_model.predict(prediction_time, prediction_time+fiveSecondFromMinute)
+    finally:
+        mutex.release()
     # Define threshold and time interval
 
 
@@ -330,9 +337,127 @@ while True:
         break
     except:
         continue
+mutex = threading.Lock()
 
 cursor=db.cursor()
+learningTimer=time.time()
+def onlineLearning():
+    metrics = ['download_file_latency_seconds', 'download_file_throughput_bytes']
 
+    if  time.time()-learningTimer>6000:
+
+
+        time_interval = timedelta(hours=1)
+        start_time = datetime.utcnow() - time_interval
+        cursor.execute("SELECT * from metrics where metric_name = %s and created_at > %s",(metrics[0],start_time))
+        data=cursor.fetchall()
+        unpacked_list_temp=[]
+        print(data)
+        for item in data:
+            print(item)
+            item=list(item)
+            item[3]=str(item[3])
+            unpacked_list_temp.append(item)
+
+        finalData=datetime.strptime(data[-1][3], '%Y-%m-%d %H:%M:%S')
+        firstData=datetime.strptime(data[0][3], '%Y-%m-%d %H:%M:%S')
+
+        finalSeconds= finalData.total_seconds()
+        firstSeconds= firstData.total_seconds()
+        #tsr.json
+        samples=int((finalSeconds-firstSeconds)/5)
+        step=5 #secondi
+        index=0
+        data1=[]
+        print(samples,finalSeconds,firstSeconds)
+        for value in range(0, samples*5, 5):
+            tempData=datetime.strptime(data[index][3], '%Y-%m-%d %H:%M:%S')
+            tempSeconds= tempData.total_seconds()
+            data1.append([data[index][2]])
+            if(tempSeconds-firstSeconds<=value):
+                index+=1
+
+        std=[]
+        mean=[]
+        times=100
+        step=5
+
+        print((len(data1)-times))
+        for i in range(len(data1)-times):
+            std.append([str(step*i),np.std(data1[i:i+times])])
+            mean.append([str(step*i),np.mean(data1[i:i+times])])
+
+
+
+
+        mean_train=np.array(std)
+        std_train=np.array(std)
+        temp_mean_Latency=statsmodels.api.tsa.ARIMA(mean_train,order=mean_Latency_model.order())
+        temp_std_Latency=statsmodels.api.tsa.ARIMA(std_train,order=std_Latency_model.order())
+        temp_mean_Latency.fit()
+        temp_std_Latency.fit()
+   
+
+        cursor.execute("SELECT * from metrics where metric_name = %s and created_at > %s",(metrics[1],start_time))
+        data=cursor.fetchall()
+        unpacked_list_temp=[]
+        print(data)
+        for item in data:
+            print(item)
+            item=list(item)
+            item[3]=str(item[3])
+            unpacked_list_temp.append(item)
+
+        finalData=datetime.strptime(data[-1][3], '%Y-%m-%d %H:%M:%S')
+        firstData=datetime.strptime(data[0][3], '%Y-%m-%d %H:%M:%S')
+
+        finalSeconds= finalData.total_seconds()
+        firstSeconds= firstData.total_seconds()
+        #tsr.json
+        samples=int((finalSeconds-firstSeconds)/5)
+        step=5 #secondi
+        index=0
+        data1=[]
+        print(samples,finalSeconds,firstSeconds)
+        for value in range(0, samples*5, 5):
+            tempData=datetime.strptime(data[index][3], '%Y-%m-%d %H:%M:%S')
+            tempSeconds= tempData.total_seconds()
+            data1.append([data[index][2]])
+            if(tempSeconds-firstSeconds<=value):
+                index+=1
+
+        std=[]
+        mean=[]
+        times=100
+        step=5
+
+        print((len(data1)-times))
+        for i in range(len(data1)-times):
+            std.append([str(step*i),np.std(data1[i:i+times])])
+            mean.append([str(step*i),np.mean(data1[i:i+times])])
+
+
+
+
+        mean_train=np.array(std)
+        std_train=np.array(std)
+        temp_mean_Throughput=statsmodels.api.tsa.ARIMA(mean_train,order=mean_Throughput_model.order())
+        temp_std_Throughput=statsmodels.api.tsa.ARIMA(std_train,order=std_Throughput_model.order())
+        temp_mean_Throughput.fit()
+        temp_std_Throughput.fit()
+        
+        
+        mutex.acquire()
+        try:
+            mean_Throughput_model=temp_mean_Throughput
+            std_Throughput_model = temp_std_Throughput
+            mean_Latency_model = temp_mean_Latency
+            std_Latency_model = temp_std_Latency
+        finally:
+            mutex.release() 
+    
+        learningTimer=time.time()
+    
 def mysql_updater():
     global lastThroughput
     global lastLatency
@@ -399,6 +524,9 @@ with open('std_Latency_model.pkl', 'rb') as file:
 if __name__ == "__main__":
     thread1 = threading.Thread(target=mysql_updater)
     thread1.start()
+    thread2= threading.Thread(target=onlineLearning)
+    thread2.start()
+
     app.run(host='0.0.0.0', port=80, threaded=True)
 
 
