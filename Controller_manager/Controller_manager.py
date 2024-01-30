@@ -90,7 +90,7 @@ def register_controller(consumer,oldTopics):
                 sys.stderr.write('%% %s [%d] reached end at offset %d\n' %
                                 (msg.topic(), msg.partition(), msg.offset()))
             elif msg.error():
-                raise KafkaException(msg.error())
+                continue
         else:
             cursor.execute("SELECT DISTINCT topic FROM partitions")
             topics=cursor.fetchall()
