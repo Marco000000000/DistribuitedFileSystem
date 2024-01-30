@@ -109,7 +109,7 @@ def checkLimitTopic():
     while True:
         try:
             host="qosmanager-service"
-            response=requests.get("http://"+host+"/discover", timeout=5)
+            response=requests.get("http://"+host+"/limitTopic", timeout=5)
             logger.info("response")
              
             limitTopic= response.json()
