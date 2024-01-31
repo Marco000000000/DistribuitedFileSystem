@@ -1,4 +1,4 @@
-#Istruzioni per il deploy:
+# Istruzioni per il deploy:
 Scaricare docker Desktop dal sito ufficiale ed installare l'ambiente kubernetes associato.
 Una volta scaricato il progetto usare il comando :
 `docker-compose build`
