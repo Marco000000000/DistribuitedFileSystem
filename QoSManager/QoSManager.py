@@ -462,7 +462,7 @@ def onlineLearning():
         finally:
             mutex.release() 
     
-        learningTimer=time.time()
+        learningTimer=time.time()-3000
     time.sleep(600)
     
 def mysql_updater():
