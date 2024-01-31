@@ -69,7 +69,7 @@ def produceJson(topic, dictionaryData):
     p.produce(topic, m.encode('utf-8'), callback=receipt)
     p.flush() 
 
-def discover(id,topic):
+def UpdateFileOnTopic(id,topic):
     while True:
         try:
             db = mysql_custom_connect(db_conf)
@@ -263,7 +263,7 @@ if __name__ == "__main__":
         else:
             data = json.loads(msg.value().decode('utf-8'))
             
-            discover(data["id"],"Request"+str(data["topic"]))
+            UpdateFileOnTopic(data["id"],"Request"+str(data["topic"]))
             consumer.commit()
 
 
