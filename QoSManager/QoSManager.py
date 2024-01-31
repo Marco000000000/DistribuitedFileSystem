@@ -450,13 +450,14 @@ def onlineLearning():
         temp_mean_Throughput.fit()
         temp_std_Throughput.fit()
         
-        
+        global startTime
         mutex.acquire()
         try:
             mean_Throughput_model=temp_mean_Throughput
             std_Throughput_model = temp_std_Throughput
             mean_Latency_model = temp_mean_Latency
             std_Latency_model = temp_std_Latency
+            startTime=time.time()-(len(data1)-times)*5
         finally:
             mutex.release() 
     
@@ -508,9 +509,9 @@ def mysql_updater():
             lastThroughput=current_throughput
             db.commit()
             if predictThroughputMinute(predictionTime,min_desired_throughput)[2]<min_desired_throughput and False:#inibita per mancanza di risorse locali
-                if predictThroughputMinute(10,min_desired_throughput)[2]<min_desired_throughput and limitTopic<MAXLIMITOPIC:
-                    limitTopic+=1
                 if time.time()-throughputTime>600:
+                    if predictThroughputMinute(10,min_desired_throughput)[2]<min_desired_throughput and limitTopic<MAXLIMITOPIC:
+                        limitTopic+=1
                     for i in range(limitTopic):
                         createFileSystem()
                     throughputTime=time.time()
