@@ -9,7 +9,7 @@ from time import sleep
 import string
 import random
 import logging
-import requests 
+# import requests 
 # Configurazione del producer e instanziazione
 prod_conf = {'bootstrap.servers': 'kafka-service:9093'}
 # Configurazione logger
@@ -77,8 +77,7 @@ def discover(id,topic):
         except:
             continue
     cursor=db.cursor(buffered=True)
-    mysql_query = "SELECT distinct file_name FROM files WHERE ready=true;"
-    cursor.execute(mysql_query)
+    cursor.execute("SELECT distinct file_name FROM files WHERE ready=true and partition_id=%s;",(topic,))
     files=cursor.fetchall()
     print(files)
     if cursor.rowcount>0:
@@ -135,72 +134,72 @@ def discover(id,topic):
     cursor.close()
     db.close()    
 
-@circuit(failure_threshold=5, recovery_timeout=30,fallback_function=discover)
-def get_filenames(id, topic):
-    try:
-        logger.info("get_filenames")
-        host="download-controller-service"
-        response=requests.get("http://"+host+"/discover", timeout=5)
-        logger.info("response")
-        return response.json()
-    except Exception as e:
-        logging.info(f"Exception in get_filenames: {e}")
-        raise e
+# @circuit(failure_threshold=5, recovery_timeout=30,fallback_function=discover)
+# def get_filenames(id, topic):
+#     try:
+#         logger.info("get_filenames")
+#         host="download-controller-service"
+#         response=requests.get("http://"+host+"/discover", timeout=5)
+#         logger.info("response")
+#         return response.json()
+#     except Exception as e:
+#         logging.info(f"Exception in get_filenames: {e}")
+#         raise e
 # Funzione che elabora il messaggio ricevuto dal consumer
-def UpdateFileOnTopic(id,topic):
-    while True:
-        try:
-            json_data = get_filenames(id, topic)
-            break
-        except:
-            discover(id, topic)
-            return
+# def UpdateFileOnTopic(id,topic):
+#     while True:
+#         try:
+#             json_data = get_filenames(id, topic)
+#             break
+#         except:
+#             discover(id, topic)
+#             return
 
-    for i in json_data:
-        code=get_random_string(10)
-        control=json_data[i].split(".")
-        if len(control)!=2:
-            continue
-        data={
-            "fileName":json_data[i],
-            "returnTopic":"UpdateIntermediate",
-            "code":code
-            }     
-        produceJson(topic,data)
-        count=0
-        while True:
-            msg=consumerIntermediate.poll(0.01)
-            if msg is None:
-                continue
-            elif msg.error():
-                print('Error: {}'.format(msg.error()))
-                continue
-            else:
-                data=json.loads(msg.value().decode('utf-8'))
-                if data["filename"] != json_data[i] or data["code"] != code:
-                    consumerIntermediate.commit()
-                    continue
-                if data["last"] == True:
+#     for i in json_data:
+#         code=get_random_string(10)
+#         control=json_data[i].split(".")
+#         if len(control)!=2:
+#             continue
+#         data={
+#             "fileName":json_data[i],
+#             "returnTopic":"UpdateIntermediate",
+#             "code":code
+#             }     
+#         produceJson(topic,data)
+#         count=0
+#         while True:
+#             msg=consumerIntermediate.poll(0.01)
+#             if msg is None:
+#                 continue
+#             elif msg.error():
+#                 print('Error: {}'.format(msg.error()))
+#                 continue
+#             else:
+#                 data=json.loads(msg.value().decode('utf-8'))
+#                 if data["filename"] != json_data[i] or data["code"] != code:
+#                     consumerIntermediate.commit()
+#                     continue
+#                 if data["last"] == True:
                     
-                    consumerIntermediate.commit()
-                    break
-                else:
-                    data={
-                    "fileName": json_data[i],
-                    "data":data["data"],
-                    "last":False, 
-                    "count":count,
-                    "id":id
-                    }                    
-                    count=count+1
-                    produceJson("UpdateDownload",data)
-                    consumerIntermediate.commit()
-    data={
+#                     consumerIntermediate.commit()
+#                     break
+#                 else:
+#                     data={
+#                     "fileName": json_data[i],
+#                     "data":data["data"],
+#                     "last":False, 
+#                     "count":count,
+#                     "id":id
+#                     }                    
+#                     count=count+1
+#                     produceJson("UpdateDownload",data)
+#                     consumerIntermediate.commit()
+#     data={
             
-            "last":True, 
-            "id":id
-            } 
-    produceJson("UpdateDownload",data)
+#             "last":True, 
+#             "id":id
+#             } 
+#     produceJson("UpdateDownload",data)
 
 
 
@@ -264,7 +263,7 @@ if __name__ == "__main__":
         else:
             data = json.loads(msg.value().decode('utf-8'))
             
-            UpdateFileOnTopic(data["id"],"Request"+str(data["topic"]))
+            discover(data["id"],"Request"+str(data["topic"]))
             consumer.commit()
 
 
