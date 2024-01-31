@@ -18,6 +18,7 @@ oppure, se si utilizza Linux e non è stato attivato l'alias docker-compose, uti
    ```bash
    kubectl apply -f startall.yaml 
 ```
+4. contattare il server nell'indirizzo localhost:30000 utilizzando le varie api implementate
  ## Descrizione del sistema
    Il progetto realizzato implementa un file system distribuito che supporta varie operazioni su diverse tipologie di file.
    L’obiettivo che il sistema si pone è la massimizzazione del throughput in download.
