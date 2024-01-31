@@ -211,7 +211,8 @@ def query_prometheus():
             return jsonify({"desidered_"+query: max_desired_latency}), 200
         elif query== allowed_queries[1]:
             return jsonify({"desidered_"+query: min_desired_throughput}), 200
-
+    elif type=="discover":
+        return jsonify({"allowed_queries": allowed_queries}), 200
     elif type== "violation":
 
         time_interval = timedelta(hours=interval_value)
