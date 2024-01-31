@@ -16,7 +16,7 @@ oppure, se si utilizza Linux e non è stato attivato l'alias docker-compose, uti
 3.Successivamente, lanciare il comando:
 
    ```bash
-   kubectl apply -f startall.yaml ```
+   kubectl apply -f startall.yaml 
 ```
  ## Descrizione del sistema
    Il progetto realizzato implementa un file system distribuito che supporta varie operazioni su diverse tipologie di file.
