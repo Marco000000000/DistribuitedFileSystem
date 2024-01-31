@@ -1,8 +1,15 @@
 # Istruzioni per il deploy:
-Scaricare docker Desktop dal sito ufficiale ed installare l'ambiente kubernetes associato.
-Una volta scaricato il progetto usare il comando :
-`docker-compose build`
-o se su linux e non si è attivato il l'alias docker-compose usare il comando:
-`docker compose build`
-A questo punto lanciare il comando
-`kubectl apply -f startall.yaml` 
+
+1. Scaricare [Docker Desktop](https://www.docker.com/products/docker-desktop) dal sito ufficiale ed installare l'ambiente Kubernetes associato.
+
+2. Una volta scaricato il progetto, utilizzare il comando:
+   ```bash
+   docker-compose build```
+oppure, se si utilizza Linux e non è stato attivato l'alias docker-compose, utilizzare il comando:
+
+```bash
+docker compose build```
+Successivamente, lanciare il comando:
+```bash
+kubectl apply -f startall.yaml``
+
